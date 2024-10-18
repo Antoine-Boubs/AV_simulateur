@@ -1413,6 +1413,26 @@ def generate_pdf_report(resultats_df, params, objectives):
     print(f"params: {params}")
     print(f"objectives: {objectives}")
 
+
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
+    ]
+
+    # Ajouter les informations des objectifs à data
+    for i, obj in enumerate(objectives, start=1):
+        data.extend([
+            [f"Objectif {i} - Nom", obj['nom']],
+            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
+            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
+            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
+        ])
+
+    # Générer les graphiques
+    img_buffer1 = generate_chart1(resultats_df)
+    img_buffer2 = generate_chart2(resultats_df)
     
     # Create the financial investment evolution chart
     fig1 = go.Figure()
@@ -1633,22 +1653,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         except Exception as e:
             print(f"Error adding image to PDF: {e}")
 
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.set_x(left_margin)
-    pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
-    pdf.ln(5)
-
-    pdf.set_font_safe('Inter', '', 12)
-    info_text = [
-        f"Capital initial : {params['capital_initial']} €",
-        f"Versement mensuel : {params['versement_mensuel']} €",
-        f"Rendement annuel : {params['rendement_annuel']*100:.2f}%",
-        f"Durée de simulation : {len(resultats_df)} ans"
-    ]
-
-    for line in info_text:
-        pdf.set_x(left_margin)
-        pdf.cell(0, 8, line, 0, 1, 'L')
+   
 
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
