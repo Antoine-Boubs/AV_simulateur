@@ -983,16 +983,24 @@ class PDF(FPDF):
         super().__init__()
         self.logo_path = logo_path
         
-        font_path = "assets/Fonts"
+        font_path = "assets"
         
-        self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
-        self.add_font('Inter', 'B', os.path.join(font_path, 'Inter-Bold.ttf'), uni=True)
-        self.add_font('Inter', 'I', os.path.join(font_path, 'Inter-Italic.ttf'), uni=True)
+        try:
+            self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
+            self.add_font('Inter', 'B', os.path.join(font_path, 'Inter-Bold.ttf'), uni=True)
+            self.add_font('Inter', 'I', os.path.join(font_path, 'Inter-Italic.ttf'), uni=True)
+        except Exception as e:
+            print(f"Error loading fonts: {e}")
+            # Fallback to built-in fonts if custom fonts are not available
+            self.set_font('Arial', '', 12)
 
     def header(self):
         if self.logo_path and os.path.exists(self.logo_path):
-            self.image(self.logo_path, 10, 10, 20)
-            self.link(10, 10, 20, 20, "https://www.antoineberjoan.com")
+            try:
+                self.image(self.logo_path, 10, 10, 20)
+                self.link(10, 10, 20, 20, "https://www.antoineberjoan.com")
+            except Exception as e:
+                print(f"Error loading logo: {e}")
         self.set_font('Inter', 'B', 14)
         self.set_text_color(251, 191, 36)
         self.set_xy(35, 10)
@@ -1248,9 +1256,12 @@ class PDF(FPDF):
         self.set_font('Inter', 'B', 10)
         self.cell(effective_width / 2, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 0, 'L')
         
-        if self.logo_path:
-            self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
-
+        if self.logo_path and os.path.exists(self.logo_path):
+            try:
+                self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
+            except Exception as e:
+                print(f"Error adding logo to last page: {e}")
+                
 def generate_chart1(resultats_df):
     fig1 = go.Figure()
 
@@ -1640,6 +1651,10 @@ from PIL import Image
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
+    if not os.path.exists(logo_path):
+        print(f"Warning: Logo file not found at {logo_path}")
+        logo_path = None
+
     pdf = PDF(logo_path)
     left_margin = 20
     pdf.set_left_margin(left_margin)
@@ -1650,25 +1665,27 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_auto_page_break(auto=True, margin=15)
 
     for i, img_buffer in enumerate(img_buffers):
-        # Créer une image temporaire à partir du buffer
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            img = Image.open(img_buffer)
-            img.save(tmpfile.name, format="PNG")
-            tmpfile.flush()
-            
-            pdf.add_page()
-            if i == 2:  # Pour le troisième graphique (performances historiques)
-                pdf.set_font('Inter', 'B', 14)
-                pdf.cell(0, 10, 'Performances historiques', 0, 1)
-                pdf.set_font('Inter', '', 12)
-                pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
-                                     'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
-                                     "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
-                                     "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
-                                     "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
-                                     'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
-                                     'performances supérieures.')
-            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+                img = Image.open(img_buffer)
+                img.save(tmpfile.name, format="PNG")
+                tmpfile.flush()
+                
+                pdf.add_page()
+                if i == 2:  # Pour le troisième graphique (performances historiques)
+                    pdf.set_font('Inter', 'B', 14)
+                    pdf.cell(0, 10, 'Performances historiques', 0, 1)
+                    pdf.set_font('Inter', '', 12)
+                    pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                                         'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                                         "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                                         "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                                         "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                                         'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                                         'performances supérieures.')
+                pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+        except Exception as e:
+            print(f"Error adding image to PDF: {e}")
 
     pdf.set_font('Inter', 'B', 14)
     pdf.set_x(left_margin)
@@ -1728,7 +1745,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     )
     pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
-    pdf.add_last_page()
+    try:
+        pdf.add_last_page()
+    except Exception as e:
+        print(f"Error adding last page: {e}")
 
     return pdf.output(dest='S')
 
