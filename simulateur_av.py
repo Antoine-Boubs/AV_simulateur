@@ -1075,7 +1075,10 @@ class PDF(FPDF):
         self.set_text_color(128, 128, 128)
         
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'R')
-        
+
+        legal_text = (
+            "Sous le contrôle de l'ACPR // Garantie Financière et Assurance Responsabilité Civile Professionnelle conformes au Code des Assurances"
+        )
         
         
         line_width = self.w - 20
