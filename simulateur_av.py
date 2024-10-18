@@ -1482,7 +1482,7 @@ def generate_pdf_report(resultats_df, params, img_buffers):
     img_buffer3 = io.BytesIO(img_bytes3)
     
     # Generate PDF with all three charts
-    pdf_bytes = create_pdf(data, img_buffers, resultats_df, params)
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params)
     
     return pdf_bytes
 
