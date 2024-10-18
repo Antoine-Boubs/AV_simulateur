@@ -1328,7 +1328,7 @@ def generate_chart1(resultats_df):
             'x':0.5,
             'xanchor': 'center',
             'yanchor': 'top',
-            'font': dict(size=24, family='Arial, sans-serif')
+            'font': dict(size=24, family='Inter, sans-serif')
         },
         xaxis_title='Année',
         yaxis_title='Montant (€)',
@@ -1337,7 +1337,8 @@ def generate_chart1(resultats_df):
             yanchor="bottom",
             y=1.02,
             xanchor="center",
-            x=0.5
+            x=0.5,
+            font=dict(family='Inter, sans-serif')
         ),
         plot_bgcolor='white',
         paper_bgcolor='white',
@@ -1346,31 +1347,33 @@ def generate_chart1(resultats_df):
             zerolinecolor='#E0E0E0',
             tickformat=',.0f',
             ticksuffix=' €',
-            separatethousands=True
+            separatethousands=True,
+            title_font=dict(family='Inter, sans-serif'),
+            tickfont=dict(family='Inter, sans-serif')
         ),
         xaxis=dict(
             gridcolor='#E0E0E0',
-            zerolinecolor='#E0E0E0'
+            zerolinecolor='#E0E0E0',
+            title_font=dict(family='Inter, sans-serif'),
+            tickfont=dict(family='Inter, sans-serif')
         ),
         hovermode="x unified",
         barmode='relative',
-        font=dict(family='Arial, sans-serif'),
+        font=dict(family='Inter, sans-serif'),
         margin=dict(l=50, r=50, t=100, b=50),
-        width=800,  # Largeur fixe pour centrer le graphique
-        height=500  # Hauteur fixe
+        width=800,
+        height=500
     )
 
-    # Améliorer le style des lignes de grille
     fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
     fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
 
-    # Ajouter une annotation pour expliquer les rachats
     fig1.add_annotation(
         x=0.5, y=-0.15,
         xref='paper', yref='paper',
         text='Les barres rouges représentent les rachats effectués',
         showarrow=False,
-        font=dict(size=12, color='#666'),
+        font=dict(size=12, color='#666', family='Inter, sans-serif'),
         align='center',
         bgcolor='rgba(255,255,255,0.8)',
         bordercolor='#E0E0E0',
