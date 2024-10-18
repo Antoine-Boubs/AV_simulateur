@@ -1434,7 +1434,7 @@ def generate_pdf_report(resultats_df, params, objectives):
     # Générer les graphiques
     img_buffer1 = generate_chart1(resultats_df)
     img_buffer2 = generate_chart2(resultats_df)
-    img_buffer3 = generate_chart3()
+
     
     # Create the financial investment evolution chart
     fig1 = go.Figure()
@@ -1740,7 +1740,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     )
     pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
-    create_performance_page(pdf, params)
+  
     
     pdf.add_last_page()
 
