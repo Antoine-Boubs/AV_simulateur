@@ -1617,7 +1617,7 @@ import tempfile
 from PIL import Image
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    pdf = AppleStylePDF()
+    pdf =  PDF(FPDF):
     pdf.add_page()
 
     # Page de couverture
