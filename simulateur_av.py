@@ -1015,29 +1015,34 @@ class PDF(FPDF):
             self.set_font('Arial', '', 12)
 
     def header(self):
+        # Couleurs inspirées d'Apple
+        apple_gray = (128, 128, 128)
+        apple_blue = (0, 122, 255)
+        
+        # Ajout du logo
         if self.logo_path and os.path.exists(self.logo_path):
             try:
-                self.image(self.logo_path, 10, 10, 20)
-                self.link(10, 10, 20, 20, "https://www.antoineberjoan.com")
+                self.image(self.logo_path, 10, 8, 20)
             except Exception as e:
-                print(f"Error loading logo: {e}")
+                print(f"Erreur lors du chargement du logo : {e}")
         
-        self.set_font_safe('Inter', 'B', 14)
-        self.set_text_color(251, 191, 36)
-        self.set_xy(35, 10)
-        self.cell(0, 8, 'Antoine Berjoan', 0, 1, 'L')
+        # Titre du rapport
+        self.set_font('Inter', 'B', 24)
+        self.set_text_color(*apple_blue)
+        self.cell(0, 10, 'Rapport Financier', 0, 1, 'R')
         
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(100, 100, 100)
-        self.set_xy(35, 18)
-        self.cell(0, 8, 'Conseiller en investissement', 0, 1, 'L')
-
-        self.styled_button('Prendre RDV', 'https://app.lemcal.com/@antoineberjoan', self.w - 60, 10, 50, 15)
-
-        self.set_draw_color(200, 200, 200)
+        # Sous-titre
+        self.set_font('Inter', '', 12)
+        self.set_text_color(*apple_gray)
+        self.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'R')
+        
+        # Ligne de séparation
+        self.set_draw_color(*apple_gray)
+        self.set_line_width(0.1)
         self.line(10, 35, self.w - 10, 35)
-
-        self.ln(30)
+        
+        # Espace après le header
+        self.ln(20)
 
     def styled_button(self, text, url, x, y, w, h):
         self.set_fill_color(251, 191, 36)
