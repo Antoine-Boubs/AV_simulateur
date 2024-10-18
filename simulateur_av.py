@@ -981,11 +981,15 @@ import tempfile
 class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
-        self.logo_path = logo_path
         self.is_custom_font_loaded = False
         
-        font_path = os.path.join(os.path.dirname(__file__), "assets/Fonts")
-        logo_path = os.path.join(os.path.dirname(__file__), "assets/Logo1.png")
+        font_path = os.path.join(os.path.dirname(__file__), "assets", "Fonts")
+        
+        # Si logo_path n'est pas fourni, utilisez le chemin par défaut
+        if logo_path is None:
+            logo_path = os.path.join(os.path.dirname(__file__), "assets", "Logo1.png")
+        
+        self.logo_path = logo_path  # Assignez logo_path à self.logo_path
 
         
         try:
