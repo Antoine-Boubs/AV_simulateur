@@ -1650,9 +1650,8 @@ def create_pdf(data, img_buffers, resultats_df, params):
 def main():
     # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        # Générer les graphiques ou images sous forme de buffers
-        
-        # Appeler la fonction generate_pdf_report avec les images en paramètre
+        # Assure-toi que les variables img_buffer1, img_buffer2, et img_buffer3 existent
+        # et contiennent les images/buffers générés précédemment dans ton code
         pdf_bytes = generate_pdf_report(resultats_df, params, img_buffers=[img_buffer1, img_buffer2, img_buffer3])
         
         # Créer un lien de téléchargement pour le PDF
