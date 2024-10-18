@@ -1445,6 +1445,27 @@ def generate_pdf_report(resultats_df, params, objectives):
     print(f"resultats_df shape: {resultats_df.shape}")
     print(f"params: {params}")
     print(f"objectives: {objectives}")
+
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
+    ]
+
+    # Ajouter les informations des objectifs à data
+    for i, obj in enumerate(objectives, start=1):
+        data.extend([
+            [f"Objectif {i} - Nom", obj['nom']],
+            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
+            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
+            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
+        ])
+
+    # Générer les graphiques
+    img_buffer1 = generate_chart1(resultats_df)
+    img_buffer2 = generate_chart2(resultats_df)
+    img_buffer3 = generate_chart3()
     
     # Create the financial investment evolution chart
     fig1 = go.Figure()
@@ -1608,27 +1629,6 @@ def generate_pdf_report(resultats_df, params, objectives):
     img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
     img_buffer3 = io.BytesIO(img_bytes3)
     img_buffer3.seek(0)  # Rembobiner le buffer
-
-     # Add objectives information to data
-    for i, obj in enumerate(objectives, start=1):
-        data.extend([
-            [f"Objectif {i} - Nom", obj['nom']],
-            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
-            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
-            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
-        ])
-
-    data = [
-        ["Paramètre", "Valeur"],
-        ["Capital initial", f"{params['capital_initial']} €"],
-        ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
-    ]
-
-    # Générer les graphiques
-    img_buffer1 = generate_chart1(resultats_df)
-    img_buffer2 = generate_chart2(resultats_df)
-    img_buffer3 = generate_chart3()
 
     # Créer le PDF
     pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
