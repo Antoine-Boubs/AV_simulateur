@@ -2,7 +2,9 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 import math
-
+from streamlit_extras.card import card
+from plotly.subplots import make_subplots
+import plotly.io as pio
 
 st.set_page_config(
     layout="centered", 
@@ -30,9 +32,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# Titre de l'application
-st.title("📊 Simulation de votre placement")
 
 def input_simulateur():
     with st.sidebar:
@@ -83,6 +82,67 @@ def input_simulateur():
         "abattement": abattement
     }
 
+import streamlit as st
+
+# CSS for Apple-inspired simple and elegant style
+st.markdown("""
+<style>
+    .main {
+        background-color: #f5f5f7;
+    }
+    .stApp {
+        margin: 0 auto;
+    }
+    .card {
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    .card-title {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        color: #1d1d1f;
+    }
+    .stSlider > div > div > div {
+        background-color: #0071e3;
+    }
+    .stSlider > div > div > div > div {
+        background-color: #0077ed;
+    }
+    .stNumberInput > div > div > input {
+        border-radius: 5px;
+        border: 1px solid #d2d2d7;
+    }
+    .delete-button {
+        background-color: #ff3b30;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        float: right;
+    }
+    .delete-button:hover {
+        background-color: #ff453a;
+    }
+    .action-button {
+        background-color: #0071e3;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .action-button:hover {
+        background-color: #0077ed;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Initialisation des variables de session
 if "versements_libres" not in st.session_state:
     st.session_state.versements_libres = []
@@ -93,18 +153,16 @@ if "show_stopper_interface" not in st.session_state:
 if "show_modifier_interface" not in st.session_state:
     st.session_state.show_modifier_interface = False
 
-# Fonction pour ajouter un versement libre
+# Fonctions (inchangées)
 def ajouter_versement_libre():
     st.session_state.versements_libres.append({
         "annee": 5,
         "montant": 1000.0
     })
 
-# Fonction pour supprimer un versement libre
 def supprimer_versement_libre(index):
     st.session_state.versements_libres.pop(index)
 
-# Fonction pour ajouter une modification de versement
 def ajouter_modification_versement(debut, fin, montant):
     st.session_state.modifications_versements.append({
         "debut": debut,
@@ -112,94 +170,253 @@ def ajouter_modification_versement(debut, fin, montant):
         "montant": montant
     })
 
-# Fonction pour supprimer une modification de versement
 def supprimer_modification_versement(index):
     st.session_state.modifications_versements.pop(index)
 
-# Fonction pour afficher l'interface de stop des versements
 def toggle_stopper_interface():
     st.session_state.show_stopper_interface = not st.session_state.show_stopper_interface
     st.session_state.show_modifier_interface = False
 
-# Fonction pour afficher l'interface de modification des versements
 def toggle_modifier_interface():
     st.session_state.show_modifier_interface = not st.session_state.show_modifier_interface
     st.session_state.show_stopper_interface = False
 
+def verifier_chevauchements():
+    chevauchements = []
+    for i, modif1 in enumerate(st.session_state.modifications_versements):
+        for j, modif2 in enumerate(st.session_state.modifications_versements):
+            if i != j:
+                if (modif1['debut'] <= modif2['fin'] and modif2['debut'] <= modif1['fin']):
+                    chevauchements.append((i, j))
+    return chevauchements
+
+# Style personnalisé
+st.markdown("""
+<style>
+    .stButton>button {
+        width: 100%;
+        border-radius: 20px;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 20px;
+    }
+    .stSlider>div>div>div>div {
+        background-color: #f0f2f6;
+    }
+    .stSlider>div>div>div>div>div {
+        background-color: #4e8cff;
+    }
+    .streamlit-expanderHeader {
+        font-size: 1em;
+        color: #31333F;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+
 # Boutons pour gérer les versements
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.button("➕ Ajouter un versement libre", on_click=ajouter_versement_libre)
+    st.button("➕ Ajouter un versement", on_click=ajouter_versement_libre, key="add_free_payment")
 with col2:
-    st.button("🛑 Stopper les versements", on_click=toggle_stopper_interface)
+    st.button("🛑 Stopper les versements", on_click=toggle_stopper_interface, key="stop_payments")
 with col3:
-    st.button("📊 Modifier les versements", on_click=toggle_modifier_interface)
+    st.button("📊 Modifier les versements", on_click=toggle_modifier_interface, key="modify_payments")
 
 # Affichage de tous les versements libres avec option de suppression
-for i, versement in enumerate(st.session_state.versements_libres):
-    col1, col2, col3 = st.columns([2, 2, 1])
-    with col1:
-        versement["annee"] = st.slider(f"Année du versement libre {i+1}", min_value=1, max_value=60, value=versement["annee"])
-    with col2:
-        versement["montant"] = st.number_input(f"Montant du versement libre {i+1} (€)", min_value=0.0, value=versement["montant"])
-    with col3:
-        st.button("❌ Supprimer", key=f"supprimer_libre_{i}", on_click=supprimer_versement_libre, args=(i,))
+if st.session_state.versements_libres:
+    for i, versement in enumerate(st.session_state.versements_libres):
+        with st.expander(f"💰 Versement libre de {versement['montant']}€ à l'année {versement['annee']}", expanded=True):
+            col1, col2, col3 = st.columns([2, 2, 1])
+            with col1:
+                versement["annee"] = st.slider(f"Année", min_value=1, max_value=60, value=versement["annee"], key=f"year_slider_{i}")
+            with col2:
+                versement["montant"] =  st.number_input(f"Montant (€)", min_value=0.0, value=versement["montant"], step=100.0, format="%.2f", key=f"amount_input_{i}")
+            with col3:
+                st.button("❌", key=f"delete_free_{i}", on_click=supprimer_versement_libre, args=(i,))
 
 # Interface pour stopper les versements
 if st.session_state.show_stopper_interface:
-    st.subheader("Stopper les versements")
-    debut, fin = st.slider("Sélectionnez la période d'arrêt des versements", 1, 60, (1, 5))
-    if st.button("Confirmer l'arrêt des versements"):
-        ajouter_modification_versement(debut, fin, 0)
-        st.session_state.show_stopper_interface = False
+    with st.form(key="stop_form"):
+        debut, fin = st.slider("Période d'arrêt des versements", 1, 60, (1, 5), key="stop_slider")
+        submit_stop = st.form_submit_button("Confirmer l'arrêt des versements")
+        if submit_stop:
+            ajouter_modification_versement(debut, fin, 0)
+            st.session_state.show_stopper_interface = False
+            st.success("Arrêt des versements confirmé!")
+            st.rerun()
 
 # Interface pour modifier les versements
 if st.session_state.show_modifier_interface:
-    st.subheader("Modifier les versements")
-    debut, fin = st.slider("Sélectionnez la période de modification des versements", 1, 60, (1, 5))
-    nouveau_montant = st.number_input("Nouveau montant des versements mensuels", min_value=0.0, value=400.0)
-    if st.button("Confirmer la modification des versements"):
-        ajouter_modification_versement(debut, fin, nouveau_montant)
-        st.session_state.show_modifier_interface = False
+    with st.form(key="modify_form"):
+        debut, fin = st.slider("Période de modification des versements", 1, 60, (1, 5), key="modify_slider")
+        nouveau_montant = st.number_input("Nouveau montant mensuel (€)", min_value=0.0, value=400.0, step=100.0, format="%.2f", key="new_amount")
+        submit_modify = st.form_submit_button("Confirmer la modification")
+        if submit_modify:
+            ajouter_modification_versement(debut, fin, nouveau_montant)
+            st.session_state.show_modifier_interface = False
+            st.success("Modification des versements confirmée!")
+            st.rerun()
 
 # Affichage des modifications de versements
 if st.session_state.modifications_versements:
-    st.subheader("Modifications des versements")
+    chevauchements = verifier_chevauchements()
+    if chevauchements:
+        st.warning("⚠️ Attention : Certaines périodes de modifications se chevauchent. Veuillez vérifier vos saisies.")   
+
     for i, modification in enumerate(st.session_state.modifications_versements):
-        col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
-        with col1:
-            st.write(f"Années : {modification['debut']} - {modification['fin']}")
-        with col2:
-            st.write(f"Montant : {modification['montant']} €")
-        with col3:
-            if modification['montant'] == 0:
-                st.write("Versements arrêtés")
-            else:
-                st.write("Versements modifiés")
-        with col4:
-            st.button("❌", key=f"supprimer_modif_{i}", on_click=supprimer_modification_versement, args=(i,))
+        if modification['montant'] == 0:
+            emoji = "🔴 "
+            etat = "Versements arrêtés"
+        elif modification['montant'] > 0:
+            emoji = "💰 "
+            etat = "Versements modifiés"
+        else:
+            emoji = ""
+            etat = "État inconnu"
+        
+        with st.expander(f"{emoji}Versements de {modification['debut']} à {modification['fin']} ans : {modification['montant']}€ / mois", expanded=True):
+            col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+            with col1:
+                st.markdown(f"**Années** : {modification['debut']} - {modification['fin']}")
+            with col2:
+                st.markdown(f"**Montant** : {modification['montant']} €")
+            with col3:
+                st.markdown(f"**État** : {etat}")
+            with col4:
+                st.button("❌", key=f"delete_modif_{i}", on_click=supprimer_modification_versement, args=(i,))
+
+        if any(i in chevauchement for chevauchement in chevauchements):
+            st.warning(f"⚠️ Cette modification chevauche une autre période.")
+
+import streamlit as st
+import pandas as pd
+import math
 
 
-st.header("🎯 Objectifs financiers")
+# Initialisation de la liste des objectifs dans la session state
+if "objectifs" not in st.session_state:
+    st.session_state.objectifs = []
 
-# Ajouter des objectifs spécifiques
-objectifs = []
-nombre_objectifs = st.number_input("Combien d'objectifs souhaitez-vous définir ?", min_value=1, max_value=10, value=1)
+# Fonction pour mettre à jour les valeurs des sliders
+def mettre_a_jour_slider(cle):
+    st.session_state[cle] = st.session_state[cle]
 
-for i in range(1, nombre_objectifs + 1):
-    st.subheader(f"Objectif {i}")
-    objectif_nom = st.text_input(f"Nom de l'objectif {i}", f"Objectif {i}")
-    objectif_annee = st.slider(f"Année de réalisation de l'objectif {objectif_nom}", min_value=1, max_value=60, value=i * 10)
-    montant_annuel_retrait = st.number_input(f"Montant annuel à retirer pour {objectif_nom} (€)", min_value=0, value=5000)
-    duree_retrait = st.number_input(f"Durée de retrait pour {objectif_nom} (années)", min_value=1, value=4)
-    
+# CSS pour un design épuré et élégant
+st.markdown("""
+<style>
+    .main {
+        background-color: #f5f5f7;
+        padding: 2rem;
+        border-radius: 20px;
+    }
+    h1 {
+        color: #1d1d1f;
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+    }
+    .stTextInput > div > div > input {
+        border-radius: 10px;
+        border: 1px solid #d2d2d7;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+    .stSlider > div > div > div {
+        background-color: #0071e3;
+    }
+    .stExpander {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    .stExpander:hover {
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+    .stButton > button {
+        background-color: #0071e3;
+        color: white;
+        border-radius: 20px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        background-color: #0077ed;
+    }
+    .delete-button {
+        color: #ff3b30;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+    .delete-button:hover {
+        color: #F1B8A2;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-    objectifs.append({
-        "nom": objectif_nom,
-        "annee": objectif_annee,
-        "montant_annuel": montant_annuel_retrait,
-        "duree_retrait": duree_retrait,
-    })
+
+# Affichage de tous les objectifs
+for i, objectif in enumerate(st.session_state.objectifs):
+    with st.expander(f"Objectif {i + 1}: {objectif['nom']}", expanded=True):
+        col_delete, col_nom = st.columns([1, 11])
+        with col_delete:
+            if st.button("🗑️", key=f"delete_button_{i}", help="Supprimer cet objectif", on_click=lambda i=i: st.session_state.objectifs.pop(i)):
+                st.rerun()
+        with col_nom:
+            objectif["nom"] = st.text_input("Nom de l'objectif", value=objectif["nom"], key=f"nom_objectif_{i}")
+        
+        col_montant, col_annee, col_duree = st.columns(3)
+        with col_montant:
+            objectif["montant_annuel"] = st.number_input(
+                "Montant annuel (€)",
+                min_value=0,
+                value=objectif["montant_annuel"],
+                step=100,
+                key=f"montant_annuel_{i}"
+            )
+        with col_annee:
+            objectif["annee"] = st.slider(
+                "Année de réalisation",
+                min_value=1,
+                max_value=60,
+                value=objectif["annee"],
+                key=f"annee_realisation_{i}",
+                on_change=mettre_a_jour_slider,
+                args=(f"annee_realisation_{i}",)
+            )
+        with col_duree:
+            objectif["duree_retrait"] = st.slider(
+                "Durée (années)",
+                min_value=1,
+                max_value=60,
+                value=objectif["duree_retrait"],
+                key=f"duree_retrait_{i}",
+                on_change=mettre_a_jour_slider,
+                args=(f"duree_retrait_{i}",)
+            )
+
+# Bouton pour ajouter un nouvel objectif
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    if st.button("➕ Ajouter un objectif", key="ajouter_objectif"):
+        st.session_state.objectifs.append({
+            "nom": f"Nouvel objectif",
+            "annee": 10,
+            "montant_annuel": 5000,
+            "duree_retrait": 4
+        })
+        st.rerun()
+
+# Utilisation des objectifs dans le reste de votre code
+objectifs = st.session_state.objectifs
 
 # Exemple de DataFrame pour les rachats
 df_test = pd.DataFrame({
@@ -217,16 +434,18 @@ for objectif in objectifs:
     montant_rachat_annuel = objectif["montant_annuel"]
     
     # Ajouter le montant annuel de l'objectif au rachat pour les années concernées
-    for j in range(objectif["duree_retrait"] if not math.isinf(objectif["duree_retrait"]) else len(df_test) - annee):
-        if annee + j < len(df_test):
-            df_test.at[annee + j, "Rachat"] += montant_rachat_annuel
+    for j in range(objectif["duree_retrait"]):
+        if annee + j <= 60:
+            df_test.at[annee + j - 1, "Rachat"] += montant_rachat_annuel
 
 
 
 
-def calculer_duree_capi_max (objectifs):
-    objectif_annee_max = max(obj["annee"] for obj in objectifs)
-    return objectif_annee_max
+
+def calculer_duree_capi_max(objectifs):
+    if not objectifs:  # Vérifie si la liste est vide
+        return 60  # Durée par défaut si aucun objectif n'est défini
+    return max(obj["annee"] for obj in objectifs)
 
 def calcul_rendement_versements_mensuels(versement_mensuel_investi, rendement_annuel):
     rendement_versements = 0
@@ -236,9 +455,15 @@ def calcul_rendement_versements_mensuels(versement_mensuel_investi, rendement_an
     return rendement_versements
 
 def calculer_duree_totale(objectifs):
+    if not objectifs:  # Vérifie si la liste est vide
+        return 60  # Durée par défaut si aucun objectif n'est défini
     # Calculer la durée maximale en fonction des objectifs
-    duree_totale = max(obj["annee"] + obj["duree_retrait"] for obj in objectifs)
-    return duree_totale
+    return max(obj["annee"] + obj["duree_retrait"] for obj in objectifs)
+
+# ... (autre code)
+
+if not objectifs:
+    st.warning("Aucun objectif n'a été défini. Une durée par défaut de 60 ans sera utilisée pour la simulation.")
 
 # Calcul des valeurs dynamiques pour le tableau
 def optimiser_objectifs(params, duree_totale):
@@ -275,7 +500,8 @@ def optimiser_objectifs(params, duree_totale):
     for annee in range(1, duree_totale + 1):
         # Déterminer le versement mensuel pour l'année en cours
         versement_mensuel_courant = versement_mensuel_initial
-        for modification in st.session_state.modifications_versements:
+        modifications = st.session_state.get('modifications_versements', [])
+        for modification in modifications:
             if modification["debut"] <= annee <= modification["fin"]:
                 versement_mensuel_courant = modification["montant"]
                 break
@@ -394,54 +620,105 @@ st.dataframe(resultats_df)
 
 
 def create_financial_chart(df: pd.DataFrame):
-    fig = go.Figure()
+    # Create figure with secondary y-axis
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    fig.add_trace(go.Scatter(
-        x=df['Année'],
-        y=df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float),
-        mode='lines+markers',
-        name='Capital fin d\'année',
-        line=dict(color='#1f77b4')
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=df['Année'],
-        y=df['Épargne investie'].str.replace(' €', '').astype(float),
-        mode='lines+markers',
-        name='Épargne investie',
-        line=dict(color='#2ca02c')
-    ))
-
-    fig.add_trace(go.Bar(
-        x=df['Année'],
-        y=df['Rachat'].str.replace(' €', '').astype(float),
-        name='Rachats',
-        marker_color='#d62728'
-    ))
-
-    fig.update_layout(
-        title='Évolution du placement financier',
-        xaxis_title='Année',
-        yaxis_title='Montant (€)',
-        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
-        hovermode='x unified',
-        updatemenus=[dict(
-            type='buttons',
-            direction='left',
-            buttons=[
-                dict(args=[{'visible': [True, True, True]}], label='Tout afficher', method='update'),
-                dict(args=[{'visible': [True, False, False]}], label='Capital fin d\'année', method='update'),
-                dict(args=[{'visible': [False, True, False]}], label='Épargne investie', method='update'),
-                dict(args=[{'visible': [False, False, True]}], label='Rachats', method='update')
-            ],
-            pad={'r': 10, 't': 10},
-            showactive=True,
-            x=0.1,
-            xanchor='left',
-            y=1.1,
-            yanchor='top'
-        )]
+    # Add traces
+    fig.add_trace(
+        go.Scatter(
+            x=df['Année'],
+            y=df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float),
+            name='Capital fin d\'année',
+            line=dict(color='#007AFF', width=3),
+            mode='lines'
+        ),
+        secondary_y=False,
     )
+
+    fig.add_trace(
+        go.Scatter(
+            x=df['Année'],
+            y=df['Épargne investie'].str.replace(' €', '').astype(float),
+            name='Épargne investie',
+            line=dict(color='#34C759', width=3),
+            mode='lines'
+        ),
+        secondary_y=False,
+    )
+
+    fig.add_trace(
+        go.Bar(
+            x=df['Année'],
+            y=df['Rachat'].str.replace(' €', '').astype(float),
+            name='Rachats',
+            marker_color='#FF3B30',
+            opacity=0.7
+        ),
+        secondary_y=True,
+    )
+
+    # Customize the layout
+    fig.update_layout(
+        title={
+            'text': 'Évolution du placement financier',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, color='#1D1D1F')
+        },
+        font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color="#1D1D1F"),
+        plot_bgcolor='white',
+        hovermode="x unified",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=60, r=30, t=100, b=50),
+    )
+
+    # Update axes
+    fig.update_xaxes(
+        title_text="Année",
+        showgrid=True,
+        gridcolor='#E5E5EA',
+        tickfont=dict(size=12)
+    )
+
+    fig.update_yaxes(
+        title_text="Montant (€)",
+        showgrid=True,
+        gridcolor='#E5E5EA',
+        tickfont=dict(size=12),
+        secondary_y=False
+    )
+
+    fig.update_yaxes(
+        title_text="Rachats (€)",
+        showgrid=False,
+        tickfont=dict(size=12),
+        secondary_y=True
+    )
+
+    # Add range slider
+    fig.update_layout(
+        xaxis=dict(
+            rangeslider=dict(visible=True),
+            type="linear"
+        )
+    )
+
+    # Use a template inspired by Apple's design
+    pio.templates["apple"] = go.layout.Template(
+        layout=go.Layout(
+            colorway=['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#000000'],
+            font={'color': '#1D1D1F'},
+        )
+    )
+    fig.update_layout(template="apple")
 
     return fig
 st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True)
@@ -453,31 +730,75 @@ st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True)
 
 
 def create_waterfall_chart(df: pd.DataFrame):
-    # Utiliser une méthode différente pour traiter la colonne 'Capital fin d'année (NET)'
+    # Traitement des données
     capital_fin_annee = df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float)
-    
     yearly_change = capital_fin_annee.diff()
     yearly_change = yearly_change.fillna(capital_fin_annee.iloc[0])
-
     final_capital = capital_fin_annee.iloc[-1]
 
+    # Création du graphique
     fig = go.Figure(go.Waterfall(
         name = "Evolution du capital",
         orientation = "v",
         measure = ["relative"] * len(df) + ["total"],
         x = df['Année'].tolist() + ["Total"],
         textposition = "outside",
-        text = [f"{val:,.2f} €" for val in yearly_change] + [f"{final_capital:,.2f} €"],
+        text = [f"{val:,.0f} €" for val in yearly_change] + [f"{final_capital:,.0f} €"],
         y = yearly_change.tolist() + [0],
-        connector = {"line":{"color":"rgb(63, 63, 63)"}},
+        connector = {"line":{"color":"rgba(63, 63, 63, 0.2)"}},
+        increasing = {"marker":{"color":"#34C759"}},
+        decreasing = {"marker":{"color":"#FF3B30"}},
+        totals = {"marker":{"color":"#007AFF"}},
     ))
 
+    # Personnalisation du layout
     fig.update_layout(
-        title = "Evolution du capital année par année",
-        showlegend = False,
-        xaxis_title = "Année",
-        yaxis_title = "Variation du capital (€)"
+        title = {
+            'text': "Évolution du capital année par année",
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, color='#1D1D1F')
+        },
+        font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color="#1D1D1F"),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        xaxis=dict(
+            title="Année",
+            tickfont=dict(size=12),
+            gridcolor='#E5E5EA'
+        ),
+        yaxis=dict(
+            title="Variation du capital (€)",
+            tickfont=dict(size=12),
+            gridcolor='#E5E5EA',
+            tickformat=',.0f'
+        ),
+        margin=dict(l=60, r=30, t=100, b=50),
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=14,
+            font_family="SF Pro Display, Arial, sans-serif"
+        )
     )
+
+    # Ajout d'un range slider
+    fig.update_layout(
+        xaxis=dict(
+            rangeslider=dict(visible=True),
+            type="linear"
+        )
+    )
+
+    # Utilisation d'un template personnalisé inspiré d'Apple
+    pio.templates["apple"] = go.layout.Template(
+        layout=go.Layout(
+            colorway=['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#000000'],
+            font={'color': '#1D1D1F'},
+        )
+    )
+    fig.update_layout(template="apple")
 
     return fig
 
@@ -486,175 +807,88 @@ st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True)
 
 
 
+import plotly.graph_objects as go
+import plotly.io as pio
+import pandas as pd
 
+def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
+    # Trouver l'année correspondant à duree_capi_max
+    target_year = df[df['Année'] == duree_capi_max].iloc[0]
 
+    # Calculer les valeurs nécessaires
+    capital_final = float(target_year['Capital fin d\'année (NET)'].replace(' €', '').replace(',', ''))
+    pourcentage_plus_value = float(target_year['%'].replace('%', '')) / 100  # Convertir le pourcentage en décimal
+    plus_values = capital_final * pourcentage_plus_value
+    versements = capital_final - plus_values
 
-
-
-
-
-
-
-
-
-def create_donut_chart(df: pd.DataFrame):
-    last_year = df.iloc[-1]
-    capital_initial = float(last_year['Capital initial (NET)'].replace(' €', ''))
-    interets = float(last_year['Capital fin d\'année (NET)'].replace(' €', '')) - capital_initial
-
-    fig = go.Figure(data=[go.Pie(
-        labels=['Capital initial', 'Intérêts cumulés'],
-        values=[capital_initial, interets],
-        hole=.4,
-        textinfo='label+percent',
-        insidetextorientation='radial'
-    )])
-
-    fig.update_layout(
-        title_text="Répartition du capital final",
-        annotations=[dict(text='Capital<br>final', x=0.5, y=0.5, font_size=20, showarrow=False)]
-    )
-
-    return fig
-
-# Dans votre application Streamlit
-st.plotly_chart(create_donut_chart(resultats_df), use_container_width=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-def create_bubble_chart(df: pd.DataFrame):
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
-        x=df['Année'],
-        y=df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float),
-        mode='lines+markers',
-        name='Capital fin d\'année',
-        line=dict(color='blue'),
-        marker=dict(size=10)
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=df['Année'],
-        y=df['Rachat'].str.replace(' €', '').astype(float),
-        mode='markers',
-        name='Rachats',
-        marker=dict(
-            size=df['Rachat'].str.replace(' €', '').astype(float) / 100,
-            sizemode='area',
-            sizeref=2.*max(df['Rachat'].str.replace(' €', '').astype(float))/(40.**2),
-            sizemin=4,
-            color='red'
+    if capital_final == 0:
+        # Si le capital final est 0, afficher un message au lieu du graphique
+        fig = go.Figure()
+        fig.add_annotation(
+            x=0.5, y=0.5,
+            text="Pas de données à afficher",
+            font=dict(size=20, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F'),
+            showarrow=False
         )
-    ))
+    else:
+        # Créer le graphique en donut
+        colors = ['#007AFF', '#34C759']
+        fig = go.Figure(data=[go.Pie(
+            labels=['Versements', 'Plus-values'],
+            values=[versements, plus_values],
+            hole=.7,
+            textinfo='label+value',
+            texttemplate='%{label}<br>%{value:,.0f} €',
+            textposition='outside',
+            insidetextorientation='horizontal',
+            marker=dict(colors=colors, line=dict(color='#ffffff', width=2)),
+            direction='clockwise',
+            sort=False,
+            pull=[0, 0.1],
+            textfont=dict(size=14, family="SF Pro Display, Arial, sans-serif"),
+        )])
+
+        # Calcul du pourcentage de croissance
+        growth_percentage = (plus_values / versements * 100) if versements != 0 else 0
+        growth_text = f"+{growth_percentage:.1f}%"
+
+        fig.update_layout(
+            annotations=[
+                dict(text=f'<b>{capital_final:,.0f} €</b><br>Capital final', x=0.5, y=0.5, font_size=16, showarrow=False),
+                dict(text=f'<b>{growth_text}</b><br>Plus-values', x=0.5, y=0.35, font_size=14, showarrow=False, font_color='#34C759')
+            ]
+        )
 
     fig.update_layout(
-        title='Evolution du capital et des rachats',
-        xaxis_title='Année',
-        yaxis_title='Montant (€)',
-        showlegend=True
+        title={
+            'text': f"Composition du capital en année {duree_capi_max}",
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F')
+        },
+        font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color='#1D1D1F'),
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        showlegend=False,
     )
+
+    pio.templates["apple"] = go.layout.Template(
+        layout=go.Layout(
+            colorway=['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#000000'],
+            font={'color': '#1D1D1F'},
+        )
+    )
+    fig.update_layout(template="apple")
 
     return fig
 
-# Dans votre application Streamlit
-st.plotly_chart(create_bubble_chart(resultats_df), use_container_width=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def create_stacked_area_chart(df: pd.DataFrame):
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
-        x=df['Année'], 
-        y=df['Capital initial (NET)'].str.replace(' €', '').astype(float),
-        mode='lines',
-        line=dict(width=0.5, color='rgb(131, 90, 241)'),
-        stackgroup='one',
-        name='Capital initial'
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=df['Année'],
-        y=df['VP NET'].str.replace(' €', '').astype(float).cumsum(),
-        mode='lines',
-        line=dict(width=0.5, color='rgb(111, 231, 219)'),
-        stackgroup='one',
-        name='Versements programmés'
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=df['Année'],
-        y=df['Rendement'].str.replace(' €', '').astype(float).cumsum(),
-        mode='lines',
-        line=dict(width=0.5, color='rgb(184, 247, 212)'),
-        stackgroup='one',
-        name='Rendements cumulés'
-    ))
-
-    fig.update_layout(
-        title='Composition du capital au fil du temps',
-        xaxis_title='Année',
-        yaxis_title='Montant (€)',
-        yaxis_type='linear',
-        showlegend=True
-    )
-
-    return fig
 
 # Dans votre application Streamlit
-st.plotly_chart(create_stacked_area_chart(resultats_df), use_container_width=True)
-
-
-
-
-
-
-
-
-if st.button("Lancer la simulation"):
-    resultats_df = optimiser_objectifs(params, objectifs)
-    
-    chart_type = st.selectbox(
-        "Choisissez le type de graphique",
-        ["Ligne et barre", "Cascade", "Anneau", "Bulles", "Aires empilées"]
-    )
-    
-    if chart_type == "Ligne et barre":
-        st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True, key="line_bar_chart")
-    elif chart_type == "Cascade":
-        st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True, key="waterfall_chart")
-    elif chart_type == "Anneau":
-        st.plotly_chart(create_donut_chart(resultats_df), use_container_width=True, key="donut_chart")
-    elif chart_type == "Bulles":
-        st.plotly_chart(create_bubble_chart(resultats_df), use_container_width=True, key="bubble_chart")
-    elif chart_type == "Aires empilées":
-        st.plotly_chart(create_stacked_area_chart(resultats_df), use_container_width=True, key="stacked_area_chart")
-    
-    # Display the results table
-    st.write("Résultats détaillés de la simulation :")
-    st.dataframe(resultats_df)
+objectif_annee_max = calculer_duree_capi_max(objectifs)
+duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi max réelle
+st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True)
 
 
 
@@ -667,6 +901,69 @@ if st.button("Lancer la simulation"):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import textwrap
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -674,127 +971,683 @@ from fpdf import FPDF
 import base64
 from io import BytesIO
 import os
+from PIL import Image
+import io
+import numpy as np
 
 class PDF(FPDF):
-    def __init__(self):
+    def __init__(self, logo_path=None):
         super().__init__()
-        # Ajuster le chemin pour correspondre à votre structure de dossier
-        fonts_path = os.path.join(os.path.dirname(__file__), 'Inter Streamlit', 'static')
+        self.logo_path = logo_path
         
-        # Ajouter les polices Inter
-        self.add_font('Inter', '', os.path.join(fonts_path, 'Inter-Regular.ttf'), uni=True)
-        self.add_font('Inter', 'B', os.path.join(fonts_path, 'Inter-Bold.ttf'), uni=True)
-        self.add_font('Inter', 'I', os.path.join(fonts_path, 'Inter-Italic.ttf'), uni=True)
+        # Définir le chemin vers le dossier contenant les polices
+        font_path = "/Users/boubs/Downloads/Inter" 
+        
+        # Ajouter les polices
+        self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
+        self.add_font('Inter', 'B', os.path.join(font_path, 'Inter-Bold.ttf'), uni=True)
+        self.add_font('Inter', 'I', os.path.join(font_path, 'Inter-Italic.ttf'), uni=True)
 
     def header(self):
-        self.set_font('Inter', 'B', 12)
-        self.cell(0, 10, 'Rapport de Simulation Financière', 0, 1, 'C')
+        # Logo et nom (à gauche)
+        if self.logo_path and os.path.exists(self.logo_path):
+            self.image(self.logo_path, 10, 10, 20)  # Réduire la taille du logo à 20
+            # Ajoutez un lien cliquable sur la zone du logo
+            self.link(10, 10, 20, 20, "https://www.antoineberjoan.com")
+        self.set_font('Inter', 'B', 14)  # Réduire la taille de la police
+        self.set_text_color(251, 191, 36)
+        self.set_xy(35, 10)  # Ajuster la position du texte
+        self.cell(0, 8, 'Antoine Berjoan', 0, 1, 'L')
+        self.set_font('Inter', '', 10)  # Réduire la taille de la police
+        self.set_text_color(100, 100, 100)
+        self.set_xy(35, 18)  # Ajuster la position du texte
+        self.cell(0, 8, 'Conseiller en investissement', 0, 1, 'L')
+
+        # Bouton stylisé
+        self.styled_button('Prendre RDV', 'https://app.lemcal.com/@antoineberjoan', self.w - 60, 10, 50, 15)
+
+        # Ligne de séparation
+        self.set_draw_color(200, 200, 200)
+        self.line(10, 35, self.w - 10, 35)  # Déplacer la ligne vers le bas
+
+        self.ln(30)  # Augmenter l'espace après l'en-tête
+    
+    def styled_button(self, text, url, x, y, w, h):
+        # Fond du bouton
+        self.set_fill_color(251, 191, 36)  # Couleur dorée
+        self.rounded_rect(x, y, w, h, 2, 'F')  # Utiliser rounded_rect avec un rayon de 2
+
+        # Ajouter une bordure plus fine
+        self.set_draw_color(200, 150, 0)  # Couleur de la bordure (un peu plus foncée que le fond)
+        self.set_line_width(0.5)  # Réduire l'épaisseur de la bordure
+        self.rounded_rect(x, y, w, h, 2, 'D')  # 'D' pour dessiner seulement le contour
+
+        # Texte du bouton
+        self.set_font('Inter', 'B', 10)  # Réduire la taille de la police
+        self.set_text_color(255, 255, 255)  # Texte blanc
+        self.set_xy(x, y)
+        self.cell(w, h, text, 0, 0, 'C')  # 'C' pour centrer le texte
+
+        # Lien cliquable
+        self.link(x, y, w, h, url)
+
+    def rounded_rect(self, x, y, w, h, r, style=''):
+        # Simplification de la méthode pour dessiner un rectangle normal
+        if style == 'F':
+            self.rect(x, y, w, h, style)
+        elif style == 'D' or style == '':
+            self.rect(x, y, w, h)
+        else:  # FD ou DF
+            self.rect(x, y, w, h, 'FD')
 
     def footer(self):
+        # Position at 15 mm from bottom
         self.set_y(-15)
-        self.set_font('Inter', 'I', 8)
-        self.cell(0, 10, f'Page {self.page_no()}/{{nb}}', 0, 0, 'C')
+        
+        # Draw a line
+        self.set_draw_color(200, 200, 200)
+        self.line(10, self.get_y(), self.w - 10, self.get_y())
+        
+        # Move below the line
+        self.set_y(self.get_y() + 1)
+        
+        # Inter italic 7
+        self.set_font('Inter', 'I', 7)
+        
+        # Text color in gray
+        self.set_text_color(128, 128, 128)
+        
+        # Page number on the right
+        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'R')
+        
+        # Legal text
+        legal_text = (
+            "RCS Chambéry n° 837 746 528 - Orias n° 21008012 - www.orias.fr "
+            "Conseil en Investissements Financiers membre de la CNCEF, chambre agréée par l'AMF - "
+            "Mandataire d'intermédiaire en assurance - Mandataire d'intermédiaire en opérations de banque et services de paiement "
+            "Transactions sur Immeubles sans réception de fonds Carte n° CPI34022017000021580 délivrée par la CCI de Hérault "
+            "Sous le contrôle de l'ACPR // Garantie Financière et Assurance Responsabilité Civile Professionnelle conformes au Code des Assurances"
+        )
+        
+        # Calculate the width of each line based on the page width
+        line_width = self.w - 20  # 10mm margin on each side
+        
+        # Calculate the height of the text
+        self.set_xy(10, self.h)  # Move to the bottom of the page
+        total_height = self.get_y()
+        self.multi_cell(line_width, 3, legal_text, 0, 'L')
+        total_height = self.get_y() - total_height
+        
+        # Reset position and actually print the text
+        self.set_y(-15 - total_height)
+        self.multi_cell(line_width, 3, legal_text, 0, 'L')
 
-def create_pdf(data, figures):
-    pdf = PDF()
+    def get_string_height(self, width, txt):
+        lines = self.multi_cell(width, 3, txt, 0, 'L', 0, output='text')
+        return len(lines.split('\n')) * 3
+
+    def add_warning(self):
+        # Ajouter un espace entre le divider et l'avertissement
+        self.ln(10)
+        
+        margin = 20
+        self.set_left_margin(margin)
+        self.set_right_margin(margin)
+        
+        self.set_fill_color(240, 240, 240)  # Couleur de fond gris clair
+        self.rect(margin, self.get_y(), self.w - 2*margin, 50, 'F')
+        
+        self.set_xy(margin + 5, self.get_y() + 5)
+        self.set_font('Inter', 'B', 12)
+        self.set_text_color(0, 0, 0)
+        self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
+        
+        self.set_xy(margin + 5, self.get_y())
+        self.set_font('Inter', '', 10)
+        self.multi_cell(self.w - 2*margin - 10, 5, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports "
+                              "en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à "
+                              "fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés "
+                              "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
+                              "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
+                              "sont pas stables dans le temps.", align='J')
+        
+        
+    def add_recap(self, params, objectives):
+        self.add_page()
+        self.set_font('Inter', 'B', 16)
+        self.cell(0, 10, 'Récapitulatif de votre projet', 0, 1, 'C')
+        self.ln(5)
+
+        # Informations du client
+        self.set_font('Inter', 'B', 14)
+        self.cell(0, 10, 'Informations du client', 0, 1, 'L')
+        self.set_font('Inter', '', 12)
+        self.cell(0, 8, f"Capital initial : {params['capital_initial']} €", 0, 1)
+        self.cell(0, 8, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
+        self.cell(0, 8, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
+
+        # Versements
+        self.ln(5)
+        self.set_font('Inter', 'B', 14)
+        self.cell(0, 10, 'Versements', 0, 1, 'L')
+        self.set_font('Inter', '', 12)
+
+        # Versements libres
+        if st.session_state.versements_libres:
+            self.set_font('Inter', 'B', 12)
+            self.cell(0, 8, "Versements libres :", 0, 1)
+            self.set_font('Inter', '', 12)
+            for vl in st.session_state.versements_libres:
+                self.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
+
+        # Modifications de versements
+        if st.session_state.modifications_versements:
+            self.set_font('Inter', 'B', 12)
+            self.cell(0, 8, "Modifications de versements :", 0, 1)
+            self.set_font('Inter', '', 12)
+            for mv in st.session_state.modifications_versements:
+                if mv['montant'] == 0:
+                    self.cell(0, 8, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 1)
+                else:
+                    self.cell(0, 8, f"Versements modifiés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}", 0, 1)
+
+        # Si aucun versement libre ou modification n'est défini
+        if not st.session_state.versements_libres and not st.session_state.modifications_versements:
+            self.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
+
+        # Objectifs
+        self.ln(5)
+        self.set_font('Inter', 'B', 14)
+        self.cell(0, 10, 'Vos objectifs', 0, 1, 'L')
+        self.set_font('Inter', '', 12)
+        for obj in objectifs:
+            self.set_font('Inter', 'B', 12)
+            self.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)
+            self.set_font('Inter', '', 12)
+            self.cell(0, 8, f"Montant annuel de retrait : {obj['montant_annuel']} €", 0, 1)
+            self.cell(0, 8, f"Durée : {obj['duree_retrait']} ans", 0, 1)
+            self.cell(0, 8, f"Année de réalisation : {obj['annee']}", 0, 1)
+            self.ln(5)
+        self.add_page()  # Add a new page after the recap
+    
+
+    def colored_table(self, headers, data, col_widths):
+        # Colors, line width and bold font
+        header_color = (240, 240, 240)  # Light gray for header
+        row_colors = [(255, 255, 255), (245, 245, 245)]  # White and light gray for alternating rows
+        self.set_fill_color(*header_color)
+        self.set_text_color(0)
+        self.set_draw_color(128, 128, 128)
+        self.set_line_width(0.3)
+        self.set_font('Inter', 'B', 8)
+
+        # Calculate total width and position to center the table
+        total_width = sum(col_widths)
+        table_x = (self.w - total_width) / 2
+
+        # Table header
+        self.set_x(table_x)
+        for i, (header, width) in enumerate(zip(headers, col_widths)):
+            self.cell(width, 10, header, 1, 0, 'C', 1)
+        self.ln()
+
+        # Table data
+        self.set_font('Inter', '', 8)
+        row_height = 6
+        page_rows = 0
+        fill_index = 0
+
+        for row in data:
+            if page_rows == 30:  # Start a new page after 30 rows
+                self.add_page()
+                # Reprint the header
+                self.set_x(table_x)
+                self.set_fill_color(*header_color)
+                self.set_font('Inter', 'B', 8)
+                for header, width in zip(headers, col_widths):
+                    self.cell(width, 10, header, 1, 0, 'C', 1)
+                self.ln()
+                self.set_font('Inter', '', 8)
+                page_rows = 0
+                fill_index = 0
+
+            self.set_x(table_x)
+            self.set_fill_color(*row_colors[fill_index % 2])
+            for i, (value, width) in enumerate(zip(row, col_widths)):
+                align = 'C' if i == 0 else 'R'  # Center-align the 'Année' column, right-align others
+                self.cell(width, row_height, str(value), 1, 0, align, 1)
+            self.ln()
+            fill_index += 1
+            page_rows += 1
+
+
+    def add_last_page(self):
+        self.add_page()
+        margin = 20
+        self.set_left_margin(margin)
+        self.set_right_margin(margin)
+        effective_width = self.w - 2*margin
+
+        self.set_font('Inter', '', 10)
+        self.set_text_color(0, 0, 0)
+
+        # Contenu principal
+        content = [
+            "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité d'un acteur historique de l'assurance-vie. L'assurance-vie offre de nombreux avantages, parmi lesquels :",
+            "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la transmission de votre patrimoine",
+            "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des versements quand vous le souhaitez."
+        ]
+
+        for paragraph in content:
+            self.multi_cell(effective_width, 5, paragraph, 0, 'L')
+            self.ln(3)
+
+        # Encadré d'information
+        #self.set_fill_color(240, 240, 240)
+        start_y = self.get_y()
+        self.set_xy(margin + 5, start_y + 5) #Ajout d'espace
+
+        # Dessiner le rectangle en arrière-plan
+        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour la bordure
+        self.rect(margin, start_y, effective_width, 0, 'D')  # 'D' pour dessiner seulement le contour
+
+
+        # Réinitialiser la position pour écrire le contenu
+        #self.set_xy(margin, start_y)
+
+
+        self.set_font('Inter', 'B', 12)
+        self.cell(effective_width, 10, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1, 'L')
+        self.ln(5)
+        self.set_font('Inter', '', 10)
+
+        info_content = [
+            "Lors d'un retrait (rachat), la somme reçue contient une part en capital et une part en plus-values. La fiscalité s'applique sur les plus-values et diffère selon l'ancienneté de votre contrat d'assurance-vie au moment du retrait. L'imposition est la suivante :",
+            "• Contrat de moins de 8 ans : 12,80 % ou intégration aux revenus du foyer avec application du barème progressif de l'impôt sur le revenu.",
+            "• Contrat de plus de 8 ans, et après abattement, sur les plus-values réalisées, de 4 600 €* pour les veufs ou célibataires et de 9 200 €* pour les personnes mariées ou pacsées :",
+            "  ○ 7,5 % de prélèvement sur la part des versements ne dépassant pas 150 000 €* ;",
+            "  ○ 12,8 % de prélèvement sur la part des versements dépassant 150 000 €* ;",
+            "  ○ ou intégration aux revenus du foyer.",
+            "Comptez aussi des prélèvements sociaux à hauteur de 17,2 % sur les plus-values réalisées, prélevés par l'assureur lors du rachat.",
+            "* Toutes assurances - vie du foyer confondues.",
+            "Par ailleurs, vous profitez d'un cadre fiscal avantageux lors de la transmission de votre patrimoine."
+        ]
+
+        for paragraph in info_content:
+            self.multi_cell(effective_width, 5, paragraph, 0, 'L')
+            self.ln(3)
+
+        # Ajuster la hauteur de l'encadré
+        end_y = self.get_y()
+        self.rect(margin, start_y, effective_width, end_y - start_y, 'D')
+
+        # Repositionner le curseur pour continuer après l'encadré
+        self.set_y(end_y + 5)
+
+        # Ajout du lien cliquable
+        self.set_font('Inter', '', 10)
+        self.set_text_color(200, 80, 20)  # Couleur orange pour le lien
+        self.cell(0, 5, 'Pour en savoir plus, cliquez ici.', 0, 1, 'R', link="https://www.example.com")
+
+        # Pied de page avec logo
+        self.set_y(-30)  # 30 mm du bas
+        self.set_font('Inter', 'B', 10)
+        self.cell(effective_width / 2, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 0, 'L')
+        
+        # Logo (ajusté à droite et plus petit)
+        if self.logo_path:
+            self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)  # Largeur réduite à 20
+
+
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import io
+
+def generate_pdf_report(resultats_df, params):
+    # Create the financial investment evolution chart
+    fig1 = go.Figure()
+
+    # Assuming resultats_df contains the necessary data
+    years = resultats_df['Année'].tolist()
+    capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
+    epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
+    rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
+
+    # Add traces
+    fig1.add_trace(go.Scatter(
+        x=years, y=capital_fin_annee,
+        mode='lines+markers',
+        name='Capital fin d\'année',
+        line=dict(color='#1f77b4', width=2)
+    ))
+
+    fig1.add_trace(go.Scatter(
+        x=years, y=epargne_investie,
+        mode='lines+markers',
+        name='Épargne investie',
+        line=dict(color='#2ca02c', width=2)
+    ))
+
+    fig1.add_trace(go.Bar(
+        x=years, y=rachats,
+        name='Rachats',
+        marker_color='#d62728'
+    ))
+
+    fig1.update_layout(
+        title='Évolution du placement financier',
+        xaxis_title='Année',
+        yaxis_title='Montant (€)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        plot_bgcolor='white',
+        yaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey',
+            tickformat='.0f',  # Removed the comma
+            ticksuffix=' €'
+        ),
+        xaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey'
+        ),
+        hovermode="x unified",
+        barmode='relative'  # Cela permet d'empiler les barres si nécessaire
+    )
+
+
+    # Convert the chart to image
+    img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
+    img_buffer1 = io.BytesIO(img_bytes1)
+
+    fig2 = go.Figure(go.Waterfall(
+        name="Evolution du capital",
+        orientation="v",
+        measure=["relative"] * len(resultats_df),
+        x=resultats_df['Année'],
+        y=resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).diff(),
+        connector={"line": {"color": "rgb(63, 63, 63)"}},
+        decreasing={"marker": {"color": "#CBA325"}},
+        increasing={"marker": {"color": "#A33432"}},
+        totals={"marker": {"color": "#F0D97A"}}
+    ))
+    fig2.update_layout(
+        title='Évolution annuelle du capital',
+        xaxis_title='Année',
+        yaxis_title='Variation du capital (€)',
+        plot_bgcolor='white',
+        yaxis=dict(gridcolor='#8DB3C5')
+    )
+    
+    img_bytes2 = fig2.to_image(format="png", width=700, height=400)
+    img_buffer2 = io.BytesIO(img_bytes2)
+
+    # Données pour le PDF
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
+    ]
+
+# Create the historical performance chart using the provided data
+    fig3 = go.Figure()
+    years = [2019, 2020, 2021, 2022, 2023]
+    performances = [22.69, -0.80, 25.33, -12.17, 11.91]
+
+    fig3.add_trace(go.Bar(
+        x=years,
+        y=performances,
+        text=[f"{p:+.2f}%" for p in performances],
+        textposition='outside',
+        marker_color=['#4CAF50' if p >= 0 else '#F44336' for p in performances],
+        marker_line_color='rgba(0,0,0,0.5)',
+        marker_line_width=1.5,
+        opacity=0.8,
+        name='Performance annuelle'
+    ))
+
+    # Add a line for cumulative performance
+    cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
+    fig3.add_trace(go.Scatter(
+        x=years,
+        y=cumulative_performance,
+        mode='lines+markers',
+        name='Performance cumulée',
+        line=dict(color='#FFA500', width=3),
+        marker=dict(size=8, symbol='diamond', line=dict(width=2, color='DarkSlateGrey')),
+        yaxis='y2'
+    ))
+
+    fig3.update_layout(
+        title={
+            'text': 'Performances historiques',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, color='#1E3A8A')
+        },
+        xaxis_title='Année',
+        yaxis_title='Performance annuelle (%)',
+        yaxis2=dict(
+            title='Performance cumulée (%)',
+            overlaying='y',
+            side='right',
+            showgrid=False
+        ),
+        plot_bgcolor='rgba(240,240,240,0.5)',
+        paper_bgcolor='white',
+        yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
+        xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=50, r=50, t=80, b=50),
+        hovermode="x unified"
+    )
+
+    # Add annotations
+    total_cumulative_performance = cumulative_performance[-1]
+    fig3.add_annotation(
+        x=0.5, y=1.15,
+        xref='paper', yref='paper',
+        text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
+        showarrow=False,
+        font=dict(size=16, color='#1E3A8A', weight='bold')
+    )
+
+    # Improve hover information
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
+        selector=dict(type='bar')
+    )
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance cumulée:</b> %{y:.2f}%<extra></extra>",
+        selector=dict(type='scatter')
+    )
+
+    # Convert the new chart to image
+    img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
+    img_buffer3 = io.BytesIO(img_bytes3)
+    
+    # Generate PDF with all three charts
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params)
+    
+    return pdf_bytes
+
+def format_value(value):
+    if isinstance(value, (int, float)):
+        # Formatage avec séparateur de milliers et deux décimales
+        formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
+        return f"{formatted} €"
+    elif isinstance(value, str):
+        # Si la valeur est déjà une chaîne, essayez de la convertir en nombre
+        try:
+            num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
+            return format_value(num_value)  # Appel récursif avec la valeur numérique
+        except ValueError:
+            return value  # Si la conversion échoue, retournez la chaîne d'origine
+    return str(value)
+
+
+def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
+    pdf.set_font('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
+    pdf.ln(5)
+
+    col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
+    headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
+
+    data = [
+        [row['Année'], 
+         format_value(row['Capital initial (NET)']),
+         format_value(row['VP NET']),
+         format_value(row['Rendement']),
+         format_value(row['Frais de gestion']),
+         format_value(row.get('Rachat', 0)),
+         format_value(row.get('Fiscalite', 0)),
+         format_value(row.get('Rachat net', 0)),
+         format_value(row['Capital fin d\'année (NET)'])]
+        for _, row in resultats_df.iterrows()
+    ]
+
+    #table_width = sum(col_widths)
+    #table_x = (pdf.w - table_width) / 2
+    #pdf.set_x(table_x)
+
+    pdf.colored_table(headers, data, col_widths)
+    
+# Modification de la fonction create_pdf pour accepter plusieurs images
+def create_pdf(data, img_buffers, resultats_df, params):
+    logo_path = os.path.expanduser("/Users/boubs/Downloads/Logo1.png")    
+    pdf = PDF(logo_path)
+    left_margin = 20  # Définir la marge gauche
+    pdf.set_left_margin(left_margin)
+    pdf.alias_nb_pages()
+    pdf.add_page()
+    pdf.add_warning()  # Ajout de l'avertissement en première page
+    pdf.ln(20)  # Ajoute 20 unités d'espace après l'avertissement
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Ajout des données utilisateur
+
+    # Informations du client
     pdf.set_font('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Paramètres de simulation', 0, 1)
+    pdf.set_x(left_margin)  # Positionner le curseur à la marge gauche
+    pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
+    pdf.ln(5)  # Ajouter un peu d'espace après le titre
+
     pdf.set_font('Inter', '', 12)
-    for row in data:
-        pdf.cell(90, 10, row[0], 1)
-        pdf.cell(90, 10, row[1], 1)
-        pdf.ln()
+    info_text = [
+        f"Capital initial : {params['capital_initial']} €",
+        f"Versement mensuel : {params['versement_mensuel']} €",
+        f"Rendement annuel : {params['rendement_annuel']*100:.2f}%",
+        f"Durée de simulation : {len(resultats_df)} ans"
+    ]
 
-    # Ajout des graphiques
-    for i, fig in enumerate(figures):
-        img_buffer = BytesIO()
-        fig.write_image(img_buffer, format="png")
-        img_buffer.seek(0)
-        pdf.add_page()
-        pdf.set_font('Inter', 'B', 14)
-        pdf.cell(0, 10, f'Graphique {i+1}', 0, 1)
-        pdf.image(img_buffer, x=10, y=30, w=190)
+    for line in info_text:
+        pdf.set_x(left_margin)  # Positionner le curseur à la marge gauche pour chaque ligne
+        pdf.cell(0, 8, line, 0, 1, 'L')
 
-    # Ajout de l'avertissement légal
+    # Résumé des résultats
     pdf.add_page()
+    pdf.set_font('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
+    pdf.set_font('Inter', '', 12)
+    derniere_annee = resultats_df.iloc[-1]
+    capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
+    epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
+    gains_totaux = capital_final - epargne_investie
+    
+    resume_text = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
+    resume_text += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
+    resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
+    
+    pdf.multi_cell(0, 10, resume_text)
+
+    # Créer la liste des objectifs
+    objectives = [
+        {
+            'name': 'Objectif principal',
+            'annual_withdrawal': params.get('montant_retrait_annuel', 'Non spécifié'),
+            'duration': params.get('objectif_annee', 'Non spécifiée'),  # Utilisation de 'objectif_annee' au lieu de 'duree'
+            'start_date': params.get('date_debut_retrait', 'Non spécifiée')
+        }
+    ]
+    
+    # Ajouter le récapitulatif
+    pdf.add_recap(params, objectives)
+    
+
+   # Graphiques
+    for i, img_buffer in enumerate(img_buffers):
+        pdf.add_page()
+        if i == 2:  # For the third chart (historical performance)
+            pdf.set_font('Inter', 'B', 14)
+            pdf.cell(0, 10, 'Performances historiques', 0, 1)
+            pdf.set_font('Inter', '', 12)
+            pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                                 'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                                 "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                                 "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                                 "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                                 'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                                 'performances supérieures.')
+        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
+    
+    
+    create_detailed_table(pdf, resultats_df)
+
+    # Add a note about the table
+    pdf.set_xy(10, pdf.get_y() + 10)
+    pdf.set_font('Inter', 'I', 8)
+    pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
+                         "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
+                         "Les valeurs sont arrondies à deux décimales près.")
+
+    # Avertissement légal stylisé
+    pdf.add_page()
+    pdf.set_fill_color(240, 240, 240)
+    pdf.set_draw_color(200, 200, 200)
+    pdf.set_font('Inter', 'B', 12)
+    pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
     pdf.set_font('Inter', 'I', 10)
-    pdf.set_text_color(128, 128, 128)  # Gris
+    pdf.set_text_color(80, 80, 80)
     disclaimer_text = (
-        "AVERTISSEMENT : Les performances passées ne préjugent pas des performances futures. "
+        "Les performances passées ne préjugent pas des performances futures. "
         "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. "
         "Les résultats présentés sont des estimations potentielles destinées à faciliter la compréhension "
         "du développement de votre patrimoine. Nous vous recommandons de consulter un professionnel "
         "qualifié avant de prendre toute décision d'investissement."
     )
-    pdf.multi_cell(0, 5, disclaimer_text)
+    pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
-    return pdf.output()
+    pdf.add_last_page()
 
+    return pdf.output(dest='S')
+
+
+# Votre fonction main() existante reste inchangée
 def main():
-    st.title("Simulation Financière")
+    # Votre code existant pour l'interface utilisateur Streamlit et la génération des données
 
-    # Vos paramètres et calculs ici
-    params = {
-        "capital_initial": 10000,
-        "versement_mensuel": 500,
-        "rendement_annuel": 0.05,
-        # Ajoutez d'autres paramètres selon vos besoins
-    }
-
-    # Votre logique de simulation ici
-    # ...
-
-    # Création des graphiques (exemple)
-    def create_financial_chart(df):
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df['Année'], y=df['Capital fin d\'année (NET)'], name='Capital'))
-        return fig
-
-    def create_waterfall_chart(df):
-        fig = go.Figure(go.Waterfall(
-            name = "Évolution du capital",
-            orientation = "v",
-            measure = ["relative"] * len(df),
-            x = df['Année'],
-            y = df['Capital fin d\'année (NET)'] - df['Capital initial (NET)'],
-            connector = {"line":{"color":"rgb(63, 63, 63)"}},
-        ))
-        return fig
-
-    # Supposons que vous ayez un DataFrame 'resultats_df' avec vos résultats
-    resultats_df = pd.DataFrame({
-        'Année': range(1, 11),
-        'Capital initial (NET)': [10000] * 10,
-        'Capital fin d\'année (NET)': [11000, 12100, 13310, 14641, 16105, 17716, 19487, 21436, 23579, 25937]
-    })
-
-    fig1 = create_financial_chart(resultats_df)
-    fig2 = create_waterfall_chart(resultats_df)
-
-    # Affichage des graphiques dans Streamlit
-    st.plotly_chart(fig1)
-    st.plotly_chart(fig2)
-
+    # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        # Préparez les données pour le PDF
-        data = [
-            ["Paramètre", "Valeur"],
-            ["Capital initial", f"{params['capital_initial']} €"],
-            ["Versement mensuel", f"{params['versement_mensuel']} €"],
-            ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
-            # Ajoutez d'autres paramètres ici
-        ]
-
-        # Générez le PDF
-        pdf_bytes = create_pdf(data, [fig1, fig2])
-
-        # Créez un lien de téléchargement pour le PDF
+        pdf_bytes = generate_pdf_report(resultats_df, params)
+        
+        # Créer un lien de téléchargement pour le PDF
         b64 = base64.b64encode(pdf_bytes).decode()
-        href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation.pdf">Télécharger le rapport PDF</a>'
+        href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
         st.markdown(href, unsafe_allow_html=True)
 
 if __name__ == "__main__":
