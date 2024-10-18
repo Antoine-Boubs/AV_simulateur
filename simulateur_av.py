@@ -1293,28 +1293,43 @@ def generate_chart1(resultats_df):
     epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
     rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
 
+    # Couleurs inspirées d'Apple
+    apple_blue = '#007AFF'
+    apple_green = '#34C759'
+    apple_red = '#FF3B30'
+
     fig1.add_trace(go.Scatter(
         x=years, y=capital_fin_annee,
         mode='lines+markers',
         name='Capital fin d\'année',
-        line=dict(color='#1f77b4', width=2)
+        line=dict(color=apple_blue, width=3),
+        marker=dict(size=8, symbol='circle')
     ))
 
     fig1.add_trace(go.Scatter(
         x=years, y=epargne_investie,
         mode='lines+markers',
         name='Épargne investie',
-        line=dict(color='#2ca02c', width=2)
+        line=dict(color=apple_green, width=3),
+        marker=dict(size=8, symbol='circle')
     ))
 
     fig1.add_trace(go.Bar(
         x=years, y=rachats,
         name='Rachats',
-        marker_color='#d62728'
+        marker_color=apple_red,
+        opacity=0.7
     ))
 
     fig1.update_layout(
-        title='Évolution du placement financier',
+        title={
+            'text': 'Évolution du placement financier',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, family='Arial, sans-serif')
+        },
         xaxis_title='Année',
         yaxis_title='Montant (€)',
         legend=dict(
@@ -1325,21 +1340,45 @@ def generate_chart1(resultats_df):
             x=0.5
         ),
         plot_bgcolor='white',
+        paper_bgcolor='white',
         yaxis=dict(
-            gridcolor='lightgrey',
-            zerolinecolor='lightgrey',
-            tickformat='.0f',
-            ticksuffix=' €'
+            gridcolor='#E0E0E0',
+            zerolinecolor='#E0E0E0',
+            tickformat=',.0f',
+            ticksuffix=' €',
+            separatethousands=True
         ),
         xaxis=dict(
-            gridcolor='lightgrey',
-            zerolinecolor='lightgrey'
+            gridcolor='#E0E0E0',
+            zerolinecolor='#E0E0E0'
         ),
         hovermode="x unified",
-        barmode='relative'
+        barmode='relative',
+        font=dict(family='Arial, sans-serif'),
+        margin=dict(l=50, r=50, t=100, b=50),
+        width=800,  # Largeur fixe pour centrer le graphique
+        height=500  # Hauteur fixe
     )
 
-    img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
+    # Améliorer le style des lignes de grille
+    fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
+    fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
+
+    # Ajouter une annotation pour expliquer les rachats
+    fig1.add_annotation(
+        x=0.5, y=-0.15,
+        xref='paper', yref='paper',
+        text='Les barres rouges représentent les rachats effectués',
+        showarrow=False,
+        font=dict(size=12, color='#666'),
+        align='center',
+        bgcolor='rgba(255,255,255,0.8)',
+        bordercolor='#E0E0E0',
+        borderwidth=1,
+        borderpad=4
+    )
+
+    img_bytes1 = fig1.to_image(format="png", scale=2)
     return io.BytesIO(img_bytes1)
 
 def generate_chart2(resultats_df):
