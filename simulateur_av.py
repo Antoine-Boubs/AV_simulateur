@@ -1636,12 +1636,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font_safe('Inter', 'B', 16)
     pdf.cell(0, 10, 'Informations du client', 0, 1)
     pdf.set_font_safe('Inter', '', 12)
-    pdf.cell(0, 8, f"Nom : {params['nom_client']}", 0, 1)
-    pdf.cell(0, 8, f"Date du rapport : {params['date_rapport']}", 0, 1)
-    pdf.cell(0, 8, f"Capital initial : {params['capital_initial']} €", 0, 1)
-    pdf.cell(0, 8, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
-    pdf.cell(0, 8, f"Rendement annuel estimé : {params['rendement_annuel']*100:.2f}%", 0, 1)
-    pdf.ln(10)
+    
+    # Utilisation de la méthode get() pour éviter les erreurs si une clé est manquante
+    pdf.cell(0, 8, f"Nom : {params.get('nom_client', 'Non spécifié')}", 0, 1)
+    pdf.cell(0, 8, f"Date du rapport : {params.get('date_rapport', 'Non spécifiée')}", 0, 1)
+    pdf.cell(0, 8, f"Capital initial : {params.get('capital_initial', 'Non spécifié')} €", 0, 1)
+    pdf.cell(0, 8, f"Versement mensuel : {params.get('versement_mensuel', 'Non spécifié')} €", 0, 1)
 
     # Encadré pour les objectifs de l'investisseur
     pdf.set_font_safe('Inter', 'B', 14)
