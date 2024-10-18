@@ -17,6 +17,7 @@ idna
 importlib-metadata
 Jinja2
 jsonschema
+kaleido
 kiwisolver
 markdown-it-py
 MarkupSafe
