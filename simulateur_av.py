@@ -1668,7 +1668,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                 pdf.add_page()
                 if i == 2:  # Pour le troisième graphique (performances historiques)
                     pdf.set_font_safe('Inter', 'B', 14)
-                    pdf.cell(0, 10, 'Performances historiques', 0, 1)
                     pdf.set_font_safe('Inter', '', 12)
                     pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
                                          'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
