@@ -1617,16 +1617,18 @@ def generate_pdf_report(resultats_df, params, objectives):
         ["Paramètre", "Valeur"],
         ["Capital initial", f"{params['capital_initial']} €"],
         ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
     ]
 
+    # Générer les graphiques
     img_buffer1 = generate_chart1(resultats_df)
     img_buffer2 = generate_chart2(resultats_df)
     img_buffer3 = generate_chart3()
 
+    # Créer le PDF
     pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
 
-    return pdf_bytes  # This is now guaranteed to be bytes
+    return pdf_bytes
 
 def format_value(value):
     if isinstance(value, (int, float)):
@@ -1771,16 +1773,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         print("Warning: Some characters could not be encoded. They will be replaced.")
         pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
 
-    return pdf_output  # This is now guaranteed to be bytes
+    return pdf_output
 
 
 def main():
     global resultats_df, params
-
-    # Générez vos graphiques et obtenez les buffers d'image
-    img_buffer1 = generate_chart1(resultats_df)
-    img_buffer2 = generate_chart2(resultats_df)
-    img_buffer3 = generate_chart3()
 
     # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
