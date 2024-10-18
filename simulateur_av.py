@@ -1696,6 +1696,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         card_width = (pdf.w - 2*left_margin - 10) / 2  # 2 cartes par ligne avec un espace de 10 entre elles
         card_height = 80
         card_margin = 5
+        corner_radius = 5  # Rayon des coins arrondis
         x_positions = [left_margin, left_margin + card_width + 10]
         current_x = 0
         current_y = pdf.get_y()
@@ -1706,19 +1707,27 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.set_draw_color(*color)
             pdf.set_text_color(255, 255, 255)  # Texte blanc pour contraste
 
-            # Dessiner un rectangle
-            pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'F')
+            # Dessiner un rectangle avec coins arrondis (simulation)
+            x, y = x_positions[current_x], current_y
+            pdf.rect(x, y, card_width, card_height, 'F')
+            
+            # Simuler les coins arrondis
+            pdf.set_fill_color(255, 255, 255)  # Couleur de fond de la page
+            pdf.circle(x + corner_radius, y + corner_radius, corner_radius, 'F')
+            pdf.circle(x + card_width - corner_radius, y + corner_radius, corner_radius, 'F')
+            pdf.circle(x + corner_radius, y + card_height - corner_radius, corner_radius, 'F')
+            pdf.circle(x + card_width - corner_radius, y + card_height - corner_radius, corner_radius, 'F')
+            
+            # Redessiner le rectangle principal pour couvrir les bords des cercles
+            pdf.set_fill_color(*color)
+            pdf.rect(x + corner_radius, y, card_width - 2*corner_radius, card_height, 'F')
+            pdf.rect(x, y + corner_radius, card_width, card_height - 2*corner_radius, 'F')
 
-            # Ajouter une bordure plus claire pour un effet de profondeur
-            lighter_color = tuple(min(c + 40, 255) for c in color)  # Éclaircir la couleur
-            pdf.set_draw_color(*lighter_color)
-            pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'D')
-
-            pdf.set_xy(x_positions[current_x] + card_margin, current_y + card_margin)
+            pdf.set_xy(x + card_margin, y + card_margin)
             pdf.set_font_safe('Inter', 'B', 12)
             pdf.cell(card_width - 2*card_margin, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
 
-            pdf.set_xy(x_positions[current_x] + card_margin, pdf.get_y())
+            pdf.set_xy(x + card_margin, pdf.get_y())
             pdf.set_font_safe('Inter', '', 10)
             pdf.multi_cell(card_width - 2*card_margin, 5, 
                 f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €\n"
