@@ -1710,10 +1710,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'F')
 
             # Ajouter une bordure plus claire pour un effet de profondeur
-            pdf.set_draw_color(255, 255, 255)  # Blanc
-            pdf.set_alpha(0.5)  # Définir la transparence
+            lighter_color = tuple(min(c + 40, 255) for c in color)  # Éclaircir la couleur
+            pdf.set_draw_color(*lighter_color)
             pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'D')
-            pdf.set_alpha(1)  # Réinitialiser la transparence
 
             pdf.set_xy(x_positions[current_x] + card_margin, current_y + card_margin)
             pdf.set_font_safe('Inter', 'B', 12)
