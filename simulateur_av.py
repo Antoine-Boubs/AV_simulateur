@@ -984,7 +984,7 @@ class PDF(FPDF):
         self.logo_path = logo_path
         self.is_custom_font_loaded = False
         
-        font_path = os.path.join(os.path.dirname(__file__), "assets")
+        font_path = os.path.join(os.path.dirname(__file__), "assets/Fonts")
         
         try:
             self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
