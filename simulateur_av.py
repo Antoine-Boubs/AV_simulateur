@@ -1411,15 +1411,187 @@ def generate_chart3():
     img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
     return io.BytesIO(img_bytes3)
 
-def generate_pdf_report(resultats_df, params, img_buffers):
+def generate_pdf_report(resultats_df, params, objectives):
+    # Create the financial investment evolution chart
+    fig1 = go.Figure()
+
+    years = resultats_df['Année'].tolist()
+    capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
+    epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
+    rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
+
+    fig1.add_trace(go.Scatter(
+        x=years, y=capital_fin_annee,
+        mode='lines+markers',
+        name='Capital fin d\'année',
+        line=dict(color='#1f77b4', width=2)
+    ))
+
+    fig1.add_trace(go.Scatter(
+        x=years, y=epargne_investie,
+        mode='lines+markers',
+        name='Épargne investie',
+        line=dict(color='#2ca02c', width=2)
+    ))
+
+    fig1.add_trace(go.Bar(
+        x=years, y=rachats,
+        name='Rachats',
+        marker_color='#d62728'
+    ))
+
+    fig1.update_layout(
+        title='Évolution du placement financier',
+        xaxis_title='Année',
+        yaxis_title='Montant (€)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        plot_bgcolor='white',
+        yaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey',
+            tickformat='.0f',
+            ticksuffix=' €'
+        ),
+        xaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey'
+        ),
+        hovermode="x unified",
+        barmode='relative'
+    )
+
+    img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
+    img_buffer1 = io.BytesIO(img_bytes1)
+
+    # Create the second chart (waterfall)
+    fig2 = go.Figure(go.Waterfall(
+        name="Evolution du capital",
+        orientation="v",
+        measure=["relative"] * len(resultats_df),
+        x=resultats_df['Année'],
+        y=resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).diff(),
+        connector={"line": {"color": "rgb(63, 63, 63)"}},
+        decreasing={"marker": {"color": "#CBA325"}},
+        increasing={"marker": {"color": "#A33432"}},
+        totals={"marker": {"color": "#F0D97A"}}
+    ))
+    fig2.update_layout(
+        title='Évolution annuelle du capital',
+        xaxis_title='Année',
+        yaxis_title='Variation du capital (€)',
+        plot_bgcolor='white',
+        yaxis=dict(gridcolor='#8DB3C5')
+    )
+    
+    img_bytes2 = fig2.to_image(format="png", width=700, height=400)
+    img_buffer2 = io.BytesIO(img_bytes2)
+
+    # Create the third chart (historical performance)
+    fig3 = go.Figure()
+    years = [2019, 2020, 2021, 2022, 2023]
+    performances = [22.69, -0.80, 25.33, -12.17, 11.91]
+
+    fig3.add_trace(go.Bar(
+        x=years,
+        y=performances,
+        text=[f"{p:+.2f}%" for p in performances],
+        textposition='outside',
+        marker_color=['#4CAF50' if p >= 0 else '#F44336' for p in performances],
+        marker_line_color='rgba(0,0,0,0.5)',
+        marker_line_width=1.5,
+        opacity=0.8,
+        name='Performance annuelle'
+    ))
+
+    cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
+    fig3.add_trace(go.Scatter(
+        x=years,
+        y=cumulative_performance,
+        mode='lines+markers',
+        name='Performance cumulée',
+        line=dict(color='#FFA500', width=3),
+        marker=dict(size=8, symbol='diamond', line=dict(width=2, color='DarkSlateGrey')),
+        yaxis='y2'
+    ))
+
+    fig3.update_layout(
+        title={
+            'text': 'Performances historiques',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, color='#1E3A8A')
+        },
+        xaxis_title='Année',
+        yaxis_title='Performance annuelle (%)',
+        yaxis2=dict(
+            title='Performance cumulée (%)',
+            overlaying='y',
+            side='right',
+            showgrid=False
+        ),
+        plot_bgcolor='rgba(240,240,240,0.5)',
+        paper_bgcolor='white',
+        yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
+        xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=50, r=50, t=80, b=50),
+        hovermode="x unified"
+    )
+
+    total_cumulative_performance = cumulative_performance[-1]
+    fig3.add_annotation(
+        x=0.5, y=1.15,
+        xref='paper', yref='paper',
+        text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
+        showarrow=False,
+        font=dict(size=16, color='#1E3A8A', weight='bold')
+    )
+
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
+        selector=dict(type='bar')
+    )
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance cumulée:</b> %{y:.2f}%<extra></extra>",
+        selector=dict(type='scatter')
+    )
+
+    img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
+    img_buffer3 = io.BytesIO(img_bytes3)
+
+    # Prepare data for PDF
     data = [
         ["Paramètre", "Valeur"],
         ["Capital initial", f"{params['capital_initial']} €"],
         ["Versement mensuel", f"{params['versement_mensuel']} €"],
         ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
     ]
-    
-    pdf_bytes = create_pdf(data, img_buffers, resultats_df, params)
+
+    # Add objectives information to data
+    for i, obj in enumerate(objectives, start=1):
+        data.extend([
+            [f"Objectif {i} - Nom", obj['nom']],
+            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
+            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
+            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
+        ])
+
+    # Generate PDF with all three charts
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
     
     return pdf_bytes
 
@@ -1459,7 +1631,7 @@ def create_detailed_table(pdf, resultats_df):
 
     pdf.colored_table(headers, data, col_widths)
     
-def create_pdf(data, img_buffers, resultats_df, params):
+def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.expanduser("/Users/boubs/Downloads/Logo1.png")    
     pdf = PDF(logo_path)
     left_margin = 20
@@ -1508,16 +1680,8 @@ def create_pdf(data, img_buffers, resultats_df, params):
     resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
     
     pdf.multi_cell(0, 10, resume_text)
-
-    objectives = [
-        {
-            'name': 'Objectif principal',
-            'annual_withdrawal': params.get('montant_retrait_annuel', 'Non spécifié'),
-            'duration': params.get('objectif_annee', 'Non spécifiée'),
-            'start_date': params.get('date_debut_retrait', 'Non spécifiée')
-        }
-    ]
     
+    # Ajouter le récapitulatif
     pdf.add_recap(params, objectives)
     
     for i, img_buffer in enumerate(img_buffers):
@@ -1573,7 +1737,7 @@ def main():
 
     # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        pdf_bytes = generate_pdf_report(resultats_df, params, img_buffers=[img_buffer1, img_buffer2, img_buffer3])
+        pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
         
         # Créer un lien de téléchargement pour le PDF
         b64 = base64.b64encode(pdf_bytes).decode()
