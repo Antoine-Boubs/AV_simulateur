@@ -27,3 +27,5 @@ scipy
 pandas
 plotly
 setuptools
+streamlit-extras
+
