@@ -1021,10 +1021,7 @@ class PDF(FPDF):
         
         # Ajout du logo
         if self.logo_path and os.path.exists(self.logo_path):
-            try:
-                self.image(self.logo_path, 10, 8, 20)
-            except Exception as e:
-                print(f"Erreur lors du chargement du logo : {e}")
+            self.image(self.logo_path, 10, 8, 20)
         
         # Titre du rapport
         self.set_font('Inter', 'B', 24)
@@ -1044,61 +1041,39 @@ class PDF(FPDF):
         # Espace après le header
         self.ln(20)
 
-    def styled_button(self, text, url, x, y, w, h):
-        self.set_fill_color(251, 191, 36)
-        self.rounded_rect(x, y, w, h, 2, 'F')
-
-        self.set_draw_color(200, 150, 0)
-        self.set_line_width(0.5)
-        self.rounded_rect(x, y, w, h, 2, 'D')
-
-        self.set_font_safe('Inter', 'B', 10)
-        self.set_text_color(255, 255, 255)
-        self.set_xy(x, y)
-        self.cell(w, h, text, 0, 0, 'C')
-
-        self.link(x, y, w, h, url)
-
-    def rounded_rect(self, x, y, w, h, r, style=''):
-        if style == 'F':
-            self.rect(x, y, w, h, style)
-        elif style == 'D' or style == '':
-            self.rect(x, y, w, h)
-        else:
-            self.rect(x, y, w, h, 'FD')
-
     def footer(self):
+        # Couleurs inspirées d'Apple
+        apple_gray = (128, 128, 128)
+        apple_blue = (0, 122, 255)
+
+        # Position à 1.5 cm du bas
         self.set_y(-15)
-        
-        self.set_draw_color(200, 200, 200)
+
+        # Ligne de séparation
+        self.set_draw_color(*apple_gray)
+        self.set_line_width(0.1)
         self.line(10, self.get_y(), self.w - 10, self.get_y())
-        
-        self.set_y(self.get_y() + 1)
-        
-        self.set_font_safe('Inter', 'I', 7)
-        
-        self.set_text_color(128, 128, 128)
-        
-        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'R')
 
-        legal_text = (
-            "Sous le contrôle de l'ACPR // Garantie Financière et Assurance Responsabilité Civile Professionnelle conformes au Code des Assurances"
-        )
-        
-        
-        line_width = self.w - 20
-        
-        self.set_xy(10, self.h)
-        total_height = self.get_y()
-        self.multi_cell(line_width, 3, legal_text, 0, 'L')
-        total_height = self.get_y() - total_height
-        
-        self.set_y(-15 - total_height)
-        self.multi_cell(line_width, 3, legal_text, 0, 'L')
+        # Numéro de page
+        self.set_font('Inter', '', 8)
+        self.set_text_color(*apple_gray)
+        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
 
-    def get_string_height(self, width, txt):
-        lines = self.multi_cell(width, 3, txt, 0, 'L', 0, output='text')
-        return len(lines.split('\n')) * 3
+        # Texte légal
+        legal_text = "© 2023 Votre Entreprise. Tous droits réservés."
+        self.set_font('Inter', '', 8)
+        self.set_text_color(*apple_gray)
+        text_width = self.get_string_width(legal_text)
+        self.set_x((self.w - text_width) / 2)
+        self.cell(text_width, 5, legal_text, 0, 0, 'C')
+
+        # Lien vers le site web
+        website = "www.votreentreprise.com"
+        self.set_font('Inter', '', 8)
+        self.set_text_color(*apple_blue)
+        website_width = self.get_string_width(website)
+        self.set_x((self.w - website_width) / 2)
+        self.cell(website_width, 15, website, 0, 0, 'C', link="https://www.votreentreprise.com")
 
     def add_warning(self):
         self.ln(10)
@@ -1107,16 +1082,22 @@ class PDF(FPDF):
         self.set_left_margin(margin)
         self.set_right_margin(margin)
         
-        self.set_fill_color(240, 240, 240)
-        self.rect(margin, self.get_y(), self.w - 2*margin, 50, 'F')
+        # Couleurs inspirées d'Apple
+        apple_light_gray = (247, 247, 247)
+        apple_dark_gray = (60, 60, 67)
+        apple_blue = (0, 122, 255)
+        
+        self.set_fill_color(*apple_light_gray)
+        self.rect(margin, self.get_y(), self.w - 2*margin, 60, 'F')
         
         self.set_xy(margin + 5, self.get_y() + 5)
-        self.set_font_safe('Inter', 'B', 12)
-        self.set_text_color(0, 0, 0)
+        self.set_font('Inter', 'B', 14)
+        self.set_text_color(*apple_blue)
         self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
         
         self.set_xy(margin + 5, self.get_y())
-        self.set_font_safe('Inter', '', 10)
+        self.set_font('Inter', '', 10)
+        self.set_text_color(*apple_dark_gray)
         self.multi_cell(self.w - 2*margin - 10, 5, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports "
                               "en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à "
                               "fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés "
@@ -1126,33 +1107,41 @@ class PDF(FPDF):
 
     def add_recap(self, params, objectives):
         self.add_page()
-        self.set_font_safe('Inter', 'B', 16)
-        self.cell(0, 10, 'Récapitulatif de votre projet', 0, 1, 'C')
+        self.set_font('Inter', 'B', 24)
+        self.set_text_color(0, 0, 0)
+        self.cell(0, 15, 'Récapitulatif de votre projet', 0, 1, 'C')
         self.ln(5)
 
-        self.set_font_safe('Inter', 'B', 14)
-        self.cell(0, 10, 'Informations du client', 0, 1, 'L')
-        self.set_font_safe('Inter', '', 12)
+        # Informations du client
+        self.set_font('Inter', 'B', 18)
+        self.set_text_color(0, 122, 255)  # Apple blue
+        self.cell(0, 12, 'Informations du client', 0, 1, 'L')
+        self.set_font('Inter', '', 12)
+        self.set_text_color(60, 60, 67)  # Apple dark gray
         self.cell(0, 8, f"Capital initial : {params['capital_initial']} €", 0, 1)
         self.cell(0, 8, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
         self.cell(0, 8, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
 
-        self.ln(5)
-        self.set_font_safe('Inter', 'B', 14)
-        self.cell(0, 10, 'Versements', 0, 1, 'L')
-        self.set_font_safe('Inter', '', 12)
+        self.ln(10)
+
+        # Versements
+        self.set_font('Inter', 'B', 18)
+        self.set_text_color(0, 122, 255)  # Apple blue
+        self.cell(0, 12, 'Versements', 0, 1, 'L')
+        self.set_font('Inter', '', 12)
+        self.set_text_color(60, 60, 67)  # Apple dark gray
 
         if 'versements_libres' in st.session_state and st.session_state.versements_libres:
-            self.set_font_safe('Inter', 'B', 12)
-            self.cell(0, 8, "Versements libres :", 0, 1)
-            self.set_font_safe('Inter', '', 12)
+            self.set_font('Inter', 'B', 14)
+            self.cell(0, 10, "Versements libres :", 0, 1)
+            self.set_font('Inter', '', 12)
             for vl in st.session_state.versements_libres:
                 self.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
 
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
-            self.set_font_safe('Inter', 'B', 12)
-            self.cell(0, 8, "Modifications de versements :", 0, 1)
-            self.set_font_safe('Inter', '', 12)
+            self.set_font('Inter', 'B', 14)
+            self.cell(0, 10, "Modifications de versements :", 0, 1)
+            self.set_font('Inter', '', 12)
             for mv in st.session_state.modifications_versements:
                 if mv['montant'] == 0:
                     self.cell(0, 8, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 1)
@@ -1163,14 +1152,18 @@ class PDF(FPDF):
            (not 'modifications_versements' in st.session_state or not st.session_state.modifications_versements):
             self.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
-        self.ln(5)
-        self.set_font_safe('Inter', 'B', 14)
-        self.cell(0, 10, 'Vos objectifs', 0, 1, 'L')
-        self.set_font_safe('Inter', '', 12)
+        self.ln(10)
+
+        # Objectifs
+        self.set_font('Inter', 'B', 18)
+        self.set_text_color(0, 122, 255)  # Apple blue
+        self.cell(0, 12, 'Vos objectifs', 0, 1, 'L')
+        self.set_font('Inter', '', 12)
+        self.set_text_color(60, 60, 67)  # Apple dark gray
         for obj in objectives:
-            self.set_font_safe('Inter', 'B', 12)
-            self.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)
-            self.set_font_safe('Inter', '', 12)
+            self.set_font('Inter', 'B', 14)
+            self.cell(0, 10, f"Objectif : {obj['nom']}", 0, 1)
+            self.set_font('Inter', '', 12)
             self.cell(0, 8, f"Montant annuel de retrait : {obj['montant_annuel']} €", 0, 1)
             self.cell(0, 8, f"Durée : {obj['duree_retrait']} ans", 0, 1)
             self.cell(0, 8, f"Année de réalisation : {obj['annee']}", 0, 1)
@@ -1178,24 +1171,24 @@ class PDF(FPDF):
         self.add_page()
 
     def colored_table(self, headers, data, col_widths):
-        header_color = (240, 240, 240)
-        row_colors = [(255, 255, 255), (245, 245, 245)]
+        header_color = (247, 247, 247)  # Apple light gray
+        row_colors = [(255, 255, 255), (250, 250, 250)]  # White and very light gray
         self.set_fill_color(*header_color)
-        self.set_text_color(0)
-        self.set_draw_color(128, 128, 128)
+        self.set_text_color(60, 60, 67)  # Apple dark gray
+        self.set_draw_color(229, 229, 234)  # Apple separator color
         self.set_line_width(0.3)
-        self.set_font_safe('Inter', 'B', 8)
+        self.set_font('Inter', 'B', 10)
 
         total_width = sum(col_widths)
         table_x = (self.w - total_width) / 2
 
         self.set_x(table_x)
         for i, (header, width) in enumerate(zip(headers, col_widths)):
-            self.cell(width, 10, header, 1, 0, 'C', 1)
+            self.cell(width, 12, header, 1, 0, 'C', 1)
         self.ln()
 
-        self.set_font_safe('Inter', '', 8)
-        row_height = 6
+        self.set_font('Inter', '', 10)
+        row_height = 8
         page_rows = 0
         fill_index = 0
 
@@ -1204,11 +1197,11 @@ class PDF(FPDF):
                 self.add_page()
                 self.set_x(table_x)
                 self.set_fill_color(*header_color)
-                self.set_font_safe('Inter', 'B', 8)
+                self.set_font('Inter', 'B', 10)
                 for header, width in zip(headers, col_widths):
-                    self.cell(width, 10, header, 1, 0, 'C', 1)
+                    self.cell(width, 12, header, 1, 0, 'C', 1)
                 self.ln()
-                self.set_font_safe('Inter', '', 8)
+                self.set_font('Inter', '', 10)
                 page_rows = 0
                 fill_index = 0
 
@@ -1228,8 +1221,8 @@ class PDF(FPDF):
         self.set_right_margin(margin)
         effective_width = self.w - 2*margin
 
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(0, 0, 0)
+        self.set_font('Inter', '', 11)
+        self.set_text_color(60, 60, 67)  # Apple dark gray
 
         content = [
             "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité d'un acteur historique de l'assurance-vie. L'assurance-vie offre de nombreux avantages, parmi lesquels :",
@@ -1238,19 +1231,21 @@ class PDF(FPDF):
         ]
 
         for paragraph in content:
-            self.multi_cell(effective_width, 5, paragraph, 0, 'L')
-            self.ln(3)
+            self.multi_cell(effective_width, 6, paragraph, 0, 'L')
+            self.ln(4)
 
         start_y = self.get_y()
         self.set_xy(margin + 5, start_y + 5)
 
-        self.set_draw_color(200, 200, 200)
+        self.set_draw_color(229, 229, 234)  # Apple separator color
         self.rect(margin, start_y, effective_width, 0, 'D')
 
-        self.set_font_safe('Inter', 'B', 12)
-        self.cell(effective_width, 10, "Pour en savoir plus sur la fiscalité de  l'assurance-vie", 0, 1, 'L')
+        self.set_font('Inter', 'B', 14)
+        self.set_text_color(0, 122, 255)  # Apple blue
+        self.cell(effective_width, 12, "Pour en savoir plus sur la fiscalité de  l'assurance-vie", 0, 1, 'L')
         self.ln(5)
-        self.set_font_safe('Inter', '', 10)
+        self.set_font('Inter', '', 11)
+        self.set_text_color(60, 60, 67)  # Apple dark gray
 
         info_content = [
             "Lors d'un retrait (rachat), la somme reçue contient une part en capital et une part en plus-values. La fiscalité s'applique sur les plus-values et diffère selon l'ancienneté de votre contrat d'assurance-vie au moment du retrait. L'imposition est la suivante :",
@@ -1265,27 +1260,28 @@ class PDF(FPDF):
         ]
 
         for paragraph in info_content:
-            self.multi_cell(effective_width, 5, paragraph, 0, 'L')
-            self.ln(3)
+            self.multi_cell(effective_width, 6, paragraph, 0, 'L')
+            self.ln(4)
 
         end_y = self.get_y()
         self.rect(margin, start_y, effective_width, end_y - start_y, 'D')
 
         self.set_y(end_y + 5)
 
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(200, 80, 20)
-        self.cell(0, 5, 'Pour en savoir plus, cliquez ici.', 0, 1, 'R', link="https://www.example.com")
+        self.set_font('Inter', '', 11)
+        self.set_text_color(0, 122, 255)  # Apple blue
+        self.cell(0, 6, 'Pour en savoir plus, cliquez ici.', 0, 1, 'R', link="https://www.example.com")
 
         self.set_y(-30)
-        self.set_font_safe('Inter', 'B', 10)
+        self.set_font('Inter', 'B', 11)
+        self.set_text_color(60, 60, 67)  # Apple dark gray
         self.cell(effective_width / 2, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 0, 'L')
         
         if self.logo_path and os.path.exists(self.logo_path):
-            try:
-                self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
-            except Exception as e:
-                print(f"Error adding logo to last page: {e}")
+            self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
+
+
+
                 
 def generate_chart1(resultats_df):
     fig1 = go.Figure()
