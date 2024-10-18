@@ -1631,73 +1631,83 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(20)
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Page de couverture
-    pdf.set_font('Inter', 'B', 32)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 60, 'Synthèse d\'Investissement', 0, 1, 'C')
-    pdf.set_font('Inter', '', 14)
-    pdf.set_text_color(128, 128, 128)
-    pdf.cell(0, 10, f"Préparé pour {params['nom_client']}", 0, 1, 'C')
-    pdf.cell(0, 10, f"Date: {params['date_rapport']}", 0, 1, 'C')
+    for i, img_buffer in enumerate(img_buffers):
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+                img = Image.open(img_buffer)
+                img.save(tmpfile.name, format="PNG")
+                tmpfile.flush()
+                
+                pdf.add_page()
+                if i == 2:  # Pour le troisième graphique (performances historiques)
+                    pdf.set_font_safe('Inter', 'B', 14)
+                    pdf.set_font_safe('Inter', '', 12)
+                    pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                                         'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                                         "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                                         "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                                         "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                                         'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                                         'performances supérieures.')
+                pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+        except Exception as e:
+            print(f"Error adding image to PDF: {e}")
 
-    # Résumé des résultats
+   
+
     pdf.add_page()
-    pdf.chapter_title("Aperçu de votre investissement")
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
+    pdf.set_font_safe('Inter', '', 12)
     
     derniere_annee = resultats_df.iloc[-1]
     capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
     epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
     gains_totaux = capital_final - epargne_investie
     
-    info_list = [
-        ("Capital initial", f"{params['capital_initial']:,.2f} €"),
-        ("Capital final", f"{capital_final:,.2f} €"),
-        ("Total des versements", f"{epargne_investie:,.2f} €"),
-        ("Gains totaux", f"{gains_totaux:,.2f} €"),
-        ("Rendement annuel moyen", f"{params['rendement_annuel']*100:.2f}%")
-    ]
-    pdf.add_info_section("Chiffres clés", info_list)
+    resume_text = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
+    resume_text += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
+    resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
+    
+    pdf.multi_cell(0, 10, resume_text)
+    
+    pdf.add_recap(params, objectives)
+    
+    create_detailed_table(pdf, resultats_df)
 
-    # Graphiques
-    chart_info = [
-        ("Évolution de votre capital", "Ce graphique montre la progression de votre capital au fil du temps, en tenant compte de vos versements et des éventuels rachats."),
-        ("Répartition des gains", "Cette visualisation illustre la répartition entre votre capital investi et les gains réalisés."),
-        ("Performance historique", "Ce graphique présente les performances annuelles et cumulées, offrant une perspective historique de votre investissement.")
-    ]
-    for i, (title, description) in enumerate(chart_info):
-        pdf.add_chart(img_buffers[i], title, description)
+    pdf.set_xy(10, pdf.get_y() + 10)
+    pdf.set_font_safe('Inter', 'I', 8)
+    pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
+                         "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
+                         "Les valeurs sont arrondies à deux décimales près.")
 
-    # Détails de l'investissement
     pdf.add_page()
-    pdf.chapter_title("Détails de votre investissement")
-    pdf.add_info_section("Paramètres de l'investissement", [
-        ("Durée de l'investissement", f"{len(resultats_df)} ans"),
-        ("Versement mensuel", f"{params['versement_mensuel']:,.2f} €"),
-        ("Profil de risque", params['profil_risque'])
-    ])
+    pdf.set_fill_color(240, 240, 240)
+    pdf.set_draw_color(200, 200, 200)
+    pdf.set_font_safe('Inter', 'B', 12)
+    pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
+    pdf.set_font_safe('Inter', 'I', 10)
+    pdf.set_text_color(80, 80, 80)
+    disclaimer_text = (
+        "Les performances passées ne préjugent pas des performances futures. "
+        "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. "
+        "Les résultats présentés sont des estimations potentielles destinées à faciliter la compréhension "
+        "du développement de votre patrimoine. Nous vous recommandons de consulter un professionnel "
+        "qualifié avant de prendre toute décision d'investissement."
+    )
+    pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
-    # Objectifs
-    pdf.chapter_title("Vos objectifs financiers")
-    for obj in objectives:
-        pdf.add_info_section(obj['nom'], [
-            ("Montant visé", f"{obj['montant_annuel']:,.2f} €"),
-            ("Année de réalisation", str(obj['annee'])),
-            ("Durée", f"{obj['duree_retrait']} ans")
-        ])
+  
+    
+    pdf.add_last_page()
 
-    # Avertissement
-    pdf.add_page()
-    pdf.set_fill_color(245, 245, 247)  # Light gray background
-    pdf.rect(10, pdf.get_y(), 190, 50, 'F')
-    pdf.set_xy(15, pdf.get_y() + 5)
-    pdf.set_font('Inter', 'B', 12)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 10, 'Avertissement', 0, 1)
-    pdf.set_font('Inter', '', 10)
-    pdf.set_text_color(60, 60, 67)
-    pdf.multi_cell(180, 5, "Les performances passées ne préjugent pas des performances futures. Ce rapport est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. Nous vous recommandons de consulter un professionnel qualifié avant de prendre toute décision d'investissement.")
+    try:
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
+    except UnicodeEncodeError:
+        print("Warning: Some characters could not be encoded. They will be replaced.")
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
 
-    return pdf.output(dest='S').encode('latin-1', errors='replace')
+    return pdf_output
 
 
 def main():
