@@ -977,6 +977,7 @@ import io
 import numpy as np
 import tempfile
 
+
 class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
@@ -1468,6 +1469,7 @@ def generate_pdf_report(resultats_df, params, objectives):
 
     img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
     img_buffer1 = io.BytesIO(img_bytes1)
+    img_buffer1.seek(0)  # Rembobiner le buffer
 
     # Create the second chart (waterfall)
     fig2 = go.Figure(go.Waterfall(
@@ -1491,7 +1493,8 @@ def generate_pdf_report(resultats_df, params, objectives):
     
     img_bytes2 = fig2.to_image(format="png", width=700, height=400)
     img_buffer2 = io.BytesIO(img_bytes2)
-
+    img_buffer2.seek(0)  # Rembobiner le buffer
+    
     # Create the third chart (historical performance)
     fig3 = go.Figure()
     years = [2019, 2020, 2021, 2022, 2023]
@@ -1572,6 +1575,7 @@ def generate_pdf_report(resultats_df, params, objectives):
 
     img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
     img_buffer3 = io.BytesIO(img_bytes3)
+    img_buffer3.seek(0)  # Rembobiner le buffer
 
     # Prepare data for PDF
     data = [
@@ -1631,8 +1635,11 @@ def create_detailed_table(pdf, resultats_df):
 
     pdf.colored_table(headers, data, col_widths)
     
+import tempfile
+from PIL import Image
+
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    logo_path = os.path.expanduser("/Users/boubs/Downloads/Logo1.png")    
+    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     pdf = PDF(logo_path)
     left_margin = 20
     pdf.set_left_margin(left_margin)
@@ -1642,11 +1649,25 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(20)
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    for img_buffer in img_buffers:
+    for i, img_buffer in enumerate(img_buffers):
+        # Créer une image temporaire à partir du buffer
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            tmpfile.write(img_buffer.getvalue())
+            img = Image.open(img_buffer)
+            img.save(tmpfile.name, format="PNG")
             tmpfile.flush()
             
+            pdf.add_page()
+            if i == 2:  # Pour le troisième graphique (performances historiques)
+                pdf.set_font('Inter', 'B', 14)
+                pdf.cell(0, 10, 'Performances historiques', 0, 1)
+                pdf.set_font('Inter', '', 12)
+                pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                                     'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                                     "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                                     "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                                     "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                                     'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                                     'performances supérieures.')
             pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
     pdf.set_font('Inter', 'B', 14)
@@ -1681,23 +1702,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     pdf.multi_cell(0, 10, resume_text)
     
-    # Ajouter le récapitulatif
     pdf.add_recap(params, objectives)
-    
-    for i, img_buffer in enumerate(img_buffers):
-        pdf.add_page()
-        if i == 2:
-            pdf.set_font('Inter', 'B', 14)
-            pdf.cell(0, 10, 'Performances historiques', 0, 1)
-            pdf.set_font('Inter', '', 12)
-            pdf.multi_cell(0,  5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
-                                 'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
-                                 "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
-                                 "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
-                                 "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
-                                 'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
-                                 'performances supérieures.')
-        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
     
     create_detailed_table(pdf, resultats_df)
 
