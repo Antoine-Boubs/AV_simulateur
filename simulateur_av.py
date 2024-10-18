@@ -1413,26 +1413,6 @@ def generate_pdf_report(resultats_df, params, objectives):
     print(f"params: {params}")
     print(f"objectives: {objectives}")
 
-    data = [
-        ["Paramètre", "Valeur"],
-        ["Capital initial", f"{params['capital_initial']} €"],
-        ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
-    ]
-
-    # Ajouter les informations des objectifs à data
-    for i, obj in enumerate(objectives, start=1):
-        data.extend([
-            [f"Objectif {i} - Nom", obj['nom']],
-            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
-            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
-            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
-        ])
-
-    # Générer les graphiques
-    img_buffer1 = generate_chart1(resultats_df)
-    img_buffer2 = generate_chart2(resultats_df)
-
     
     # Create the financial investment evolution chart
     fig1 = go.Figure()
