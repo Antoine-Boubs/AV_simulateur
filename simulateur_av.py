@@ -1632,22 +1632,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_warning()
     pdf.ln(10)
 
-    def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
-    if not os.path.exists(logo_path):
-        print(f"Warning: Logo file not found at {logo_path}")
-        logo_path = None
-
-    pdf = PDF(logo_path)
-    left_margin = 20
-    pdf.set_left_margin(left_margin)
-    pdf.alias_nb_pages()
-    pdf.add_page()
-
-    # Avertissement
-    pdf.add_warning()
-    pdf.ln(10)
-
     # Informations du client
     pdf.set_font_safe('Inter', 'B', 16)
     pdf.cell(0, 10, 'Paramètres de la simulation', 0, 1)
