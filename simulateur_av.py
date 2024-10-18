@@ -1531,18 +1531,6 @@ def generate_pdf_report(resultats_df, params, objectives):
         opacity=0.8,
         name='Performance annuelle'
     ))
-
-    cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
-    fig3.add_trace(go.Scatter(
-        x=years,
-        y=cumulative_performance,
-        mode='lines+markers',
-        name='Performance cumulée',
-        line=dict(color='#FFA500', width=3),
-        marker=dict(size=8, symbol='diamond', line=dict(width=2, color='DarkSlateGrey')),
-        yaxis='y2'
-    ))
-
     fig3.update_layout(
         title={
             'text': 'Performances historiques',
@@ -1575,22 +1563,9 @@ def generate_pdf_report(resultats_df, params, objectives):
         hovermode="x unified"
     )
 
-    total_cumulative_performance = cumulative_performance[-1]
-    fig3.add_annotation(
-        x=0.5, y=1.15,
-        xref='paper', yref='paper',
-        text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
-        showarrow=False,
-        font=dict(size=16, color='#1E3A8A', weight='bold')
-    )
-
     fig3.update_traces(
         hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
         selector=dict(type='bar')
-    )
-    fig3.update_traces(
-        hovertemplate="<b>Année:</b> %{x}<br><b>Performance cumulée:</b> %{y:.2f}%<extra></extra>",
-        selector=dict(type='scatter')
     )
 
     img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
