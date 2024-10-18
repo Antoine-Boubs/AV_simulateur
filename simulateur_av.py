@@ -1644,22 +1644,60 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.cell(0, 8, f"Versement mensuel : {params.get('versement_mensuel', 'Non spécifié')} €", 0, 1)
 
     # Encadré pour les objectifs de l'investisseur
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1)
-    pdf.set_draw_color(200, 200, 200)
-    pdf.rect(left_margin, pdf.get_y(), pdf.w - 2*left_margin, 0)
+    # Objectifs de l'investisseur
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 18)
+    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1, 'C')
     pdf.ln(5)
-    pdf.set_font_safe('Inter', '', 12)
-    for obj in objectives:
-        pdf.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)
-        pdf.cell(0, 8, f"  Montant annuel : {obj['montant_annuel']} €", 0, 1)
-        pdf.cell(0, 8, f"  Année de réalisation : {obj['annee']}", 0, 1)
-        pdf.cell(0, 8, f"  Durée : {obj['duree_retrait']} ans", 0, 1)
-        pdf.ln(5)
-    pdf.rect(left_margin, pdf.get_y(), pdf.w - 2*left_margin, 0)
-    pdf.ln(10)
 
-    pdf.set_auto_page_break(auto=True, margin=15)
+    # Couleurs inspirées d'Apple pour les cartes
+    colors = [
+        (88, 86, 214),   # Violet
+        (0, 122, 255),   # Bleu
+        (52, 199, 89),   # Vert
+        (255, 149, 0),   # Orange
+        (255, 59, 48)    # Rouge
+    ]
+
+    if objectives:
+        card_width = (pdf.w - 2*left_margin - 10) / 2  # 2 cartes par ligne avec un espace de 10 entre elles
+        card_height = 80
+        card_margin = 5
+        x_positions = [left_margin, left_margin + card_width + 10]
+        current_x = 0
+        current_y = pdf.get_y()
+
+        for i, obj in enumerate(objectives):
+            color = colors[i % len(colors)]
+            pdf.set_fill_color(*color)
+            pdf.set_text_color(255, 255, 255)  # Texte blanc pour contraste
+
+            pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'F')
+
+            pdf.set_xy(x_positions[current_x] + card_margin, current_y + card_margin)
+            pdf.set_font_safe('Inter', 'B', 12)
+            pdf.cell(card_width - 2*card_margin, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
+
+            pdf.set_xy(x_positions[current_x] + card_margin, pdf.get_y())
+            pdf.set_font_safe('Inter', '', 10)
+            pdf.multi_cell(card_width - 2*card_margin, 5, 
+                f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €\n"
+                f"Année : {obj.get('annee', 'Non spécifiée')}\n"
+                f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans"
+            )
+
+            current_x = (current_x + 1) % 2
+            if current_x == 0:
+                current_y += card_height + 10
+                pdf.set_y(current_y)
+
+        pdf.set_y(current_y + card_height + 10)
+    else:
+        pdf.set_font_safe('Inter', 'I', 12)
+        pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1, 'C')
+
+    pdf.set_text_color(0, 0, 0)  # Rétablir la couleur du texte en noir
+    pdf.ln(10)
 
     # Graphiques
     for i, img_buffer in enumerate(img_buffers):
