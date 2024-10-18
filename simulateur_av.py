@@ -1458,16 +1458,6 @@ def create_performance_page(pdf, params):
                          'performances supérieures.')
     pdf.ln(10)
 
-    # Add client information
-    pdf.set_font('Inter', 'B', 12)
-    pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
-    pdf.set_font('Inter', '', 11)
-    pdf.cell(0, 6, f"Capital initial : {params['capital_initial']} €", 0, 1)
-    pdf.cell(0, 6, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
-    pdf.cell(0, 6, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
-    pdf.cell(0, 6, f"Durée de simulation : {params['duree_simulation']} ans", 0, 1)
-    pdf.ln(10)
-
     # Add performance chart
     chart_buffer = generate_chart3()
     pdf.image(chart_buffer, x=10, y=pdf.get_y(), w=190)
