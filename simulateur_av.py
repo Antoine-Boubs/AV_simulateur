@@ -1617,8 +1617,19 @@ import tempfile
 from PIL import Image
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    pdf = AppleStylePDF()
+    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
+    if not os.path.exists(logo_path):
+        print(f"Warning: Logo file not found at {logo_path}")
+        logo_path = None
+
+    pdf = PDF(logo_path)
+    left_margin = 20
+    pdf.set_left_margin(left_margin)
+    pdf.alias_nb_pages()
     pdf.add_page()
+    pdf.add_warning()
+    pdf.ln(20)
+    pdf.set_auto_page_break(auto=True, margin=15)
 
     # Page de couverture
     pdf.set_font('Inter', 'B', 32)
