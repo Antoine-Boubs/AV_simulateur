@@ -1015,56 +1015,65 @@ class PDF(FPDF):
             self.set_font('Arial', '', 12)
 
     def header(self):
-        self.set_font('Inter', 'B', 12)
-        self.set_text_color(60, 60, 67)  # Dark gray
-        self.cell(0, 10, 'Rapport d\'Investissement', 0, 0, 'R')
+        # Couleurs inspirées d'Apple
+        apple_gray = (128, 128, 128)
+        apple_blue = (0, 122, 255)
+        
+        # Ajout du logo
+        if self.logo_path and os.path.exists(self.logo_path):
+            self.image(self.logo_path, 10, 8, 20)
+        
+        # Titre du rapport
+        self.set_font('Inter', 'B', 24)
+        self.set_text_color(*apple_blue)
+        self.cell(0, 10, 'Rapport Financier', 0, 1, 'R')
+        
+        # Sous-titre
+        self.set_font('Inter', '', 12)
+        self.set_text_color(*apple_gray)
+        self.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'R')
+        
+        # Ligne de séparation
+        self.set_draw_color(*apple_gray)
+        self.set_line_width(0.1)
+        self.line(10, 35, self.w - 10, 35)
+        
+        # Espace après le header
         self.ln(20)
 
     def footer(self):
+        # Couleurs inspirées d'Apple
+        apple_gray = (128, 128, 128)
+        apple_blue = (0, 122, 255)
+
+        # Position à 1.5 cm du bas
         self.set_y(-15)
+
+        # Ligne de séparation
+        self.set_draw_color(*apple_gray)
+        self.set_line_width(0.1)
+        self.line(10, self.get_y(), self.w - 10, self.get_y())
+
+        # Numéro de page
         self.set_font('Inter', '', 8)
-        self.set_text_color(128, 128, 128)  # Light gray
+        self.set_text_color(*apple_gray)
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
 
-    def chapter_title(self, title):
-        self.set_font('Inter', 'B', 24)
-        self.set_text_color(0, 0, 0)
-        self.cell(0, 20, title, 0, 1, 'L')
-        self.ln(10)
+        # Texte légal
+        legal_text = "© 2023 Votre Entreprise. Tous droits réservés."
+        self.set_font('Inter', '', 8)
+        self.set_text_color(*apple_gray)
+        text_width = self.get_string_width(legal_text)
+        self.set_x((self.w - text_width) / 2)
+        self.cell(text_width, 5, legal_text, 0, 0, 'C')
 
-    def chapter_body(self, body):
-        self.set_font('Inter', '', 11)
-        self.set_text_color(60, 60, 67)
-        self.multi_cell(0, 6, body)
-        self.ln()
-
-    def add_info_section(self, title, info_list):
-        self.set_font('Inter', 'B', 14)
-        self.set_text_color(0, 0, 0)
-        self.cell(0, 10, title, 0, 1)
-        self.ln(5)
-        
-        self.set_font('Inter', '', 11)
-        self.set_text_color(60, 60, 67)
-        for key, value in info_list:
-            self.cell(60, 8, key, 0, 0)
-            self.cell(0, 8, value, 0, 1)
-        self.ln(10)
-
-    def add_chart(self, img_buffer, title, description):
-        self.add_page()
-        self.chapter_title(title)
-        
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            img = Image.open(img_buffer)
-            img.save(tmpfile.name, format="PNG")
-            self.image(tmpfile.name, x=10, y=self.get_y(), w=190)
-        
-        self.ln(5)
-        self.set_font('Inter', '', 10)
-        self.set_text_color(128, 128, 128)
-        self.multi_cell(0, 5, description)
-        self.ln(10)
+        # Lien vers le site web
+        website = "www.votreentreprise.com"
+        self.set_font('Inter', '', 8)
+        self.set_text_color(*apple_blue)
+        website_width = self.get_string_width(website)
+        self.set_x((self.w - website_width) / 2)
+        self.cell(website_width, 15, website, 0, 0, 'C', link="https://www.votreentreprise.com")
 
     def add_warning(self):
         self.ln(10)
