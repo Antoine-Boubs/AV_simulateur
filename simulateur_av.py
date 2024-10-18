@@ -1604,15 +1604,7 @@ def generate_pdf_report(resultats_df, params, objectives):
     img_buffer3 = io.BytesIO(img_bytes3)
     img_buffer3.seek(0)  # Rembobiner le buffer
 
-    # Prepare data for PDF
-    data = [
-        ["Paramètre", "Valeur"],
-        ["Capital initial", f"{params['capital_initial']} €"],
-        ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
-    ]
-
-    # Add objectives information to data
+     # Add objectives information to data
     for i, obj in enumerate(objectives, start=1):
         data.extend([
             [f"Objectif {i} - Nom", obj['nom']],
@@ -1621,10 +1613,20 @@ def generate_pdf_report(resultats_df, params, objectives):
             [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
         ])
 
-    # Generate PDF with all three charts
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
+    ]
+
+    img_buffer1 = generate_chart1(resultats_df)
+    img_buffer2 = generate_chart2(resultats_df)
+    img_buffer3 = generate_chart3()
+
     pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
-    
-    return pdf_bytes
+
+    return pdf_bytes  # This is now guaranteed to be bytes
 
 def format_value(value):
     if isinstance(value, (int, float)):
@@ -1763,7 +1765,14 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.add_last_page()
 
-    return pdf.output(dest='S')
+try:
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
+    except UnicodeEncodeError:
+        print("Warning: Some characters could not be encoded. They will be replaced.")
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
+
+    return pdf_output  # This is now guaranteed to be bytes
+
 
 def main():
     global resultats_df, params
@@ -1775,12 +1784,16 @@ def main():
 
     # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
-        
-        # Créer un lien de téléchargement pour le PDF
-        b64 = base64.b64encode(pdf_bytes).decode()
-        href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
-        st.markdown(href, unsafe_allow_html=True)
+        try:
+            pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
+            
+            # Créer un lien de téléchargement pour le PDF
+            b64 = base64.b64encode(pdf_bytes).decode()
+            href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
+            st.markdown(href, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
+            print(f"Detailed error: {e}")
 
 if __name__ == "__main__":
     main()
