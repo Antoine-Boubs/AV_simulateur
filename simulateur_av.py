@@ -1541,7 +1541,7 @@ def create_pdf(data, img_buffers, resultats_df, params):
     pdf.ln(20)  # Ajoute 20 unités d'espace après l'avertissement
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    for img_buffer in images:
+    for img_buffer in img_buffers:  # Correction ici (img_buffers au lieu de images)
         # Sauvegarde de l'image temporairement sur le disque
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
             tmpfile.write(img_buffer.getvalue())  # Sauvegarde du buffer d'image dans un fichier temporaire
@@ -1599,7 +1599,7 @@ def create_pdf(data, img_buffers, resultats_df, params):
     
 
    # Graphiques
-    for i, img_buffer in enumerate(img_buffers):
+    for i, img_buffer in enumerate(img_buffers):  # Correction ici (img_buffers)
         pdf.add_page()
         if i == 2:  # For the third chart (historical performance)
             pdf.set_font('Inter', 'B', 14)
@@ -1613,7 +1613,6 @@ def create_pdf(data, img_buffers, resultats_df, params):
                                  'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
                                  'performances supérieures.')
         pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
-    
     
     create_detailed_table(pdf, resultats_df)
 
@@ -1644,6 +1643,7 @@ def create_pdf(data, img_buffers, resultats_df, params):
     pdf.add_last_page()
 
     return pdf.output(dest='S')
+
 
 
 # Votre fonction main() existante reste inchangée
