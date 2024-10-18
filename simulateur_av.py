@@ -1076,13 +1076,7 @@ class PDF(FPDF):
         
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'R')
         
-        legal_text = (
-            "RCS Chambéry n° 837 746 528 - Orias n° 21008012 - www.orias.fr "
-            "Conseil en Investissements Financiers membre de la CNCEF, chambre agréée par l'AMF - "
-            "Mandataire d'intermédiaire en assurance - Mandataire d'intermédiaire en opérations de banque et services de paiement "
-            "Transactions sur Immeubles sans réception de fonds Carte n° CPI34022017000021580 délivrée par la CCI de Hérault "
-            "Sous le contrôle de l'ACPR // Garantie Financière et Assurance Responsabilité Civile Professionnelle conformes au Code des Assurances"
-        )
+        
         
         line_width = self.w - 20
         
