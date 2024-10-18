@@ -1441,6 +1441,11 @@ def generate_chart3():
     return io.BytesIO(img_bytes3)
 
 def generate_pdf_report(resultats_df, params, objectives):
+    print("Entering generate_pdf_report")
+    print(f"resultats_df shape: {resultats_df.shape}")
+    print(f"params: {params}")
+    print(f"objectives: {objectives}")
+    
     # Create the financial investment evolution chart
     fig1 = go.Figure()
     years = resultats_df['Année'].tolist()
@@ -1728,6 +1733,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
     pdf.set_font_safe('Inter', '', 12)
+    
     derniere_annee = resultats_df.iloc[-1]
     capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
     epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
