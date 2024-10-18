@@ -1648,11 +1648,13 @@ def create_pdf(data, img_buffers, resultats_df, params):
 
 # Votre fonction main() existante reste inchangée
 def main():
-    # Votre code existant pour l'interface utilisateur Streamlit et la génération des données
-
     # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        pdf_bytes = generate_pdf_report(resultats_df, params)
+        # Générer les graphiques ou images sous forme de buffers
+        img_buffer1, img_buffer2, img_buffer3 = generate_graphics()
+        
+        # Appeler la fonction generate_pdf_report avec les images en paramètre
+        pdf_bytes = generate_pdf_report(resultats_df, params, img_buffers=[img_buffer1, img_buffer2, img_buffer3])
         
         # Créer un lien de téléchargement pour le PDF
         b64 = base64.b64encode(pdf_bytes).decode()
