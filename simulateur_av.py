@@ -982,7 +982,7 @@ class PDF(FPDF):
         self.logo_path = logo_path
         
         # Définir le chemin vers le dossier contenant les polices
-        font_path = "/Users/boubs/Downloads/Inter" 
+        font_path = "/AV_simulateur/assets" 
         
         # Ajouter les polices
         self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
