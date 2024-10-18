@@ -982,7 +982,7 @@ class PDF(FPDF):
         super().__init__()
         self.logo_path = logo_path
         
-        font_path = "assets"
+        font_path = "assets/fonts"
         
         self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
         self.add_font('Inter', 'B', os.path.join(font_path, 'Inter-Bold.ttf'), uni=True)
