@@ -1696,7 +1696,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         card_width = (pdf.w - 2*left_margin - 10) / 2  # 2 cartes par ligne avec un espace de 10 entre elles
         card_height = 80
         card_margin = 5
-        corner_radius = 5  # Rayon des coins arrondis
         x_positions = [left_margin, left_margin + card_width + 10]
         current_x = 0
         current_y = pdf.get_y()
@@ -1707,8 +1706,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.set_draw_color(*color)
             pdf.set_text_color(255, 255, 255)  # Texte blanc pour contraste
 
-            # Dessiner un rectangle arrondi
-            pdf.rounded_rect(x_positions[current_x], current_y, card_width, card_height, corner_radius, 'F')
+            # Dessiner un rectangle
+            pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'F')
+
+            # Ajouter une bordure plus claire pour un effet de profondeur
+            pdf.set_draw_color(255, 255, 255, 0.5)  # Blanc semi-transparent
+            pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'D')
 
             pdf.set_xy(x_positions[current_x] + card_margin, current_y + card_margin)
             pdf.set_font_safe('Inter', 'B', 12)
