@@ -982,16 +982,30 @@ class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
         self.logo_path = logo_path
+        self.is_custom_font_loaded = False
         
-        font_path = "assets"
+        font_path = os.path.join(os.path.dirname(__file__), "assets")
         
         try:
             self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
             self.add_font('Inter', 'B', os.path.join(font_path, 'Inter-Bold.ttf'), uni=True)
             self.add_font('Inter', 'I', os.path.join(font_path, 'Inter-Italic.ttf'), uni=True)
+            self.is_custom_font_loaded = True
         except Exception as e:
-            print(f"Error loading fonts: {e}")
-            # Fallback to built-in fonts if custom fonts are not available
+            print(f"Error loading custom fonts: {e}")
+            print("Falling back to built-in fonts.")
+
+    def set_font_safe(self, family, style='', size=0):
+        try:
+            if self.is_custom_font_loaded:
+                self.set_font(family, style, size)
+            else:
+                if family == 'Inter':
+                    family = 'Arial'
+                self.set_font(family, style, size)
+        except Exception as e:
+            print(f"Error setting font: {e}")
+            print("Falling back to default font.")
             self.set_font('Arial', '', 12)
 
     def header(self):
@@ -1001,11 +1015,13 @@ class PDF(FPDF):
                 self.link(10, 10, 20, 20, "https://www.antoineberjoan.com")
             except Exception as e:
                 print(f"Error loading logo: {e}")
-        self.set_font('Inter', 'B', 14)
+        
+        self.set_font_safe('Inter', 'B', 14)
         self.set_text_color(251, 191, 36)
         self.set_xy(35, 10)
         self.cell(0, 8, 'Antoine Berjoan', 0, 1, 'L')
-        self.set_font('Inter', '', 10)
+        
+        self.set_font_safe('Inter', '', 10)
         self.set_text_color(100, 100, 100)
         self.set_xy(35, 18)
         self.cell(0, 8, 'Conseiller en investissement', 0, 1, 'L')
@@ -1016,7 +1032,7 @@ class PDF(FPDF):
         self.line(10, 35, self.w - 10, 35)
 
         self.ln(30)
-    
+
     def styled_button(self, text, url, x, y, w, h):
         self.set_fill_color(251, 191, 36)
         self.rounded_rect(x, y, w, h, 2, 'F')
@@ -1025,7 +1041,7 @@ class PDF(FPDF):
         self.set_line_width(0.5)
         self.rounded_rect(x, y, w, h, 2, 'D')
 
-        self.set_font('Inter', 'B', 10)
+        self.set_font_safe('Inter', 'B', 10)
         self.set_text_color(255, 255, 255)
         self.set_xy(x, y)
         self.cell(w, h, text, 0, 0, 'C')
@@ -1048,7 +1064,7 @@ class PDF(FPDF):
         
         self.set_y(self.get_y() + 1)
         
-        self.set_font('Inter', 'I', 7)
+        self.set_font_safe('Inter', 'I', 7)
         
         self.set_text_color(128, 128, 128)
         
@@ -1087,67 +1103,68 @@ class PDF(FPDF):
         self.rect(margin, self.get_y(), self.w - 2*margin, 50, 'F')
         
         self.set_xy(margin + 5, self.get_y() + 5)
-        self.set_font('Inter', 'B', 12)
+        self.set_font_safe('Inter', 'B', 12)
         self.set_text_color(0, 0, 0)
         self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
         
         self.set_xy(margin + 5, self.get_y())
-        self.set_font('Inter', '', 10)
+        self.set_font_safe('Inter', '', 10)
         self.multi_cell(self.w - 2*margin - 10, 5, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports "
                               "en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à "
                               "fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés "
                               "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
                               "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
                               "sont pas stables dans le temps.", align='J')
-        
+
     def add_recap(self, params, objectives):
         self.add_page()
-        self.set_font('Inter', 'B', 16)
+        self.set_font_safe('Inter', 'B', 16)
         self.cell(0, 10, 'Récapitulatif de votre projet', 0, 1, 'C')
         self.ln(5)
 
-        self.set_font('Inter', 'B', 14)
+        self.set_font_safe('Inter', 'B', 14)
         self.cell(0, 10, 'Informations du client', 0, 1, 'L')
-        self.set_font('Inter', '', 12)
+        self.set_font_safe('Inter', '', 12)
         self.cell(0, 8, f"Capital initial : {params['capital_initial']} €", 0, 1)
         self.cell(0, 8, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
         self.cell(0, 8, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
 
         self.ln(5)
-        self.set_font('Inter', 'B', 14)
+        self.set_font_safe('Inter', 'B', 14)
         self.cell(0, 10, 'Versements', 0, 1, 'L')
-        self.set_font('Inter', '', 12)
+        self.set_font_safe('Inter', '', 12)
 
-        if st.session_state.versements_libres:
-            self.set_font('Inter', 'B', 12)
+        if 'versements_libres' in st.session_state and st.session_state.versements_libres:
+            self.set_font_safe('Inter', 'B', 12)
             self.cell(0, 8, "Versements libres :", 0, 1)
-            self.set_font('Inter', '', 12)
+            self.set_font_safe('Inter', '', 12)
             for vl in st.session_state.versements_libres:
                 self.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
 
-        if st.session_state.modifications_versements:
-            self.set_font('Inter', 'B', 12)
+        if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
+            self.set_font_safe('Inter', 'B', 12)
             self.cell(0, 8, "Modifications de versements :", 0, 1)
-            self.set_font('Inter', '', 12)
+            self.set_font_safe('Inter', '', 12)
             for mv in st.session_state.modifications_versements:
                 if mv['montant'] == 0:
                     self.cell(0, 8, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 1)
                 else:
                     self.cell(0, 8, f"Versements modifiés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}", 0, 1)
 
-        if not st.session_state.versements_libres and not st.session_state.modifications_versements:
+        if (not 'versements_libres' in st.session_state or not st.session_state.versements_libres) and \
+           (not 'modifications_versements' in st.session_state or not st.session_state.modifications_versements):
             self.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
         self.ln(5)
-        self.set_font('Inter', 'B', 14)
+        self.set_font_safe('Inter', 'B', 14)
         self.cell(0, 10, 'Vos objectifs', 0, 1, 'L')
-        self.set_font('Inter', '', 12)
+        self.set_font_safe('Inter', '', 12)
         for obj in objectives:
-            self.set_font('Inter', 'B', 12)
-            self.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)  # Changé de 'name' à 'nom'
-            self.set_font('Inter', '', 12)
+            self.set_font_safe('Inter', 'B', 12)
+            self.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)
+            self.set_font_safe('Inter', '', 12)
             self.cell(0, 8, f"Montant annuel de retrait : {obj['montant_annuel']} €", 0, 1)
-            self.cell(0, 8, f"Durée : {obj['duree']} ans", 0, 1)
+            self.cell(0, 8, f"Durée : {obj['duree_retrait']} ans", 0, 1)
             self.cell(0, 8, f"Année de réalisation : {obj['annee']}", 0, 1)
             self.ln(5)
         self.add_page()
@@ -1159,7 +1176,7 @@ class PDF(FPDF):
         self.set_text_color(0)
         self.set_draw_color(128, 128, 128)
         self.set_line_width(0.3)
-        self.set_font('Inter', 'B', 8)
+        self.set_font_safe('Inter', 'B', 8)
 
         total_width = sum(col_widths)
         table_x = (self.w - total_width) / 2
@@ -1169,7 +1186,7 @@ class PDF(FPDF):
             self.cell(width, 10, header, 1, 0, 'C', 1)
         self.ln()
 
-        self.set_font('Inter', '', 8)
+        self.set_font_safe('Inter', '', 8)
         row_height = 6
         page_rows = 0
         fill_index = 0
@@ -1179,11 +1196,11 @@ class PDF(FPDF):
                 self.add_page()
                 self.set_x(table_x)
                 self.set_fill_color(*header_color)
-                self.set_font('Inter', 'B', 8)
+                self.set_font_safe('Inter', 'B', 8)
                 for header, width in zip(headers, col_widths):
                     self.cell(width, 10, header, 1, 0, 'C', 1)
                 self.ln()
-                self.set_font('Inter', '', 8)
+                self.set_font_safe('Inter', '', 8)
                 page_rows = 0
                 fill_index = 0
 
@@ -1203,13 +1220,13 @@ class PDF(FPDF):
         self.set_right_margin(margin)
         effective_width = self.w - 2*margin
 
-        self.set_font('Inter', '', 10)
+        self.set_font_safe('Inter', '', 10)
         self.set_text_color(0, 0, 0)
 
         content = [
             "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité d'un acteur historique de l'assurance-vie. L'assurance-vie offre de nombreux avantages, parmi lesquels :",
             "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la transmission de votre patrimoine",
-            "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des versements quand vous le souhaitez."
+            "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand  vous le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des versements quand vous le souhaitez."
         ]
 
         for paragraph in content:
@@ -1222,10 +1239,10 @@ class PDF(FPDF):
         self.set_draw_color(200, 200, 200)
         self.rect(margin, start_y, effective_width, 0, 'D')
 
-        self.set_font('Inter', 'B', 12)
+        self.set_font_safe('Inter', 'B', 12)
         self.cell(effective_width, 10, "Pour en savoir plus sur la fiscalité de  l'assurance-vie", 0, 1, 'L')
         self.ln(5)
-        self.set_font('Inter', '', 10)
+        self.set_font_safe('Inter', '', 10)
 
         info_content = [
             "Lors d'un retrait (rachat), la somme reçue contient une part en capital et une part en plus-values. La fiscalité s'applique sur les plus-values et diffère selon l'ancienneté de votre contrat d'assurance-vie au moment du retrait. L'imposition est la suivante :",
@@ -1248,12 +1265,12 @@ class PDF(FPDF):
 
         self.set_y(end_y + 5)
 
-        self.set_font('Inter', '', 10)
+        self.set_font_safe('Inter', '', 10)
         self.set_text_color(200, 80, 20)
         self.cell(0, 5, 'Pour en savoir plus, cliquez ici.', 0, 1, 'R', link="https://www.example.com")
 
         self.set_y(-30)
-        self.set_font('Inter', 'B', 10)
+        self.set_font_safe('Inter', 'B', 10)
         self.cell(effective_width / 2, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 0, 'L')
         
         if self.logo_path and os.path.exists(self.logo_path):
@@ -1426,7 +1443,6 @@ def generate_chart3():
 def generate_pdf_report(resultats_df, params, objectives):
     # Create the financial investment evolution chart
     fig1 = go.Figure()
-
     years = resultats_df['Année'].tolist()
     capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
     epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
@@ -1501,11 +1517,11 @@ def generate_pdf_report(resultats_df, params, objectives):
         plot_bgcolor='white',
         yaxis=dict(gridcolor='#8DB3C5')
     )
-    
+
     img_bytes2 = fig2.to_image(format="png", width=700, height=400)
     img_buffer2 = io.BytesIO(img_bytes2)
     img_buffer2.seek(0)  # Rembobiner le buffer
-    
+
     # Create the third chart (historical performance)
     fig3 = go.Figure()
     years = [2019, 2020, 2021, 2022, 2023]
@@ -1624,7 +1640,7 @@ def format_value(value):
 
 def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
-    pdf.set_font('Inter', 'B', 14)
+    pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
     pdf.ln(5)
 
@@ -1673,9 +1689,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                 
                 pdf.add_page()
                 if i == 2:  # Pour le troisième graphique (performances historiques)
-                    pdf.set_font('Inter', 'B', 14)
+                    pdf.set_font_safe('Inter', 'B', 14)
                     pdf.cell(0, 10, 'Performances historiques', 0, 1)
-                    pdf.set_font('Inter', '', 12)
+                    pdf.set_font_safe('Inter', '', 12)
                     pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
                                          'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
                                          "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
@@ -1687,12 +1703,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         except Exception as e:
             print(f"Error adding image to PDF: {e}")
 
-    pdf.set_font('Inter', 'B', 14)
+    pdf.set_font_safe('Inter', 'B', 14)
     pdf.set_x(left_margin)
     pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
     pdf.ln(5)
 
-    pdf.set_font('Inter', '', 12)
+    pdf.set_font_safe('Inter', '', 12)
     info_text = [
         f"Capital initial : {params['capital_initial']} €",
         f"Versement mensuel : {params['versement_mensuel']} €",
@@ -1705,9 +1721,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.cell(0, 8, line, 0, 1, 'L')
 
     pdf.add_page()
-    pdf.set_font('Inter', 'B', 14)
+    pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
-    pdf.set_font('Inter', '', 12)
+    pdf.set_font_safe('Inter', '', 12)
     derniere_annee = resultats_df.iloc[-1]
     capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
     epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
@@ -1724,7 +1740,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     create_detailed_table(pdf, resultats_df)
 
     pdf.set_xy(10, pdf.get_y() + 10)
-    pdf.set_font('Inter', 'I', 8)
+    pdf.set_font_safe('Inter', 'I', 8)
     pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
                          "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
                          "Les valeurs sont arrondies à deux décimales près.")
@@ -1732,9 +1748,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_page()
     pdf.set_fill_color(240, 240, 240)
     pdf.set_draw_color(200, 200, 200)
-    pdf.set_font('Inter', 'B', 12)
+    pdf.set_font_safe('Inter', 'B', 12)
     pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
-    pdf.set_font('Inter', 'I', 10)
+    pdf.set_font_safe('Inter', 'I', 10)
     pdf.set_text_color(80, 80, 80)
     disclaimer_text = (
         "Les performances passées ne préjugent pas des performances futures. "
@@ -1745,16 +1761,13 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     )
     pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
-    try:
-        pdf.add_last_page()
-    except Exception as e:
-        print(f"Error adding last page: {e}")
+    pdf.add_last_page()
 
     return pdf.output(dest='S')
 
 def main():
     global resultats_df, params
-    
+
     # Générez vos graphiques et obtenez les buffers d'image
     img_buffer1 = generate_chart1(resultats_df)
     img_buffer2 = generate_chart2(resultats_df)
