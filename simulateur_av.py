@@ -975,93 +975,76 @@ import os
 from PIL import Image
 import io
 import numpy as np
+import tempfile
 
 class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
         self.logo_path = logo_path
         
-        # Définir le chemin vers le dossier contenant les polices
-        font_path = "assets" 
+        font_path = "assets"
         
-        # Ajouter les polices
         self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
         self.add_font('Inter', 'B', os.path.join(font_path, 'Inter-Bold.ttf'), uni=True)
         self.add_font('Inter', 'I', os.path.join(font_path, 'Inter-Italic.ttf'), uni=True)
 
     def header(self):
-        # Logo et nom (à gauche)
         if self.logo_path and os.path.exists(self.logo_path):
-            self.image(self.logo_path, 10, 10, 20)  # Réduire la taille du logo à 20
-            # Ajoutez un lien cliquable sur la zone du logo
+            self.image(self.logo_path, 10, 10, 20)
             self.link(10, 10, 20, 20, "https://www.antoineberjoan.com")
-        self.set_font('Inter', 'B', 14)  # Réduire la taille de la police
+        self.set_font('Inter', 'B', 14)
         self.set_text_color(251, 191, 36)
-        self.set_xy(35, 10)  # Ajuster la position du texte
+        self.set_xy(35, 10)
         self.cell(0, 8, 'Antoine Berjoan', 0, 1, 'L')
-        self.set_font('Inter', '', 10)  # Réduire la taille de la police
+        self.set_font('Inter', '', 10)
         self.set_text_color(100, 100, 100)
-        self.set_xy(35, 18)  # Ajuster la position du texte
+        self.set_xy(35, 18)
         self.cell(0, 8, 'Conseiller en investissement', 0, 1, 'L')
 
-        # Bouton stylisé
         self.styled_button('Prendre RDV', 'https://app.lemcal.com/@antoineberjoan', self.w - 60, 10, 50, 15)
 
-        # Ligne de séparation
         self.set_draw_color(200, 200, 200)
-        self.line(10, 35, self.w - 10, 35)  # Déplacer la ligne vers le bas
+        self.line(10, 35, self.w - 10, 35)
 
-        self.ln(30)  # Augmenter l'espace après l'en-tête
+        self.ln(30)
     
     def styled_button(self, text, url, x, y, w, h):
-        # Fond du bouton
-        self.set_fill_color(251, 191, 36)  # Couleur dorée
-        self.rounded_rect(x, y, w, h, 2, 'F')  # Utiliser rounded_rect avec un rayon de 2
+        self.set_fill_color(251, 191, 36)
+        self.rounded_rect(x, y, w, h, 2, 'F')
 
-        # Ajouter une bordure plus fine
-        self.set_draw_color(200, 150, 0)  # Couleur de la bordure (un peu plus foncée que le fond)
-        self.set_line_width(0.5)  # Réduire l'épaisseur de la bordure
-        self.rounded_rect(x, y, w, h, 2, 'D')  # 'D' pour dessiner seulement le contour
+        self.set_draw_color(200, 150, 0)
+        self.set_line_width(0.5)
+        self.rounded_rect(x, y, w, h, 2, 'D')
 
-        # Texte du bouton
-        self.set_font('Inter', 'B', 10)  # Réduire la taille de la police
-        self.set_text_color(255, 255, 255)  # Texte blanc
+        self.set_font('Inter', 'B', 10)
+        self.set_text_color(255, 255, 255)
         self.set_xy(x, y)
-        self.cell(w, h, text, 0, 0, 'C')  # 'C' pour centrer le texte
+        self.cell(w, h, text, 0, 0, 'C')
 
-        # Lien cliquable
         self.link(x, y, w, h, url)
 
     def rounded_rect(self, x, y, w, h, r, style=''):
-        # Simplification de la méthode pour dessiner un rectangle normal
         if style == 'F':
             self.rect(x, y, w, h, style)
         elif style == 'D' or style == '':
             self.rect(x, y, w, h)
-        else:  # FD ou DF
+        else:
             self.rect(x, y, w, h, 'FD')
 
     def footer(self):
-        # Position at 15 mm from bottom
         self.set_y(-15)
         
-        # Draw a line
         self.set_draw_color(200, 200, 200)
         self.line(10, self.get_y(), self.w - 10, self.get_y())
         
-        # Move below the line
         self.set_y(self.get_y() + 1)
         
-        # Inter italic 7
         self.set_font('Inter', 'I', 7)
         
-        # Text color in gray
         self.set_text_color(128, 128, 128)
         
-        # Page number on the right
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'R')
         
-        # Legal text
         legal_text = (
             "RCS Chambéry n° 837 746 528 - Orias n° 21008012 - www.orias.fr "
             "Conseil en Investissements Financiers membre de la CNCEF, chambre agréée par l'AMF - "
@@ -1070,16 +1053,13 @@ class PDF(FPDF):
             "Sous le contrôle de l'ACPR // Garantie Financière et Assurance Responsabilité Civile Professionnelle conformes au Code des Assurances"
         )
         
-        # Calculate the width of each line based on the page width
-        line_width = self.w - 20  # 10mm margin on each side
+        line_width = self.w - 20
         
-        # Calculate the height of the text
-        self.set_xy(10, self.h)  # Move to the bottom of the page
+        self.set_xy(10, self.h)
         total_height = self.get_y()
         self.multi_cell(line_width, 3, legal_text, 0, 'L')
         total_height = self.get_y() - total_height
         
-        # Reset position and actually print the text
         self.set_y(-15 - total_height)
         self.multi_cell(line_width, 3, legal_text, 0, 'L')
 
@@ -1088,14 +1068,13 @@ class PDF(FPDF):
         return len(lines.split('\n')) * 3
 
     def add_warning(self):
-        # Ajouter un espace entre le divider et l'avertissement
         self.ln(10)
         
         margin = 20
         self.set_left_margin(margin)
         self.set_right_margin(margin)
         
-        self.set_fill_color(240, 240, 240)  # Couleur de fond gris clair
+        self.set_fill_color(240, 240, 240)
         self.rect(margin, self.get_y(), self.w - 2*margin, 50, 'F')
         
         self.set_xy(margin + 5, self.get_y() + 5)
@@ -1112,14 +1091,12 @@ class PDF(FPDF):
                               "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
                               "sont pas stables dans le temps.", align='J')
         
-        
     def add_recap(self, params, objectives):
         self.add_page()
         self.set_font('Inter', 'B', 16)
         self.cell(0, 10, 'Récapitulatif de votre projet', 0, 1, 'C')
         self.ln(5)
 
-        # Informations du client
         self.set_font('Inter', 'B', 14)
         self.cell(0, 10, 'Informations du client', 0, 1, 'L')
         self.set_font('Inter', '', 12)
@@ -1127,13 +1104,11 @@ class PDF(FPDF):
         self.cell(0, 8, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
         self.cell(0, 8, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
 
-        # Versements
         self.ln(5)
         self.set_font('Inter', 'B', 14)
         self.cell(0, 10, 'Versements', 0, 1, 'L')
         self.set_font('Inter', '', 12)
 
-        # Versements libres
         if st.session_state.versements_libres:
             self.set_font('Inter', 'B', 12)
             self.cell(0, 8, "Versements libres :", 0, 1)
@@ -1141,7 +1116,6 @@ class PDF(FPDF):
             for vl in st.session_state.versements_libres:
                 self.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
 
-        # Modifications de versements
         if st.session_state.modifications_versements:
             self.set_font('Inter', 'B', 12)
             self.cell(0, 8, "Modifications de versements :", 0, 1)
@@ -1152,16 +1126,14 @@ class PDF(FPDF):
                 else:
                     self.cell(0, 8, f"Versements modifiés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}", 0, 1)
 
-        # Si aucun versement libre ou modification n'est défini
         if not st.session_state.versements_libres and not st.session_state.modifications_versements:
             self.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
-        # Objectifs
         self.ln(5)
         self.set_font('Inter', 'B', 14)
         self.cell(0, 10, 'Vos objectifs', 0, 1, 'L')
         self.set_font('Inter', '', 12)
-        for obj in objectifs:
+        for obj in objectives:
             self.set_font('Inter', 'B', 12)
             self.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)
             self.set_font('Inter', '', 12)
@@ -1169,39 +1141,33 @@ class PDF(FPDF):
             self.cell(0, 8, f"Durée : {obj['duree_retrait']} ans", 0, 1)
             self.cell(0, 8, f"Année de réalisation : {obj['annee']}", 0, 1)
             self.ln(5)
-        self.add_page()  # Add a new page after the recap
-    
+        self.add_page()
 
     def colored_table(self, headers, data, col_widths):
-        # Colors, line width and bold font
-        header_color = (240, 240, 240)  # Light gray for header
-        row_colors = [(255, 255, 255), (245, 245, 245)]  # White and light gray for alternating rows
+        header_color = (240, 240, 240)
+        row_colors = [(255, 255, 255), (245, 245, 245)]
         self.set_fill_color(*header_color)
         self.set_text_color(0)
         self.set_draw_color(128, 128, 128)
         self.set_line_width(0.3)
         self.set_font('Inter', 'B', 8)
 
-        # Calculate total width and position to center the table
         total_width = sum(col_widths)
         table_x = (self.w - total_width) / 2
 
-        # Table header
         self.set_x(table_x)
         for i, (header, width) in enumerate(zip(headers, col_widths)):
             self.cell(width, 10, header, 1, 0, 'C', 1)
         self.ln()
 
-        # Table data
         self.set_font('Inter', '', 8)
         row_height = 6
         page_rows = 0
         fill_index = 0
 
         for row in data:
-            if page_rows == 30:  # Start a new page after 30 rows
+            if page_rows == 30:
                 self.add_page()
-                # Reprint the header
                 self.set_x(table_x)
                 self.set_fill_color(*header_color)
                 self.set_font('Inter', 'B', 8)
@@ -1215,12 +1181,11 @@ class PDF(FPDF):
             self.set_x(table_x)
             self.set_fill_color(*row_colors[fill_index % 2])
             for i, (value, width) in enumerate(zip(row, col_widths)):
-                align = 'C' if i == 0 else 'R'  # Center-align the 'Année' column, right-align others
+                align = 'C' if i == 0 else 'R'
                 self.cell(width, row_height, str(value), 1, 0, align, 1)
             self.ln()
             fill_index += 1
             page_rows += 1
-
 
     def add_last_page(self):
         self.add_page()
@@ -1232,7 +1197,6 @@ class PDF(FPDF):
         self.set_font('Inter', '', 10)
         self.set_text_color(0, 0, 0)
 
-        # Contenu principal
         content = [
             "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité d'un acteur historique de l'assurance-vie. L'assurance-vie offre de nombreux avantages, parmi lesquels :",
             "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la transmission de votre patrimoine",
@@ -1243,22 +1207,14 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 5, paragraph, 0, 'L')
             self.ln(3)
 
-        # Encadré d'information
-        #self.set_fill_color(240, 240, 240)
         start_y = self.get_y()
-        self.set_xy(margin + 5, start_y + 5) #Ajout d'espace
+        self.set_xy(margin + 5, start_y + 5)
 
-        # Dessiner le rectangle en arrière-plan
-        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour la bordure
-        self.rect(margin, start_y, effective_width, 0, 'D')  # 'D' pour dessiner seulement le contour
-
-
-        # Réinitialiser la position pour écrire le contenu
-        #self.set_xy(margin, start_y)
-
+        self.set_draw_color(200, 200, 200)
+        self.rect(margin, start_y, effective_width, 0, 'D')
 
         self.set_font('Inter', 'B', 12)
-        self.cell(effective_width, 10, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1, 'L')
+        self.cell(effective_width, 10, "Pour en savoir plus sur la fiscalité de  l'assurance-vie", 0, 1, 'L')
         self.ln(5)
         self.set_font('Inter', '', 10)
 
@@ -1278,43 +1234,30 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 5, paragraph, 0, 'L')
             self.ln(3)
 
-        # Ajuster la hauteur de l'encadré
         end_y = self.get_y()
         self.rect(margin, start_y, effective_width, end_y - start_y, 'D')
 
-        # Repositionner le curseur pour continuer après l'encadré
         self.set_y(end_y + 5)
 
-        # Ajout du lien cliquable
         self.set_font('Inter', '', 10)
-        self.set_text_color(200, 80, 20)  # Couleur orange pour le lien
+        self.set_text_color(200, 80, 20)
         self.cell(0, 5, 'Pour en savoir plus, cliquez ici.', 0, 1, 'R', link="https://www.example.com")
 
-        # Pied de page avec logo
-        self.set_y(-30)  # 30 mm du bas
+        self.set_y(-30)
         self.set_font('Inter', 'B', 10)
         self.cell(effective_width / 2, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 0, 'L')
         
-        # Logo (ajusté à droite et plus petit)
         if self.logo_path:
-            self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)  # Largeur réduite à 20
+            self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
 
-
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import io
-
-def generate_pdf_report(resultats_df, params, img_buffers):
-    # Create the financial investment evolution chart
+def generate_chart1(resultats_df):
     fig1 = go.Figure()
 
-    # Assuming resultats_df contains the necessary data
     years = resultats_df['Année'].tolist()
     capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
     epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
     rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
 
-    # Add traces
     fig1.add_trace(go.Scatter(
         x=years, y=capital_fin_annee,
         mode='lines+markers',
@@ -1350,7 +1293,7 @@ def generate_pdf_report(resultats_df, params, img_buffers):
         yaxis=dict(
             gridcolor='lightgrey',
             zerolinecolor='lightgrey',
-            tickformat='.0f',  # Removed the comma
+            tickformat='.0f',
             ticksuffix=' €'
         ),
         xaxis=dict(
@@ -1358,14 +1301,13 @@ def generate_pdf_report(resultats_df, params, img_buffers):
             zerolinecolor='lightgrey'
         ),
         hovermode="x unified",
-        barmode='relative'  # Cela permet d'empiler les barres si nécessaire
+        barmode='relative'
     )
 
-
-    # Convert the chart to image
     img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
-    img_buffer1 = io.BytesIO(img_bytes1)
+    return io.BytesIO(img_bytes1)
 
+def generate_chart2(resultats_df):
     fig2 = go.Figure(go.Waterfall(
         name="Evolution du capital",
         orientation="v",
@@ -1386,17 +1328,9 @@ def generate_pdf_report(resultats_df, params, img_buffers):
     )
     
     img_bytes2 = fig2.to_image(format="png", width=700, height=400)
-    img_buffer2 = io.BytesIO(img_bytes2)
+    return io.BytesIO(img_bytes2)
 
-    # Données pour le PDF
-    data = [
-        ["Paramètre", "Valeur"],
-        ["Capital initial", f"{params['capital_initial']} €"],
-        ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
-    ]
-
-# Create the historical performance chart using the provided data
+def generate_chart3():
     fig3 = go.Figure()
     years = [2019, 2020, 2021, 2022, 2023]
     performances = [22.69, -0.80, 25.33, -12.17, 11.91]
@@ -1413,7 +1347,6 @@ def generate_pdf_report(resultats_df, params, img_buffers):
         name='Performance annuelle'
     ))
 
-    # Add a line for cumulative performance
     cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
     fig3.add_trace(go.Scatter(
         x=years,
@@ -1457,7 +1390,6 @@ def generate_pdf_report(resultats_df, params, img_buffers):
         hovermode="x unified"
     )
 
-    # Add annotations
     total_cumulative_performance = cumulative_performance[-1]
     fig3.add_annotation(
         x=0.5, y=1.15,
@@ -1467,7 +1399,6 @@ def generate_pdf_report(resultats_df, params, img_buffers):
         font=dict(size=16, color='#1E3A8A', weight='bold')
     )
 
-    # Improve hover information
     fig3.update_traces(
         hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
         selector=dict(type='bar')
@@ -1477,29 +1408,32 @@ def generate_pdf_report(resultats_df, params, img_buffers):
         selector=dict(type='scatter')
     )
 
-    # Convert the new chart to image
     img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
-    img_buffer3 = io.BytesIO(img_bytes3)
+    return io.BytesIO(img_bytes3)
+
+def generate_pdf_report(resultats_df, params, img_buffers):
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
+    ]
     
-    # Generate PDF with all three charts
-    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params)
+    pdf_bytes = create_pdf(data, img_buffers, resultats_df, params)
     
     return pdf_bytes
 
 def format_value(value):
     if isinstance(value, (int, float)):
-        # Formatage avec séparateur de milliers et deux décimales
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
         return f"{formatted} €"
     elif isinstance(value, str):
-        # Si la valeur est déjà une chaîne, essayez de la convertir en nombre
         try:
             num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
-            return format_value(num_value)  # Appel récursif avec la valeur numérique
+            return format_value(num_value)
         except ValueError:
-            return value  # Si la conversion échoue, retournez la chaîne d'origine
+            return value
     return str(value)
-
 
 def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
@@ -1523,38 +1457,30 @@ def create_detailed_table(pdf, resultats_df):
         for _, row in resultats_df.iterrows()
     ]
 
-    #table_width = sum(col_widths)
-    #table_x = (pdf.w - table_width) / 2
-    #pdf.set_x(table_x)
-
     pdf.colored_table(headers, data, col_widths)
     
-# Modification de la fonction create_pdf pour accepter plusieurs images
 def create_pdf(data, img_buffers, resultats_df, params):
     logo_path = os.path.expanduser("/Users/boubs/Downloads/Logo1.png")    
     pdf = PDF(logo_path)
-    left_margin = 20  # Définir la marge gauche
+    left_margin = 20
     pdf.set_left_margin(left_margin)
     pdf.alias_nb_pages()
     pdf.add_page()
-    pdf.add_warning()  # Ajout de l'avertissement en première page
-    pdf.ln(20)  # Ajoute 20 unités d'espace après l'avertissement
+    pdf.add_warning()
+    pdf.ln(20)
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    for img_buffer in img_buffers:  # Correction ici (img_buffers au lieu de images)
-        # Sauvegarde de l'image temporairement sur le disque
+    for img_buffer in img_buffers:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            tmpfile.write(img_buffer.getvalue())  # Sauvegarde du buffer d'image dans un fichier temporaire
+            tmpfile.write(img_buffer.getvalue())
             tmpfile.flush()
             
-            # Ajout de l'image à partir du fichier temporaire
             pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
-    # Informations du client
     pdf.set_font('Inter', 'B', 14)
-    pdf.set_x(left_margin)  # Positionner le curseur à la marge gauche
+    pdf.set_x(left_margin)
     pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
-    pdf.ln(5)  # Ajouter un peu d'espace après le titre
+    pdf.ln(5)
 
     pdf.set_font('Inter', '', 12)
     info_text = [
@@ -1565,10 +1491,9 @@ def create_pdf(data, img_buffers, resultats_df, params):
     ]
 
     for line in info_text:
-        pdf.set_x(left_margin)  # Positionner le curseur à la marge gauche pour chaque ligne
+        pdf.set_x(left_margin)
         pdf.cell(0, 8, line, 0, 1, 'L')
 
-    # Résumé des résultats
     pdf.add_page()
     pdf.set_font('Inter', 'B', 14)
     pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
@@ -1584,28 +1509,24 @@ def create_pdf(data, img_buffers, resultats_df, params):
     
     pdf.multi_cell(0, 10, resume_text)
 
-    # Créer la liste des objectifs
     objectives = [
         {
             'name': 'Objectif principal',
             'annual_withdrawal': params.get('montant_retrait_annuel', 'Non spécifié'),
-            'duration': params.get('objectif_annee', 'Non spécifiée'),  # Utilisation de 'objectif_annee' au lieu de 'duree'
+            'duration': params.get('objectif_annee', 'Non spécifiée'),
             'start_date': params.get('date_debut_retrait', 'Non spécifiée')
         }
     ]
     
-    # Ajouter le récapitulatif
     pdf.add_recap(params, objectives)
     
-
-   # Graphiques
-    for i, img_buffer in enumerate(img_buffers):  # Correction ici (img_buffers)
+    for i, img_buffer in enumerate(img_buffers):
         pdf.add_page()
-        if i == 2:  # For the third chart (historical performance)
+        if i == 2:
             pdf.set_font('Inter', 'B', 14)
             pdf.cell(0, 10, 'Performances historiques', 0, 1)
             pdf.set_font('Inter', '', 12)
-            pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+            pdf.multi_cell(0,  5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
                                  'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
                                  "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
                                  "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
@@ -1616,14 +1537,12 @@ def create_pdf(data, img_buffers, resultats_df, params):
     
     create_detailed_table(pdf, resultats_df)
 
-    # Add a note about the table
     pdf.set_xy(10, pdf.get_y() + 10)
     pdf.set_font('Inter', 'I', 8)
     pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
                          "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
                          "Les valeurs sont arrondies à deux décimales près.")
 
-    # Avertissement légal stylisé
     pdf.add_page()
     pdf.set_fill_color(240, 240, 240)
     pdf.set_draw_color(200, 200, 200)
@@ -1644,14 +1563,16 @@ def create_pdf(data, img_buffers, resultats_df, params):
 
     return pdf.output(dest='S')
 
-
-
-# Votre fonction main() existante reste inchangée
 def main():
+    global resultats_df, params
+    
+    # Générez vos graphiques et obtenez les buffers d'image
+    img_buffer1 = generate_chart1(resultats_df)
+    img_buffer2 = generate_chart2(resultats_df)
+    img_buffer3 = generate_chart3()
+
     # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        # Assure-toi que les variables img_buffer1, img_buffer2, et img_buffer3 existent
-        # et contiennent les images/buffers générés précédemment dans ton code
         pdf_bytes = generate_pdf_report(resultats_df, params, img_buffers=[img_buffer1, img_buffer2, img_buffer3])
         
         # Créer un lien de téléchargement pour le PDF
