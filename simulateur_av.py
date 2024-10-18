@@ -1135,10 +1135,10 @@ class PDF(FPDF):
         self.set_font('Inter', '', 12)
         for obj in objectives:
             self.set_font('Inter', 'B', 12)
-            self.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)
+            self.cell(0, 8, f"Objectif : {obj['nom']}", 0, 1)  # Changé de 'name' à 'nom'
             self.set_font('Inter', '', 12)
             self.cell(0, 8, f"Montant annuel de retrait : {obj['montant_annuel']} €", 0, 1)
-            self.cell(0, 8, f"Durée : {obj['duree_retrait']} ans", 0, 1)
+            self.cell(0, 8, f"Durée : {obj['duree']} ans", 0, 1)
             self.cell(0, 8, f"Année de réalisation : {obj['annee']}", 0, 1)
             self.ln(5)
         self.add_page()
