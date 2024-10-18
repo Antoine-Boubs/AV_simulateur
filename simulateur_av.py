@@ -1007,7 +1007,6 @@ class ImprovedPDF(FPDF):
         if self.logo_path and os.path.exists(self.logo_path):
             try:
                 self.image(self.logo_path, 10, 8, 30)
-                self.link(10, 8, 30, 30, "https://www.antoineberjoan.com")
             except Exception as e:
                 print(f"Error loading logo: {e}")
         
@@ -1019,8 +1018,6 @@ class ImprovedPDF(FPDF):
         self.set_font_safe('', 12)
         self.set_text_color(100, 100, 100)
         self.cell(0, 10, 'Conseiller en investissement', 0, 0, 'R')
-        
-        self.styled_button('Prendre RDV', 'https://app.lemcal.com/@antoineberjoan', self.w - 60, 8, 50, 15)
         
         self.ln(15)
         self.set_draw_color(200, 200, 200)
@@ -1051,28 +1048,14 @@ class ImprovedPDF(FPDF):
             self.rect(x, y, w, h, 'FD')
 
     def footer(self):
-        self.set_y(-25)
-        
-        self.set_draw_color(200, 200, 200)
-        self.line(10, self.get_y(), self.w - 10, self.get_y())
-        
-        self.set_y(self.get_y() + 1)
-        
-        self.set_font_safe('I', 7)
-        self.set_text_color(128, 128, 128)
-        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'R')
-        
-        legal_text = (
-            "RCS Chambéry n° 837 746 528 - Orias n° 21008012 - www.orias.fr "
-            "Conseil en Investissements Financiers membre de la CNCEF, chambre agréée par l'AMF - "
-            "Mandataire d'intermédiaire en assurance - Mandataire d'intermédiaire en opérations de banque et services de paiement "
-            "Transactions sur Immeubles sans réception de fonds Carte n° CPI34022017000021580 délivrée par la CCI de Hérault "
-            "Sous le contrôle de l'ACPR // Garantie Financière et Assurance Responsabilité Civile Professionnelle conformes au Code des Assurances"
-        )
-        
-        self.set_font_safe('I', 6)
         self.set_y(-20)
-        self.multi_cell(0, 3, legal_text, 0, 'C')
+        self.set_font_safe('I', 8)
+        self.set_text_color(128)
+        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+        
+        legal_text = "RCS Chambéry n° 837 746 528 - Orias n° 21008012 - www.orias.fr"
+        self.set_y(-15)
+        self.cell(0, 10, legal_text, 0, 0, 'C')
 
     def chapter_title(self, title):
         self.set_font_safe('B', 16)
@@ -1088,29 +1071,14 @@ class ImprovedPDF(FPDF):
         self.ln()
 
     def add_warning(self):
-        self.ln(10)
-        
-        margin = 20
-        self.set_left_margin(margin)
-        self.set_right_margin(margin)
-        
         self.set_fill_color(251, 191, 36)
-        self.rect(margin, self.get_y(), self.w - 2*margin, 50, 'F')
-        
-        self.set_xy(margin + 5, self.get_y() + 5)
-        self.set_font_safe('B', 12)
-        self.set_text_color(255, 255, 255)
-        self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
-        
-        self.set_xy(margin + 5, self.get_y())
-        self.set_font_safe('', 10)
         self.set_text_color(0)
-        self.multi_cell(self.w - 2*margin - 10, 5, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports "
-                              "en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à "
-                              "fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés "
-                              "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
-                              "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
-                              "sont pas stables dans le temps.", align='J')
+        self.set_font_safe('B', 12)
+        self.cell(0, 10, 'AVERTISSEMENT', 1, 1, 'C', 1)
+        self.set_font_safe('', 10)
+        self.multi_cell(0, 5, "Les performances passées ne préjugent pas des performances futures. "
+                              "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement.")
+        self.ln(5)
 
     def add_recap(self, params, objectives):
         self.add_page()
@@ -1197,12 +1165,8 @@ class ImprovedPDF(FPDF):
             for i, item in enumerate(row):
                 col_widths[i] = max(col_widths[i], self.get_string_width(str(item)) + 6)
 
-        total_width = sum(col_widths)
-        table_x = (self.w - total_width) / 2
-
-        self.set_x(table_x)
-        for i, (header, width) in enumerate(zip(headers, col_widths)):
-            self.cell(width, 7, header, 1, 0, 'C', 1)
+        for i, header in enumerate(headers):
+            self.cell(col_widths[i], 7, header, 1, 0, 'C', 1)
         self.ln()
 
         self.set_font_safe('', 9)
@@ -1212,10 +1176,8 @@ class ImprovedPDF(FPDF):
                 self.set_fill_color(245, 245, 245)
             else:
                 self.set_fill_color(255, 255, 255)
-            self.set_x(table_x)
-            for j, (value, width) in enumerate(zip(row, col_widths)):
-                align = 'C' if j == 0 else 'R'
-                self.cell(width, 6, str(value), 1, 0, align, 1)
+            for j, item in enumerate(row):
+                self.cell(col_widths[j], 6, str(item), 1, 0, 'C', 1)
             self.ln()
 
     def add_last_page(self):
@@ -1501,7 +1463,6 @@ def create_improved_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.chapter_title("Simulation Financière Personnalisée")
     pdf.chapter_body("Ce rapport présente une simulation détaillée de votre investissement financier, basée sur les paramètres que vous avez fournis et nos projections de marché.")
-
     pdf.add_warning()
 
     info_list = [
