@@ -1417,33 +1417,76 @@ def generate_chart3():
         y=performances,
         text=[f"{p:+.2f}%" for p in performances],
         textposition='outside',
-        marker_color=['#4CAF50' if p >= 0 else '#FF3B30' for p in performances],
+        marker_color=['#4CAF50' if p >= 0 else '#F44336' for p in performances],
         marker_line_color='rgba(0,0,0,0.5)',
         marker_line_width=1.5,
         opacity=0.8,
         name='Performance annuelle'
     ))
 
+    cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
+    fig3.add_trace(go.Scatter(
+        x=years,
+        y=cumulative_performance,
+        mode='lines+markers',
+        name='Performance cumulée',
+        line=dict(color='#FFA500', width=3),
+        marker=dict(size=8, symbol='diamond', line=dict(width=2, color='DarkSlateGrey')),
+        yaxis='y2'
+    ))
+
     fig3.update_layout(
+        title={
+            'text': 'Performances historiques',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, color='#1E3A8A')
+        },
         xaxis_title='Année',
         yaxis_title='Performance annuelle (%)',
+        yaxis2=dict(
+            title='Performance cumulée (%)',
+            overlaying='y',
+            side='right',
+            showgrid=False
+        ),
         plot_bgcolor='rgba(240,240,240,0.5)',
         paper_bgcolor='white',
         yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
         xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
-        margin=dict(l=50, r=50, t=50, b=50),
-        hovermode="x unified",
-        font=dict(family='Inter, sans-serif')
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=50, r=50, t=80, b=50),
+        hovermode="x unified"
+    )
+
+    total_cumulative_performance = cumulative_performance[-1]
+    fig3.add_annotation(
+        x=0.5, y=1.15,
+        xref='paper', yref='paper',
+        text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
+        showarrow=False,
+        font=dict(size=16, color='#1E3A8A', weight='bold')
     )
 
     fig3.update_traces(
         hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
         selector=dict(type='bar')
     )
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance cumulée:</b> %{y:.2f}%<extra></extra>",
+        selector=dict(type='scatter')
+    )
 
-    img_bytes3 = fig3.to_image(format="png", width=800, height=400, scale=2)
+    img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
     return io.BytesIO(img_bytes3)
-
 def create_performance_page(pdf, params):
     pdf.add_page()
     
