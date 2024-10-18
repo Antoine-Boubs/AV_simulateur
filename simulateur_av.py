@@ -1718,18 +1718,16 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         print(f"Warning: Logo file not found at {logo_path}")
         logo_path = None
 
-    pdf = ImprovedPDF(logo_path)
+    pdf = PDF(logo_path)
     left_margin = 20
     pdf.set_left_margin(left_margin)
-    pdf.set_right_margin(left_margin)
     pdf.alias_nb_pages()
     pdf.add_page()
     pdf.add_warning()
     pdf.ln(20)
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Ajoutez les deux premiers graphiques comme avant
-    for i, img_buffer in enumerate(img_buffers[:2]):
+    for i, img_buffer in enumerate(img_buffers):
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
                 img = Image.open(img_buffer)
@@ -1737,45 +1735,91 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                 tmpfile.flush()
                 
                 pdf.add_page()
-                pdf.image(tmpfile.name, x=left_margin, y=pdf.get_y()+10, w=pdf.w - 2*left_margin)
+                if i == 2:  # Pour le troisième graphique (performances historiques)
+                    pdf.set_font_safe('Inter', 'B', 14)
+                    pdf.cell(0, 10, 'Performances historiques', 0, 1)
+                    pdf.set_font_safe('Inter', '', 12)
+                    pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                                         'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                                         "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                                         "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                                         "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                                         'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                                         'performances supérieures.')
+                pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
         except Exception as e:
             print(f"Error adding image to PDF: {e}")
 
-    # Ajoutez la nouvelle page de performance
-    create_performance_page(pdf, params)
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.set_x(left_margin)
+    pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
+    pdf.ln(5)
+
+    pdf.set_font_safe('Inter', '', 12)
+    info_text = [
+        f"Capital initial : {params['capital_initial']} €",
+        f"Versement mensuel : {params['versement_mensuel']} €",
+        f"Rendement annuel : {params['rendement_annuel']*100:.2f}%",
+        f"Durée de simulation : {len(resultats_df)} ans"
+    ]
+
+    for line in info_text:
+        pdf.set_x(left_margin)
+        pdf.cell(0, 8, line, 0, 1, 'L')
 
     pdf.add_page()
-    pdf.chapter_title("Paramètres de votre simulation")
-    info_list = [
-        ("Capital initial", f"{params['capital_initial']} €"),
-        ("Versement mensuel", f"{params['versement_mensuel']} €"),
-        ("Rendement annuel estimé", f"{params['rendement_annuel']*100:.2f}%"),
-        ("Durée de simulation", f"{len(resultats_df)} ans")
-    ]
-    pdf.add_info_section("Paramètres de votre simulation", info_list)
-
-    pdf.add_page()
-    pdf.chapter_title("Projection détaillée année par année")
-    headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
-    col_widths = [20, 40, 40, 40, 40, 40, 40, 40, 40]
-    table_data = [
-        [row['Année'], 
-         format_value(row['Capital initial (NET)']),
-         format_value(row['VP NET']),
-         format_value(row['Rendement']),
-         format_value(row['Frais de gestion']),
-         format_value(row.get('Rachat', 0)),
-         format_value(row.get('Fiscalite', 0)),
-         format_value(row.get('Rachat net', 0)),
-         format_value(row['Capital fin d\'année (NET)'])]
-        for _, row in resultats_df.iterrows()
-    ]
-    pdf.colored_table(headers, table_data, col_widths)
-
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
+    pdf.set_font_safe('Inter', '', 12)
+    
+    derniere_annee = resultats_df.iloc[-1]
+    capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
+    epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
+    gains_totaux = capital_final - epargne_investie
+    
+    resume_text = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
+    resume_text += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
+    resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
+    
+    pdf.multi_cell(0, 10, resume_text)
+    
     pdf.add_recap(params, objectives)
+    
+    create_detailed_table(pdf, resultats_df)
+
+    pdf.set_xy(10, pdf.get_y() + 10)
+    pdf.set_font_safe('Inter', 'I', 8)
+    pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
+                         "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
+                         "Les valeurs sont arrondies à deux décimales près.")
+
+    pdf.add_page()
+    pdf.set_fill_color(240, 240, 240)
+    pdf.set_draw_color(200, 200, 200)
+    pdf.set_font_safe('Inter', 'B', 12)
+    pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
+    pdf.set_font_safe('Inter', 'I', 10)
+    pdf.set_text_color(80, 80, 80)
+    disclaimer_text = (
+        "Les performances passées ne préjugent pas des performances futures. "
+        "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. "
+        "Les résultats présentés sont des estimations potentielles destinées à faciliter la compréhension "
+        "du développement de votre patrimoine. Nous vous recommandons de consulter un professionnel "
+        "qualifié avant de prendre toute décision d'investissement."
+    )
+    pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
+
+    create_performance_page(pdf, params)
+    
     pdf.add_last_page()
 
-    return pdf.output(dest='S').encode('latin-1', errors='replace')
+    try:
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
+    except UnicodeEncodeError:
+        print("Warning: Some characters could not be encoded. They will be replaced.")
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
+
+    return pdf_output
 
 
 def main():
