@@ -1541,6 +1541,14 @@ def create_pdf(data, img_buffers, resultats_df, params):
     pdf.ln(20)  # Ajoute 20 unités d'espace après l'avertissement
     pdf.set_auto_page_break(auto=True, margin=15)
 
+    for img_buffer in images:
+        # Sauvegarde de l'image temporairement sur le disque
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+            tmpfile.write(img_buffer.getvalue())  # Sauvegarde du buffer d'image dans un fichier temporaire
+            tmpfile.flush()
+            
+            # Ajout de l'image à partir du fichier temporaire
+            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
     # Informations du client
     pdf.set_font('Inter', 'B', 14)
