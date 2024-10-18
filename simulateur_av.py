@@ -1440,17 +1440,19 @@ def generate_chart3():
     img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
     return io.BytesIO(img_bytes3)
 
-def generate_pdf_report(resultats_df, params):
+def generate_pdf_report(resultats_df, params, objectives):
+    print("Entering generate_pdf_report")
+    print(f"resultats_df shape: {resultats_df.shape}")
+    print(f"params: {params}")
+    print(f"objectives: {objectives}")
+    
     # Create the financial investment evolution chart
     fig1 = go.Figure()
-
-    # Assuming resultats_df contains the necessary data
     years = resultats_df['Année'].tolist()
     capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
     epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
     rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
 
-    # Add traces
     fig1.add_trace(go.Scatter(
         x=years, y=capital_fin_annee,
         mode='lines+markers',
@@ -1486,7 +1488,7 @@ def generate_pdf_report(resultats_df, params):
         yaxis=dict(
             gridcolor='lightgrey',
             zerolinecolor='lightgrey',
-            tickformat='.0f',  # Removed the comma
+            tickformat='.0f',
             ticksuffix=' €'
         ),
         xaxis=dict(
@@ -1494,14 +1496,14 @@ def generate_pdf_report(resultats_df, params):
             zerolinecolor='lightgrey'
         ),
         hovermode="x unified",
-        barmode='relative'  # Cela permet d'empiler les barres si nécessaire
+        barmode='relative'
     )
 
-
-    # Convert the chart to image
     img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
     img_buffer1 = io.BytesIO(img_bytes1)
+    img_buffer1.seek(0)  # Rembobiner le buffer
 
+    # Create the second chart (waterfall)
     fig2 = go.Figure(go.Waterfall(
         name="Evolution du capital",
         orientation="v",
@@ -1520,19 +1522,12 @@ def generate_pdf_report(resultats_df, params):
         plot_bgcolor='white',
         yaxis=dict(gridcolor='#8DB3C5')
     )
-    
+
     img_bytes2 = fig2.to_image(format="png", width=700, height=400)
     img_buffer2 = io.BytesIO(img_bytes2)
+    img_buffer2.seek(0)  # Rembobiner le buffer
 
-    # Données pour le PDF
-    data = [
-        ["Paramètre", "Valeur"],
-        ["Capital initial", f"{params['capital_initial']} €"],
-        ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100}%"],
-    ]
-
-# Create the historical performance chart using the provided data
+    # Create the third chart (historical performance)
     fig3 = go.Figure()
     years = [2019, 2020, 2021, 2022, 2023]
     performances = [22.69, -0.80, 25.33, -12.17, 11.91]
@@ -1549,7 +1544,6 @@ def generate_pdf_report(resultats_df, params):
         name='Performance annuelle'
     ))
 
-    # Add a line for cumulative performance
     cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
     fig3.add_trace(go.Scatter(
         x=years,
@@ -1593,7 +1587,6 @@ def generate_pdf_report(resultats_df, params):
         hovermode="x unified"
     )
 
-    # Add annotations
     total_cumulative_performance = cumulative_performance[-1]
     fig3.add_annotation(
         x=0.5, y=1.15,
@@ -1603,7 +1596,6 @@ def generate_pdf_report(resultats_df, params):
         font=dict(size=16, color='#1E3A8A', weight='bold')
     )
 
-    # Improve hover information
     fig3.update_traces(
         hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
         selector=dict(type='bar')
@@ -1613,33 +1605,51 @@ def generate_pdf_report(resultats_df, params):
         selector=dict(type='scatter')
     )
 
-    # Convert the new chart to image
     img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
     img_buffer3 = io.BytesIO(img_bytes3)
-    
-    # Generate PDF with all three charts
-    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params)
-    
+    img_buffer3.seek(0)  # Rembobiner le buffer
+
+     # Add objectives information to data
+    for i, obj in enumerate(objectives, start=1):
+        data.extend([
+            [f"Objectif {i} - Nom", obj['nom']],
+            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
+            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
+            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
+        ])
+
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
+    ]
+
+    # Générer les graphiques
+    img_buffer1 = generate_chart1(resultats_df)
+    img_buffer2 = generate_chart2(resultats_df)
+    img_buffer3 = generate_chart3()
+
+    # Créer le PDF
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
+
     return pdf_bytes
 
 def format_value(value):
     if isinstance(value, (int, float)):
-        # Formatage avec séparateur de milliers et deux décimales
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
         return f"{formatted} €"
     elif isinstance(value, str):
-        # Si la valeur est déjà une chaîne, essayez de la convertir en nombre
         try:
             num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
-            return format_value(num_value)  # Appel récursif avec la valeur numérique
+            return format_value(num_value)
         except ValueError:
-            return value  # Si la conversion échoue, retournez la chaîne d'origine
+            return value
     return str(value)
-
 
 def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
-    pdf.set_font('Inter', 'B', 14)
+    pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
     pdf.ln(5)
 
@@ -1659,32 +1669,55 @@ def create_detailed_table(pdf, resultats_df):
         for _, row in resultats_df.iterrows()
     ]
 
-    #table_width = sum(col_widths)
-    #table_x = (pdf.w - table_width) / 2
-    #pdf.set_x(table_x)
-
     pdf.colored_table(headers, data, col_widths)
     
-# Modification de la fonction create_pdf pour accepter plusieurs images
-def create_pdf(data, img_buffers, resultats_df, params):
-    logo_path = os.path.expanduser("/Users/boubs/Downloads/Logo1.png")    
+import tempfile
+from PIL import Image
+
+def create_pdf(data, img_buffers, resultats_df, params, objectives):
+    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
+    if not os.path.exists(logo_path):
+        print(f"Warning: Logo file not found at {logo_path}")
+        logo_path = None
+
     pdf = PDF(logo_path)
-    left_margin = 20  # Définir la marge gauche
+    left_margin = 20
     pdf.set_left_margin(left_margin)
     pdf.alias_nb_pages()
     pdf.add_page()
-    pdf.add_warning()  # Ajout de l'avertissement en première page
-    pdf.ln(20)  # Ajoute 20 unités d'espace après l'avertissement
+    pdf.add_warning()
+    pdf.ln(20)
     pdf.set_auto_page_break(auto=True, margin=15)
 
+    for i, img_buffer in enumerate(img_buffers):
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+                img = Image.open(img_buffer)
+                img.save(tmpfile.name, format="PNG")
+                tmpfile.flush()
+                
+                pdf.add_page()
+                if i == 2:  # Pour le troisième graphique (performances historiques)
+                    pdf.set_font_safe('Inter', 'B', 14)
+                    pdf.cell(0, 10, 'Performances historiques', 0, 1)
+                    pdf.set_font_safe('Inter', '', 12)
+                    pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                                         'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                                         "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                                         "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                                         "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                                         'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                                         'performances supérieures.')
+                pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+        except Exception as e:
+            print(f"Error adding image to PDF: {e}")
 
-    # Informations du client
-    pdf.set_font('Inter', 'B', 14)
-    pdf.set_x(left_margin)  # Positionner le curseur à la marge gauche
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.set_x(left_margin)
     pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
-    pdf.ln(5)  # Ajouter un peu d'espace après le titre
+    pdf.ln(5)
 
-    pdf.set_font('Inter', '', 12)
+    pdf.set_font_safe('Inter', '', 12)
     info_text = [
         f"Capital initial : {params['capital_initial']} €",
         f"Versement mensuel : {params['versement_mensuel']} €",
@@ -1693,14 +1726,14 @@ def create_pdf(data, img_buffers, resultats_df, params):
     ]
 
     for line in info_text:
-        pdf.set_x(left_margin)  # Positionner le curseur à la marge gauche pour chaque ligne
+        pdf.set_x(left_margin)
         pdf.cell(0, 8, line, 0, 1, 'L')
 
-    # Résumé des résultats
     pdf.add_page()
-    pdf.set_font('Inter', 'B', 14)
+    pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
-    pdf.set_font('Inter', '', 12)
+    pdf.set_font_safe('Inter', '', 12)
+    
     derniere_annee = resultats_df.iloc[-1]
     capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
     epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
@@ -1711,54 +1744,23 @@ def create_pdf(data, img_buffers, resultats_df, params):
     resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
     
     pdf.multi_cell(0, 10, resume_text)
-
-    # Créer la liste des objectifs
-    objectives = [
-        {
-            'name': 'Objectif principal',
-            'annual_withdrawal': params.get('montant_retrait_annuel', 'Non spécifié'),
-            'duration': params.get('objectif_annee', 'Non spécifiée'),  # Utilisation de 'objectif_annee' au lieu de 'duree'
-            'start_date': params.get('date_debut_retrait', 'Non spécifiée')
-        }
-    ]
     
-    # Ajouter le récapitulatif
     pdf.add_recap(params, objectives)
-    
-
-   # Graphiques
-    for i, img_buffer in enumerate(img_buffers):
-        pdf.add_page()
-        if i == 2:  # For the third chart (historical performance)
-            pdf.set_font('Inter', 'B', 14)
-            pdf.cell(0, 10, 'Performances historiques', 0, 1)
-            pdf.set_font('Inter', '', 12)
-            pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
-                                 'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
-                                 "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
-                                 "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
-                                 "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
-                                 'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
-                                 'performances supérieures.')
-        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
-    
     
     create_detailed_table(pdf, resultats_df)
 
-    # Add a note about the table
     pdf.set_xy(10, pdf.get_y() + 10)
-    pdf.set_font('Inter', 'I', 8)
+    pdf.set_font_safe('Inter', 'I', 8)
     pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
                          "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
                          "Les valeurs sont arrondies à deux décimales près.")
 
-    # Avertissement légal stylisé
     pdf.add_page()
     pdf.set_fill_color(240, 240, 240)
     pdf.set_draw_color(200, 200, 200)
-    pdf.set_font('Inter', 'B', 12)
+    pdf.set_font_safe('Inter', 'B', 12)
     pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
-    pdf.set_font('Inter', 'I', 10)
+    pdf.set_font_safe('Inter', 'I', 10)
     pdf.set_text_color(80, 80, 80)
     disclaimer_text = (
         "Les performances passées ne préjugent pas des performances futures. "
@@ -1771,21 +1773,30 @@ def create_pdf(data, img_buffers, resultats_df, params):
 
     pdf.add_last_page()
 
-    return pdf.output(dest='S')
+    try:
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
+    except UnicodeEncodeError:
+        print("Warning: Some characters could not be encoded. They will be replaced.")
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
+
+    return pdf_output
 
 
-# Votre fonction main() existante reste inchangée
 def main():
-    # Votre code existant pour l'interface utilisateur Streamlit et la génération des données
+    global resultats_df, params
 
     # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        pdf_bytes = generate_pdf_report(resultats_df, params)
-        
-        # Créer un lien de téléchargement pour le PDF
-        b64 = base64.b64encode(pdf_bytes).decode()
-        href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
-        st.markdown(href, unsafe_allow_html=True)
+        try:
+            pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
+            
+            # Créer un lien de téléchargement pour le PDF
+            b64 = base64.b64encode(pdf_bytes).decode()
+            href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
+            st.markdown(href, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
+            print(f"Detailed error: {e}")
 
 if __name__ == "__main__":
     main()
