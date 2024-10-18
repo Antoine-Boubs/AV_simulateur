@@ -1765,7 +1765,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.add_last_page()
 
-try:
+    try:
         pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
     except UnicodeEncodeError:
         print("Warning: Some characters could not be encoded. They will be replaced.")
