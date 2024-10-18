@@ -1632,18 +1632,67 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_warning()
     pdf.ln(10)
 
-    # Informations client
-    pdf.set_font_safe('Inter', 'B', 16)
-    pdf.cell(0, 10, 'Informations du client', 0, 1)
-    pdf.set_font_safe('Inter', '', 12)
-    
-    # Utilisation de la méthode get() pour éviter les erreurs si une clé est manquante
-    pdf.cell(0, 8, f"Nom : {params.get('nom_client', 'Non spécifié')}", 0, 1)
-    pdf.cell(0, 8, f"Date du rapport : {params.get('date_rapport', 'Non spécifiée')}", 0, 1)
-    pdf.cell(0, 8, f"Capital initial : {params.get('capital_initial', 'Non spécifié')} €", 0, 1)
-    pdf.cell(0, 8, f"Versement mensuel : {params.get('versement_mensuel', 'Non spécifié')} €", 0, 1)
+    def create_pdf(data, img_buffers, resultats_df, params, objectives):
+    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
+    if not os.path.exists(logo_path):
+        print(f"Warning: Logo file not found at {logo_path}")
+        logo_path = None
 
-    # Encadré pour les objectifs de l'investisseur
+    pdf = PDF(logo_path)
+    left_margin = 20
+    pdf.set_left_margin(left_margin)
+    pdf.alias_nb_pages()
+    pdf.add_page()
+
+    # Avertissement
+    pdf.add_warning()
+    pdf.ln(10)
+
+    # Informations du client
+    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.cell(0, 10, 'Paramètres de la simulation', 0, 1)
+    pdf.ln(5)
+
+    pdf.set_font_safe('Inter', '', 12)
+    pdf.set_fill_color(245, 245, 247)  # Couleur de fond légère inspirée d'Apple
+
+    # Fonction pour ajouter une ligne d'information
+    def add_info_line(label, value):
+        pdf.set_fill_color(245, 245, 247)
+        pdf.cell(60, 8, label, 0, 0, 'L', 1)
+        pdf.set_fill_color(255, 255, 255)
+        pdf.cell(0, 8, str(value), 0, 1, 'L', 1)
+
+    # Ajout de toutes les informations du sidebar
+    add_info_line("Capital initial :", f"{params.get('capital_initial', 'Non spécifié')} €")
+    add_info_line("Versement mensuel :", f"{params.get('versement_mensuel', 'Non spécifié')} €")
+    add_info_line("Rendement annuel :", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié")
+    add_info_line("Durée de simulation :", f"{params.get('duree_simulation', 'Non spécifié')} ans")
+    add_info_line("Frais de gestion :", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
+    
+    # Ajout des versements libres s'ils existent
+    if 'versements_libres' in params and params['versements_libres']:
+        pdf.ln(5)
+        pdf.set_font_safe('Inter', 'B', 12)
+        pdf.cell(0, 8, "Versements libres :", 0, 1)
+        pdf.set_font_safe('Inter', '', 12)
+        for vl in params['versements_libres']:
+            add_info_line(f"Année {vl['annee']} :", f"{vl['montant']} €")
+
+    # Ajout des modifications de versements s'ils existent
+    if 'modifications_versements' in params and params['modifications_versements']:
+        pdf.ln(5)
+        pdf.set_font_safe('Inter', 'B', 12)
+        pdf.cell(0, 8, "Modifications de versements :", 0, 1)
+        pdf.set_font_safe('Inter', '', 12)
+        for mv in params['modifications_versements']:
+            if mv['montant'] == 0:
+                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", "Versements arrêtés")
+            else:
+                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", f"Modifiés à {mv['montant']} €")
+
+    pdf.ln(10)
+
     # Objectifs de l'investisseur
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
@@ -1663,6 +1712,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         card_width = (pdf.w - 2*left_margin - 10) / 2  # 2 cartes par ligne avec un espace de 10 entre elles
         card_height = 80
         card_margin = 5
+        corner_radius = 5  # Rayon des coins arrondis
         x_positions = [left_margin, left_margin + card_width + 10]
         current_x = 0
         current_y = pdf.get_y()
@@ -1670,9 +1720,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         for i, obj in enumerate(objectives):
             color = colors[i % len(colors)]
             pdf.set_fill_color(*color)
+            pdf.set_draw_color(*color)
             pdf.set_text_color(255, 255, 255)  # Texte blanc pour contraste
 
-            pdf.rect(x_positions[current_x], current_y, card_width, card_height, 'F')
+            # Dessiner un rectangle arrondi
+            pdf.rounded_rect(x_positions[current_x], current_y, card_width, card_height, corner_radius, 'F')
 
             pdf.set_xy(x_positions[current_x] + card_margin, current_y + card_margin)
             pdf.set_font_safe('Inter', 'B', 12)
