@@ -1853,7 +1853,7 @@ def main():
                 # Mettre à jour le nom du client dans les paramètres
                 params['nom_client'] = prenom
                 
-                pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
+                pdf_bytes = create_pdf(st.session_state, img_buffers, resultats_df, logo_path)
                 
                 # Créer un lien de téléchargement pour le PDF
                 b64 = base64.b64encode(pdf_bytes).decode()
