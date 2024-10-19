@@ -1789,9 +1789,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     if objectives:
         colors = ['#7E57C2', '#2196F3', '#4CAF50', '#FFC107']  # Violet, Bleu, Vert, Jaune
-        card_width = 90
+        card_width = 85
         card_height = 50
-        margin = 5
+        margin = 10
+        padding = 5
         start_x = (pdf.w - (card_width * 2 + margin)) / 2
         start_y = pdf.get_y()
 
@@ -1811,18 +1812,21 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.set_fill_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
             pdf.rect(x, y, card_width, card_height, 'F')
             
+            # Ajouter le padding
+            x += padding
+            y += padding
             pdf.set_xy(x, y)
             
             # Nom de l'objectif
             pdf.set_font_safe('Inter', 'B', 12)
             pdf.set_text_color(255, 255, 255)
-            pdf.cell(card_width, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1, 'C')
+            pdf.cell(card_width - 2*padding, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1, 'C')
             
             # Détails de l'objectif
             pdf.set_font_safe('Inter', '', 8)
-            pdf.cell(card_width, 6, f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1, 'C')
-            pdf.cell(card_width, 6, f"Année : {obj.get('annee', 'Non spécifiée')}", 0, 1, 'C')
-            pdf.cell(card_width, 6, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1, 'C')
+            pdf.cell(card_width - 2*padding, 6, f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1, 'C')
+            pdf.cell(card_width - 2*padding, 6, f"Année : {obj.get('annee', 'Non spécifiée')}", 0, 1, 'C')
+            pdf.cell(card_width - 2*padding, 6, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1, 'C')
 
         # Ajuster la position Y pour la suite du document
         pdf.set_y(start_y + ((len(objectives) + 1) // 2) * (card_height + margin))
@@ -1875,32 +1879,36 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 def main():
     global resultats_df, params
 
+    st.title("Générateur de Rapport Financier")
+
     # Créer une disposition en colonnes
     col1, col2 = st.columns([3, 1])
 
     # Champ de saisie pour le prénom dans la première colonne
     with col1:
-        prenom = st.text_input("Prénom", key="prenom_input")
+        prenom = st.text_input("Entrez votre prénom", key="prenom_input")
 
     # Bouton pour générer le PDF dans la deuxième colonne
     with col2:
-        if st.button("Générer le rapport PDF"):
-            if not prenom:
-                st.warning("Veuillez entrer votre prénom avant de générer le rapport.")
-            else:
-                try:
-                    # Mettre à jour le nom du client dans les paramètres
-                    params['nom_client'] = prenom
-                    
-                    pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
-                    
-                    # Créer un lien de téléchargement pour le PDF
-                    b64 = base64.b64encode(pdf_bytes).decode()
-                    href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere_{prenom}.pdf">Télécharger le rapport PDF</a>'
-                    st.markdown(href, unsafe_allow_html=True)
-                except Exception as e:
-                    st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-                    print(f"Detailed error: {e}")
+        generate_button = st.button("Générer le rapport PDF")
+
+    if generate_button:
+        if not prenom:
+            st.warning("Veuillez entrer votre prénom avant de générer le rapport.")
+        else:
+            try:
+                # Mettre à jour le nom du client dans les paramètres
+                params['nom_client'] = prenom
+                
+                pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
+                
+                # Créer un lien de téléchargement pour le PDF
+                b64 = base64.b64encode(pdf_bytes).decode()
+                href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere_{prenom}.pdf">Télécharger le rapport PDF</a>'
+                st.markdown(href, unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
+                print(f"Detailed error: {e}")
 
 if __name__ == "__main__":
     main()
