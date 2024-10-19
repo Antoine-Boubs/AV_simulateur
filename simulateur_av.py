@@ -1688,24 +1688,50 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Paramètres de la simulation
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Paramètres de la simulation', 0, 1)
-    pdf.ln(5)
+    pdf.set_font_safe('Inter', 'B', 24)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 20, 'Paramètres de la simulation', 0, 1, 'C')
+    pdf.ln(10)
 
-    pdf.set_font_safe('Inter', '', 12)
-    pdf.set_fill_color(245, 245, 247)  # Couleur de fond légère inspirée d'Apple
+    # Définition des couleurs
+    light_gray = 245
+    dark_gray = 80
+    blue = (0, 122, 255)  # Bleu Apple
 
-    def add_info_line(label, value):
-        pdf.set_fill_color(245, 245, 247)
-        pdf.cell(60, 8, label, 0, 0, 'L', 1)
-        pdf.set_fill_color(255, 255, 255)
-        pdf.cell(0, 8, str(value), 0, 1, 'L', 1)
+    # Création d'un tableau stylisé
+    parameters = [
+        ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
+        ("Versement mensuel", f"{params.get('versement_mensuel', 'Non spécifié')} €"),
+        ("Rendement annuel", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié"),
+        ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
+        ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
+    ]
 
-    add_info_line("Capital initial :", f"{params.get('capital_initial', 'Non spécifié')} €")
-    add_info_line("Versement mensuel :", f"{params.get('versement_mensuel', 'Non spécifié')} €")
-    add_info_line("Rendement annuel :", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié")
-    add_info_line("Durée de simulation :", f"{params.get('duree_simulation', 'Non spécifié')} ans")
-    add_info_line("Frais de gestion :", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
+    # Largeur de colonne et hauteur de ligne
+    col_width = pdf.w / 2 - 20
+    row_height = 14
+    
+    for i, (label, value) in enumerate(parameters):
+        # Alternance de couleurs de fond
+        if i % 2 == 0:
+            pdf.set_fill_color(light_gray, light_gray, light_gray)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        
+        # Label
+        pdf.set_font_safe('Inter', 'B', 12)
+        pdf.set_text_color(dark_gray, dark_gray, dark_gray)
+        pdf.cell(col_width, row_height, label, 0, 0, 'L', 1)
+        
+        # Value
+        pdf.set_font_safe('Inter', '', 12)
+        pdf.set_text_color(*blue)
+        pdf.cell(col_width, row_height, value, 0, 1, 'R', 1)
+    
+    # Bordure autour du tableau
+    pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
+
+    pdf.ln(20)
 
     # Détail des versements
     pdf.ln(10)
