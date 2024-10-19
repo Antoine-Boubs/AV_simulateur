@@ -1733,10 +1733,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.ln(20)
 
-    # Détail des versements
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 28)
-    pdf.cell(0, 20, 'Détail des versements', 0, 1)
+   # Détail des versements
+    check_page_break(pdf)
+    pdf.set_font_safe('Inter', 'B', 24)
+    pdf.cell(0, 15, 'Détail des versements', 0, 1)
     pdf.ln(5)
 
     versements_libres = params.get('versements_libres', [])
@@ -1764,6 +1764,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     if not versements_libres and not modifications_versements:
         pdf.set_font_safe('Inter', 'I', 18)
         pdf.cell(0, 10, "Aucun versement libre ou modification de versement défini", 0, 1)
+
 
     # Graphiques
     for i, img_buffer in enumerate(img_buffers):
@@ -1798,6 +1799,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
     # Objectifs de l'investisseur
+    check_page_break(pdf)
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1, 'C')
@@ -1851,15 +1853,19 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_font_safe('Inter', 'I', 12)
         pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1, 'C')
 
+    if pdf.get_y() > pdf.h - 40:  # Si on est trop bas sur la page
+        pdf.add_page()
+
     pdf.ln(10)
 
     # Dernière page
+    check_page_break(pdf)
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 28)
-    pdf.cell(0, 20, 'Informations complémentaires', 0, 1, 'C')
-    pdf.ln(10)
+    pdf.set_font_safe('Inter', 'B', 24)  # Réduire légèrement la taille de la police
+    pdf.cell(0, 15, 'Informations complémentaires', 0, 1, 'C')
+    pdf.ln(5)
 
-    pdf.set_font_safe('Inter', '', 16)
+    pdf.set_font_safe('Inter', '', 12)  # Réduire la taille de la police pour le texte principal
     pdf.multi_cell(0, 8, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
                          "Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité "
                          "d'un acteur historique de l'assurance-vie.")
@@ -1886,10 +1892,17 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
 
+    if pdf.get_y() > pdf.h - 40:
+        pdf.add_page()
+
     if logo_path and os.path.exists(logo_path):
         pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
 
     return pdf.output(dest='S').encode('latin-1', errors='replace')
+
+def check_page_break(pdf, height=30):
+    if pdf.get_y() + height > pdf.h - 40:
+        pdf.add_page()
 
 
 def main():
