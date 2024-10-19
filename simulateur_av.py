@@ -1693,6 +1693,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
 
 
 def main():
+    initialize_session_state()
     global resultats_df, params
 
     # Créer une disposition en colonnes avec un ratio de 2:1
