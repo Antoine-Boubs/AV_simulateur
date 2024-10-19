@@ -1643,7 +1643,25 @@ def create_pie_chart(capital_final, versements, plus_values, annee):
 
     img_bytes = fig.to_image(format="png")
     return io.BytesIO(img_bytes)
-    
+
+def create_waterfall_chart(resultats_df):
+    fig = go.Figure(go.Waterfall(
+        name = "Evolution du capital", orientation = "v",
+        measure = ["relative"] * len(resultats_df),
+        x = resultats_df['Année'],
+        textposition = "outside",
+        text = resultats_df['Capital fin d\'année (NET)'],
+        y = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float),
+        connector = {"line":{"color":"rgb(63, 63, 63)"}},
+    ))
+
+    fig.update_layout(
+        title = "Évolution du capital année par année",
+        showlegend = False
+    )
+
+    img_bytes = fig.to_image(format="png")
+    return io.BytesIO(img_bytes)
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
@@ -1658,9 +1676,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Page de couverture
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 24)
-    pdf.cell(0, 20, 'Rapport de Simulation Financière', 0, 1, 'C')
-    pdf.set_font_safe('Inter', '', 14)
+    pdf.set_font_safe('Inter', 'B', 28)
+    pdf.cell(0, 20, 'Simulation Financière', 0, 1, 'C')
+    pdf.set_font_safe('Inter', '', 16)
     pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
     pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
 
@@ -1670,7 +1688,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Paramètres de la simulation
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Paramètres de la simulation', 0, 1)
     pdf.ln(5)
 
@@ -1691,13 +1709,13 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Détail des versements
     pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.set_font_safe('Inter', 'B', 16)
     pdf.cell(0, 10, 'Détail des versements', 0, 1)
     pdf.ln(5)
     pdf.set_font_safe('Inter', '', 12)
 
     if 'versements_libres' in params and params['versements_libres']:
-        pdf.set_font_safe('Inter', 'B', 12)
+        pdf.set_font_safe('Inter', 'B', 14)
         pdf.cell(0, 8, "Versements libres :", 0, 1)
         pdf.set_font_safe('Inter', '', 12)
         for vl in params['versements_libres']:
@@ -1705,7 +1723,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.ln(5)
 
     if 'modifications_versements' in params and params['modifications_versements']:
-        pdf.set_font_safe('Inter', 'B', 12)
+        pdf.set_font_safe('Inter', 'B', 14)
         pdf.cell(0, 8, "Modifications de versements :", 0, 1)
         pdf.set_font_safe('Inter', '', 12)
         for mv in params['modifications_versements']:
@@ -1721,21 +1739,34 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Graphiques
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Évolution de votre investissement', 0, 1)
 
     # Premier graphique
     with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
         img = Image.open(img_buffers[0])
         img.save(tmpfile.name, format="PNG")
-        pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=95)
+        pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
-    # Texte explicatif à droite du premier graphique
-    pdf.set_xy(110, pdf.get_y()+10)
+    # Texte explicatif sous le premier graphique
+    pdf.set_y(pdf.get_y() + 140)
     pdf.set_font_safe('Inter', '', 10)
-    pdf.multi_cell(90, 5, "Ce graphique montre l'évolution de votre capital au fil du temps. La ligne bleue représente le capital total, la ligne verte l'épargne investie, et les barres rouges les éventuels rachats.")
+    pdf.multi_cell(0, 5, "Ce graphique montre l'évolution de votre capital au fil du temps. La ligne bleue représente le capital total, la ligne verte l'épargne investie, et les barres rouges les éventuels rachats.")
 
-    # Deuxième graphique (composition du capital)
+    # Deuxième graphique (waterfall)
+    pdf.add_page()
+    waterfall_chart = create_waterfall_chart(resultats_df)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as waterfall_tmpfile:
+        Image.open(waterfall_chart).save(waterfall_tmpfile.name, format="PNG")
+        pdf.image(waterfall_tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+
+    # Texte explicatif sous le deuxième graphique
+    pdf.set_y(pdf.get_y() + 140)
+    pdf.set_font_safe('Inter', '', 10)
+    pdf.multi_cell(0, 5, "Ce graphique en cascade illustre l'évolution de votre capital année par année, montrant les variations annuelles et la progression globale de votre investissement.")
+
+    # Troisième graphique (composition du capital)
+    pdf.add_page()
     derniere_annee = resultats_df.iloc[-1]
     capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
     versements = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
@@ -1745,16 +1776,16 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pie_chart = create_pie_chart(capital_final, versements, plus_values, annee)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as pie_tmpfile:
         Image.open(pie_chart).save(pie_tmpfile.name, format="PNG")
-        pdf.image(pie_tmpfile.name, x=110, y=pdf.get_y()+100, w=95)
+        pdf.image(pie_tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
-    # Texte explicatif à gauche du deuxième graphique
-    pdf.set_xy(10, pdf.get_y()+100)
+    # Texte explicatif sous le troisième graphique
+    pdf.set_y(pdf.get_y() + 140)
     pdf.set_font_safe('Inter', '', 10)
-    pdf.multi_cell(90, 5, f"Ce graphique illustre la composition de votre capital à la fin de la simulation. Sur un total de {capital_final:,.0f} €, {versements:,.0f} € proviennent de vos versements et {plus_values:,.0f} € des plus-values générées.")
+    pdf.multi_cell(0, 5, f"Ce graphique illustre la composition de votre capital à la fin de la simulation. Sur un total de {capital_final:,.0f} €, {versements:,.0f} € proviennent de vos versements et {plus_values:,.0f} € des plus-values générées, représentant une croissance de {(plus_values/versements)*100:.1f}% sur votre investissement initial.")
 
     # Objectifs de l'investisseur
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1)
     pdf.ln(5)
 
@@ -1774,7 +1805,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Performance historique
     if len(img_buffers) > 2:
         pdf.add_page()
-        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.set_font_safe('Inter', 'B', 16)
         pdf.cell(0, 10, 'Performance historique', 0, 1)
         pdf.set_font_safe('Inter', '', 12)
         pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
@@ -1788,6 +1819,43 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             img = Image.open(img_buffers[2])
             img.save(tmpfile.name, format="PNG")
             pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+
+    # Dernière page
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 18)
+    pdf.cell(0, 10, 'Informations complémentaires', 0, 1, 'C')
+    pdf.ln(10)
+
+    pdf.set_font_safe('Inter', '', 12)
+    pdf.multi_cell(0, 5, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
+                         "Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité "
+                         "d'un acteur historique de l'assurance-vie.")
+    pdf.ln(5)
+    pdf.multi_cell(0, 5, "L'assurance-vie offre de nombreux avantages, parmi lesquels :")
+    pdf.ln(5)
+    pdf.multi_cell(0, 5, "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains "
+                         "réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la "
+                         
+                         "transmission de votre patrimoine.")
+    pdf.ln(5)
+    pdf.multi_cell(0, 5, "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous "
+                         "le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des "
+                         "versements quand vous le souhaitez.")
+    pdf.ln(10)
+
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
+    pdf.set_font_safe('Inter', '', 10)
+    pdf.set_text_color(0, 122, 255)  # Bleu Apple
+    pdf.cell(0, 10, 'Cliquez ici pour plus d\'informations', 0, 1, 'L', link="https://www.example.com")
+    pdf.set_text_color(0, 0, 0)  # Retour au noir
+
+    pdf.ln(10)
+    pdf.set_font_safe('Inter', 'B', 12)
+    pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
+
+    if logo_path and os.path.exists(logo_path):
+        pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
 
     return pdf.output(dest='S').encode('latin-1', errors='replace')
 
