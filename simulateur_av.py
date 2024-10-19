@@ -982,22 +982,15 @@ from PIL import Image
 import io
 import numpy as np
 import tempfile
-
-
 class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
         self.is_custom_font_loaded = False
-        
         font_path = os.path.join(os.path.dirname(__file__), "assets", "Fonts")
-        
         # Si logo_path n'est pas fourni, utilisez le chemin par défaut
         if logo_path is None:
             logo_path = os.path.join(os.path.dirname(__file__), "assets", "Logo1.png")
-        
         self.logo_path = logo_path  # Assignez logo_path à self.logo_path
-
-        
         try:
             self.add_font('Inter', '', os.path.join(font_path, 'Inter-Regular.ttf'), uni=True)
             self.add_font('Inter', 'B', os.path.join(font_path, 'Inter-Bold.ttf'), uni=True)
@@ -1006,7 +999,6 @@ class PDF(FPDF):
         except Exception as e:
             print(f"Error loading custom fonts: {e}")
             print("Falling back to built-in fonts.")
-
     def set_font_safe(self, family, style='', size=0):
         try:
             if self.is_custom_font_loaded:
@@ -1019,52 +1011,41 @@ class PDF(FPDF):
             print(f"Error setting font: {e}")
             print("Falling back to default font.")
             self.set_font('Arial', '', 12)
-
     def header(self):
         # Couleurs inspirées d'Apple
         apple_gray = (128, 128, 128)
         apple_blue = (0, 122, 255)
-        
         # Ajout du logo
         if self.logo_path and os.path.exists(self.logo_path):
             self.image(self.logo_path, 10, 8, 20)
-        
         # Titre du rapport
         self.set_font('Inter', 'B', 24)
         self.set_text_color(*apple_blue)
         self.cell(0, 10, 'Rapport Financier', 0, 1, 'R')
-        
         # Sous-titre
         self.set_font('Inter', '', 12)
         self.set_text_color(*apple_gray)
         self.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'R')
-        
         # Ligne de séparation
         self.set_draw_color(*apple_gray)
         self.set_line_width(0.1)
         self.line(10, 35, self.w - 10, 35)
-        
         # Espace après le header
         self.ln(20)
-
     def footer(self):
         # Couleurs inspirées d'Apple
         apple_gray = (128, 128, 128)
         apple_blue = (0, 122, 255)
-
         # Position à 1.5 cm du bas
         self.set_y(-15)
-
         # Ligne de séparation
         self.set_draw_color(*apple_gray)
         self.set_line_width(0.1)
         self.line(10, self.get_y(), self.w - 10, self.get_y())
-
         # Numéro de page
         self.set_font('Inter', '', 8)
         self.set_text_color(*apple_gray)
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
-
         # Texte légal
         legal_text = "© 2023 Votre Entreprise. Tous droits réservés."
         self.set_font('Inter', '', 8)
@@ -1072,7 +1053,6 @@ class PDF(FPDF):
         text_width = self.get_string_width(legal_text)
         self.set_x((self.w - text_width) / 2)
         self.cell(text_width, 5, legal_text, 0, 0, 'C')
-
         # Lien vers le site web
         website = "www.votreentreprise.com"
         self.set_font('Inter', '', 8)
@@ -1080,27 +1060,21 @@ class PDF(FPDF):
         website_width = self.get_string_width(website)
         self.set_x((self.w - website_width) / 2)
         self.cell(website_width, 15, website, 0, 0, 'C', link="https://www.votreentreprise.com")
-
     def add_warning(self):
         self.ln(10)
-        
         margin = 20
         self.set_left_margin(margin)
         self.set_right_margin(margin)
-        
         # Couleurs inspirées d'Apple
         apple_light_gray = (247, 247, 247)
         apple_dark_gray = (60, 60, 67)
         apple_blue = (0, 122, 255)
-        
         self.set_fill_color(*apple_light_gray)
         self.rect(margin, self.get_y(), self.w - 2*margin, 60, 'F')
-        
         self.set_xy(margin + 5, self.get_y() + 5)
         self.set_font('Inter', 'B', 14)
         self.set_text_color(*apple_blue)
         self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
-        
         self.set_xy(margin + 5, self.get_y())
         self.set_font('Inter', '', 10)
         self.set_text_color(*apple_dark_gray)
@@ -1110,14 +1084,12 @@ class PDF(FPDF):
                               "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
                               "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
                               "sont pas stables dans le temps.", align='J')
-
     def add_recap(self, params, objectives):
         self.add_page()
         self.set_font('Inter', 'B', 24)
         self.set_text_color(0, 0, 0)
         self.cell(0, 15, 'Récapitulatif de votre projet', 0, 1, 'C')
         self.ln(5)
-
         # Informations du client
         self.set_font('Inter', 'B', 18)
         self.set_text_color(0, 122, 255)  # Apple blue
@@ -1127,23 +1099,19 @@ class PDF(FPDF):
         self.cell(0, 8, f"Capital initial : {params['capital_initial']} €", 0, 1)
         self.cell(0, 8, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
         self.cell(0, 8, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
-
         self.ln(10)
-
         # Versements
         self.set_font('Inter', 'B', 18)
         self.set_text_color(0, 122, 255)  # Apple blue
         self.cell(0, 12, 'Versements', 0, 1, 'L')
         self.set_font('Inter', '', 12)
         self.set_text_color(60, 60, 67)  # Apple dark gray
-
         if 'versements_libres' in st.session_state and st.session_state.versements_libres:
             self.set_font('Inter', 'B', 14)
             self.cell(0, 10, "Versements libres :", 0, 1)
             self.set_font('Inter', '', 12)
             for vl in st.session_state.versements_libres:
                 self.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
-
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
             self.set_font('Inter', 'B', 14)
             self.cell(0, 10, "Modifications de versements :", 0, 1)
@@ -1153,13 +1121,10 @@ class PDF(FPDF):
                     self.cell(0, 8, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 1)
                 else:
                     self.cell(0, 8, f"Versements modifiés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}", 0, 1)
-
         if (not 'versements_libres' in st.session_state or not st.session_state.versements_libres) and \
            (not 'modifications_versements' in st.session_state or not st.session_state.modifications_versements):
             self.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
-
         self.ln(10)
-
         # Objectifs
         self.set_font('Inter', 'B', 18)
         self.set_text_color(0, 122, 255)  # Apple blue
@@ -1175,7 +1140,6 @@ class PDF(FPDF):
             self.cell(0, 8, f"Année de réalisation : {obj['annee']}", 0, 1)
             self.ln(5)
         self.add_page()
-
     def colored_table(self, headers, data, col_widths):
         header_color = (247, 247, 247)  # Apple light gray
         row_colors = [(255, 255, 255), (250, 250, 250)]  # White and very light gray
@@ -1184,20 +1148,16 @@ class PDF(FPDF):
         self.set_draw_color(229, 229, 234)  # Apple separator color
         self.set_line_width(0.3)
         self.set_font('Inter', 'B', 10)
-
         total_width = sum(col_widths)
         table_x = (self.w - total_width) / 2
-
         self.set_x(table_x)
         for i, (header, width) in enumerate(zip(headers, col_widths)):
             self.cell(width, 12, header, 1, 0, 'C', 1)
         self.ln()
-
         self.set_font('Inter', '', 10)
         row_height = 8
         page_rows = 0
         fill_index = 0
-
         for row in data:
             if page_rows == 30:
                 self.add_page()
@@ -1210,7 +1170,6 @@ class PDF(FPDF):
                 self.set_font('Inter', '', 10)
                 page_rows = 0
                 fill_index = 0
-
             self.set_x(table_x)
             self.set_fill_color(*row_colors[fill_index % 2])
             for i, (value, width) in enumerate(zip(row, col_widths)):
@@ -1219,40 +1178,32 @@ class PDF(FPDF):
             self.ln()
             fill_index += 1
             page_rows += 1
-
     def add_last_page(self):
         self.add_page()
         margin = 20
         self.set_left_margin(margin)
         self.set_right_margin(margin)
         effective_width = self.w - 2*margin
-
         self.set_font('Inter', '', 11)
         self.set_text_color(60, 60, 67)  # Apple dark gray
-
         content = [
             "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité d'un acteur historique de l'assurance-vie. L'assurance-vie offre de nombreux avantages, parmi lesquels :",
             "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la transmission de votre patrimoine",
             "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand  vous le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des versements quand vous le souhaitez."
         ]
-
         for paragraph in content:
             self.multi_cell(effective_width, 6, paragraph, 0, 'L')
             self.ln(4)
-
         start_y = self.get_y()
         self.set_xy(margin + 5, start_y + 5)
-
         self.set_draw_color(229, 229, 234)  # Apple separator color
         self.rect(margin, start_y, effective_width, 0, 'D')
-
         self.set_font('Inter', 'B', 14)
         self.set_text_color(0, 122, 255)  # Apple blue
         self.cell(effective_width, 12, "Pour en savoir plus sur la fiscalité de  l'assurance-vie", 0, 1, 'L')
         self.ln(5)
         self.set_font('Inter', '', 11)
         self.set_text_color(60, 60, 67)  # Apple dark gray
-
         info_content = [
             "Lors d'un retrait (rachat), la somme reçue contient une part en capital et une part en plus-values. La fiscalité s'applique sur les plus-values et diffère selon l'ancienneté de votre contrat d'assurance-vie au moment du retrait. L'imposition est la suivante :",
             "• Contrat de moins de 8 ans : 12,80 % ou intégration aux revenus du foyer avec application du barème progressif de l'impôt sur le revenu.",
@@ -1264,34 +1215,282 @@ class PDF(FPDF):
             "* Toutes assurances - vie du foyer confondues.",
             "Par ailleurs, vous profitez d'un cadre fiscal avantageux lors de la transmission de votre patrimoine."
         ]
-
         for paragraph in info_content:
             self.multi_cell(effective_width, 6, paragraph, 0, 'L')
             self.ln(4)
-
         end_y = self.get_y()
         self.rect(margin, start_y, effective_width, end_y - start_y, 'D')
-
         self.set_y(end_y + 5)
-
         self.set_font('Inter', '', 11)
         self.set_text_color(0, 122, 255)  # Apple blue
         self.cell(0, 6, 'Pour en savoir plus, cliquez ici.', 0, 1, 'R', link="https://www.example.com")
-
         self.set_y(-30)
         self.set_font('Inter', 'B', 11)
         self.set_text_color(60, 60, 67)  # Apple dark gray
         self.cell(effective_width / 2, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 0, 'L')
-        
         if self.logo_path and os.path.exists(self.logo_path):
             self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
-
-
-import plotly.graph_objects as go
-import pandas as pd
-
-                
-
+def generate_chart1(resultats_df):
+    fig1 = go.Figure()
+    years = resultats_df['Année'].tolist()
+    capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
+    epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
+    rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
+    # Couleurs inspirées d'Apple
+    apple_blue = '#007AFF'
+    apple_green = '#34C759'
+    apple_red = '#FF3B30'
+    fig1.add_trace(go.Scatter(
+        x=years, y=capital_fin_annee,
+        mode='lines+markers',
+        name='Capital fin d\'année',
+        line=dict(color=apple_blue, width=3),
+        marker=dict(size=8, symbol='circle')
+    ))
+    fig1.add_trace(go.Scatter(
+        x=years, y=epargne_investie,
+        mode='lines+markers',
+        name='Épargne investie',
+        line=dict(color=apple_green, width=3),
+        marker=dict(size=8, symbol='circle')
+    ))
+    fig1.add_trace(go.Bar(
+        x=years, y=rachats,
+        name='Rachats',
+        marker_color=apple_red,
+        opacity=0.7
+    ))
+    fig1.update_layout(
+        title={
+            'text': 'Évolution du placement financier',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, family='Inter, sans-serif')
+        },
+        xaxis_title='Année',
+        yaxis_title='Montant (€)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            font=dict(family='Inter, sans-serif')
+        ),
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        yaxis=dict(
+            gridcolor='#E0E0E0',
+            zerolinecolor='#E0E0E0',
+            tickformat=',.0f',
+            ticksuffix=' €',
+            separatethousands=True,
+            title_font=dict(family='Inter, sans-serif'),
+            tickfont=dict(family='Inter, sans-serif')
+        ),
+        xaxis=dict(
+            gridcolor='#E0E0E0',
+            zerolinecolor='#E0E0E0',
+            title_font=dict(family='Inter, sans-serif'),
+            tickfont=dict(family='Inter, sans-serif')
+        ),
+        hovermode="x unified",
+        barmode='relative',
+        font=dict(family='Inter, sans-serif'),
+        margin=dict(l=50, r=50, t=100, b=50),
+        width=800,
+        height=500
+    )
+    fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
+    fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
+    fig1.add_annotation(
+        x=0.5, y=-0.15,
+        xref='paper', yref='paper',
+        text='Les barres rouges représentent les rachats effectués',
+        showarrow=False,
+        font=dict(size=12, color='#666', family='Inter, sans-serif'),
+        align='center',
+        bgcolor='rgba(255,255,255,0.8)',
+        bordercolor='#E0E0E0',
+        borderwidth=1,
+        borderpad=4
+    )
+    img_bytes1 = fig1.to_image(format="png", scale=2)
+    return io.BytesIO(img_bytes1)
+def generate_chart2(resultats_df):
+    fig2 = go.Figure(go.Waterfall(
+        name="Evolution du capital",
+        orientation="v",
+        measure=["relative"] * len(resultats_df),
+        x=resultats_df['Année'],
+        y=resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).diff(),
+        connector={"line": {"color": "rgb(63, 63, 63)"}},
+        decreasing={"marker": {"color": "#CBA325"}},
+        increasing={"marker": {"color": "#A33432"}},
+        totals={"marker": {"color": "#F0D97A"}}
+    ))
+    fig2.update_layout(
+        title='Évolution annuelle du capital',
+        xaxis_title='Année',
+        yaxis_title='Variation du capital (€)',
+        plot_bgcolor='white',
+        yaxis=dict(gridcolor='#8DB3C5')
+    )
+    img_bytes2 = fig2.to_image(format="png", width=700, height=400)
+    return io.BytesIO(img_bytes2)
+def generate_pdf_report(resultats_df, params, objectives):
+    print("Entering generate_pdf_report")
+    print(f"resultats_df shape: {resultats_df.shape}")
+    print(f"params: {params}")
+    print(f"objectives: {objectives}")
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
+    ]
+    # Ajouter les informations des objectifs à data
+    for i, obj in enumerate(objectives, start=1):
+        data.extend([
+            [f"Objectif {i} - Nom", obj['nom']],
+            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
+            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
+            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
+        ])
+    # Générer les graphiques
+    img_buffer1 = generate_chart1(resultats_df)
+    img_buffer2 = generate_chart2(resultats_df)
+    # Create the financial investment evolution chart
+    fig1 = go.Figure()
+    years = resultats_df['Année'].tolist()
+    capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
+    epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
+    rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
+    fig1.add_trace(go.Scatter(
+        x=years, y=capital_fin_annee,
+        mode='lines+markers',
+        name='Capital fin d\'année',
+        line=dict(color='#1f77b4', width=2)
+    ))
+    fig1.add_trace(go.Scatter(
+        x=years, y=epargne_investie,
+        mode='lines+markers',
+        name='Épargne investie',
+        line=dict(color='#2ca02c', width=2)
+    ))
+    fig1.add_trace(go.Bar(
+        x=years, y=rachats,
+        name='Rachats',
+        marker_color='#d62728'
+    ))
+    fig1.update_layout(
+        title='Évolution du placement financier',
+        xaxis_title='Année',
+        yaxis_title='Montant (€)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        plot_bgcolor='white',
+        yaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey',
+            tickformat='.0f',
+            ticksuffix=' €'
+        ),
+        xaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey'
+        ),
+        hovermode="x unified",
+        barmode='relative'
+    )
+    img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
+    img_buffer1 = io.BytesIO(img_bytes1)
+    img_buffer1.seek(0)  # Rembobiner le buffer
+    # Create the second chart (waterfall)
+    fig2 = go.Figure(go.Waterfall(
+        name="Evolution du capital",
+        orientation="v",
+        measure=["relative"] * len(resultats_df),
+        x=resultats_df['Année'],
+        y=resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).diff(),
+        connector={"line": {"color": "rgb(63, 63, 63)"}},
+        decreasing={"marker": {"color": "#CBA325"}},
+        increasing={"marker": {"color": "#A33432"}},
+        totals={"marker": {"color": "#F0D97A"}}
+    ))
+    fig2.update_layout(
+        title='Évolution annuelle du capital',
+        xaxis_title='Année',
+        yaxis_title='Variation du capital (€)',
+        plot_bgcolor='white',
+        yaxis=dict(gridcolor='#8DB3C5')
+    )
+    img_bytes2 = fig2.to_image(format="png", width=700, height=400)
+    img_buffer2 = io.BytesIO(img_bytes2)
+    img_buffer2.seek(0)  # Rembobiner le buffer
+    # Create the third chart (historical performance)
+    fig3 = go.Figure()
+    years = [2019, 2020, 2021, 2022, 2023]
+    performances = [22.69, -0.80, 25.33, -12.17, 11.91]
+    fig3.add_trace(go.Bar(
+        x=years,
+        y=performances,
+        text=[f"{p:+.2f}%" for p in performances],
+        textposition='outside',
+        marker_color=['#4CAF50' if p >= 0 else '#F44336' for p in performances],
+        marker_line_color='rgba(0,0,0,0.5)',
+        marker_line_width=1.5,
+        opacity=0.8,
+        name='Performance annuelle'
+    ))
+    fig3.update_layout(
+        title={
+            'text': 'Performances historiques',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, color='#1E3A8A')
+        },
+        xaxis_title='Année',
+        yaxis_title='Performance annuelle (%)',
+        yaxis2=dict(
+            title='Performance cumulée (%)',
+            overlaying='y',
+            side='right',
+            showgrid=False
+        ),
+        plot_bgcolor='rgba(240,240,240,0.5)',
+        paper_bgcolor='white',
+        yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
+        xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=50, r=50, t=80, b=50),
+        hovermode="x unified"
+    )
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
+        selector=dict(type='bar')
+    )
+    img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
+    img_buffer3 = io.BytesIO(img_bytes3)
+    img_buffer3.seek(0)  # Rembobiner le buffer
+    # Créer le PDF
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
+    return pdf_bytes
 def format_value(value):
     if isinstance(value, (int, float)):
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
@@ -1303,16 +1502,13 @@ def format_value(value):
         except ValueError:
             return value
     return str(value)
-
 def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
     pdf.ln(5)
-
     col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
     headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
-
     data = [
         [row['Année'], 
          format_value(row['Capital initial (NET)']),
@@ -1325,87 +1521,169 @@ def create_detailed_table(pdf, resultats_df):
          format_value(row['Capital fin d\'année (NET)'])]
         for _, row in resultats_df.iterrows()
     ]
-
     pdf.colored_table(headers, data, col_widths)
-    
 import tempfile
 from PIL import Image
-
-
-# Création du PDF
+def create_pie_chart(capital_final, versements, plus_values, annee):
+    fig = go.Figure(data=[go.Pie(
+        labels=['Versements', 'Plus-values'],
+        values=[versements, plus_values],
+        hole=.3,
+        marker_colors=['#007AFF', '#34C759']  # Couleurs Apple (bleu et vert)
+    )])
+    fig.update_layout(
+        title=f"Composition du capital en année {annee}",
+        annotations=[
+            dict(text=f'{capital_final:,.0f} €', x=0.5, y=0.5, font_size=20, showarrow=False),
+            dict(text='Capital final', x=0.5, y=0.35, font_size=12, showarrow=False)
+        ],
+        width=400,
+        height=300,
+        margin=dict(l=0, r=0, t=40, b=0)
+    )
+    img_bytes = fig.to_image(format="png")
+    return io.BytesIO(img_bytes)
+def create_waterfall_chart(resultats_df):
+    fig = go.Figure(go.Waterfall(
+        name = "Evolution du capital", orientation = "v",
+        measure = ["relative"] * len(resultats_df),
+        x = resultats_df['Année'],
+        textposition = "outside",
+        text = resultats_df['Capital fin d\'année (NET)'],
+        y = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float),
+        connector = {"line":{"color":"rgb(63, 63, 63)"}},
+    ))
+    fig.update_layout(
+        title = "Évolution du capital année par année",
+        showlegend = False
+    )
+    img_bytes = fig.to_image(format="png")
+    return io.BytesIO(img_bytes)
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    pdf = PDF()
-    pdf.add_page()
-    pdf.set_left_margin(20)
-    pdf.set_right_margin(20)
-    pdf.set_auto_page_break(auto=True, margin=15)
-
+    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
+    if not os.path.exists(logo_path):
+        print(f"Warning: Logo file not found at {logo_path}")
+        logo_path = None
+    pdf = PDF(logo_path)
+    left_margin = 20
+    pdf.set_left_margin(left_margin)
+    pdf.alias_nb_pages()
     # Page de couverture
-    pdf.set_font_safe('Inter', 'B', 24)
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 28)
     pdf.cell(0, 20, 'Simulation Financière', 0, 1, 'C')
-    pdf.set_font_safe('Inter', '', 14)
+    pdf.set_font_safe('Inter', '', 16)
     pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
-    pdf.cell(0, 10, f"Date : {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'C')
-
+    pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
+    # Avertissement
+    pdf.ln(20)
+    pdf.add_warning()
     # Paramètres de la simulation
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 15, 'Paramètres de la simulation', 0, 1, 'C')
-    pdf.ln(5)
-
+    pdf.set_font_safe('Inter', 'B', 24)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 20, 'Paramètres de la simulation', 0, 1, 'C')
+    pdf.ln(10)
+    # Définition des couleurs
+    light_gray = 245
+    dark_gray = 80
+    blue = (0, 122, 255)  # Bleu Apple
+    # Création d'un tableau stylisé
     parameters = [
         ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
         ("Versement mensuel", f"{params.get('versement_mensuel', 'Non spécifié')} €"),
-        ("Rendement annuel", f"{params.get('rendement_annuel', 0)*100:.2f}%"),
+        ("Rendement annuel", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié"),
         ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
-        ("Frais de gestion", f"{params.get('frais_gestion', 0)*100:.2f}%")
+        ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
     ]
-
-    for label, value in parameters:
+    # Largeur de colonne et hauteur de ligne
+    col_width = pdf.w / 2 - 20
+    row_height = 14
+    for i, (label, value) in enumerate(parameters):
+        # Alternance de couleurs de fond
+        if i % 2 == 0:
+            pdf.set_fill_color(light_gray, light_gray, light_gray)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        # Label
         pdf.set_font_safe('Inter', 'B', 12)
-        pdf.cell(80, 10, label, 0)
+        pdf.set_text_color(dark_gray, dark_gray, dark_gray)
+        pdf.cell(col_width, row_height, label, 0, 0, 'L', 1)
+        # Value
         pdf.set_font_safe('Inter', '', 12)
-        pdf.cell(0, 10, value, 0, 1)
+        pdf.set_text_color(*blue)
+        pdf.cell(col_width, row_height, value, 0, 1, 'R', 1)
+    # Bordure autour du tableau
+    pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
+    pdf.ln(20)
+    # Détail des versements
+    pdf.ln(10)
+    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.cell(0, 10, 'Détail des versements', 0, 1)
     pdf.ln(5)
-
+    pdf.set_font_safe('Inter', '', 12)
+    versements_libres = params.get('versements_libres', [])
+    modifications_versements = params.get('modifications_versements', [])
+    if versements_libres:
+        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.cell(0, 8, "Versements libres :", 0, 1)
+        pdf.set_font_safe('Inter', '', 12)
+        for vl in versements_libres:
+            add_info_line(f"Année {vl['annee']} :", f"{vl['montant']} €")
+        pdf.ln(5)
+    if modifications_versements:
+        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.cell(0, 8, "Modifications de versements :", 0, 1)
+        pdf.set_font_safe('Inter', '', 12)
+        for mv in modifications_versements:
+            if mv['montant'] == 0:
+                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", "Versements arrêtés")
+            else:
+                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", f"Modifiés à {mv['montant']} €")
+        pdf.ln(5)
+    if not versements_libres and not modifications_versements:
+        pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
     # Graphiques
-    chart_titles = [
-        'Évolution du placement financier',
-        'Évolution annuelle du capital',
-        'Performances historiques',
-        'Composition du capital en fin de simulation',
-        'Composition du capital à durée capi max'
-    ]
-
     for i, img_buffer in enumerate(img_buffers):
         pdf.add_page()
-        pdf.set_font_safe('Inter', 'B', 16)
-        pdf.cell(0, 10, chart_titles[i], 0, 1, 'C')
-        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
-
-    # Objectifs de l'investisseur
-    if objectives:
-        pdf.add_page()
         pdf.set_font_safe('Inter', 'B', 18)
-        pdf.cell(0, 15, 'Objectifs de l\'investisseur', 0, 1, 'C')
-        pdf.ln(5)
-
-        for obj in objectives:
+        if i == 0:
+            pdf.cell(0, 10, 'Évolution de votre investissement', 0, 1)
+        elif i == 1:
+            pdf.cell(0, 10, 'Composition du capital', 0, 1)
+        elif i == 2:
+            pdf.cell(0, 10, 'Performance historique', 0, 1)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+            img = Image.open(img_buffer)
+            img.save(tmpfile.name, format="PNG")
+            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+    # Objectifs de l'investisseur
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 18)
+    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1)
+    pdf.ln(5)
+    if objectives:
+        colors = ['#7E57C2', '#2196F3', '#4CAF50']  # Violet, Bleu, Vert
+        for i, obj in enumerate(objectives):
+            pdf.set_fill_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
+            pdf.rect(pdf.get_x(), pdf.get_y(), 190, 40, 'F')
             pdf.set_font_safe('Inter', 'B', 14)
+            pdf.set_text_color(255, 255, 255)
             pdf.cell(0, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
             pdf.set_font_safe('Inter', '', 12)
-            pdf.cell(0, 8, f"Montant annuel : {obj.get('montant_annuel', 'Non  spécifié')} €", 0, 1)
+            pdf.cell(0, 8, f"Montant annuel : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1)
             pdf.cell(0, 8, f"Année de réalisation : {obj.get('annee', 'Non spécifiée')}", 0, 1)
             pdf.cell(0, 8, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1)
-            pdf.ln(5)
-
+            pdf.set_text_color(0, 0, 0)
+            pdf.ln(10)
+    else:
+        pdf.set_font_safe('Inter', 'I', 12)
+        pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1)
     # Dernière page
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
-    pdf.set_text_color(44, 62, 80)  # Bleu foncé
-    pdf.cell(0, 15, 'Informations complémentaires', 0, 1, 'C')
-    pdf.ln(5)
-
+    pdf.cell(0, 10, 'Informations complémentaires', 0, 1, 'C')
+    pdf.ln(10)
     pdf.set_font_safe('Inter', '', 12)
     pdf.multi_cell(0, 5, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
                          "Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité "
@@ -1421,39 +1699,33 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                          "le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des "
                          "versements quand vous le souhaitez.")
     pdf.ln(10)
-
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
-    pdf.set_font_safe('Inter', '', 12)
+    pdf.set_font_safe('Inter', '', 10)
     pdf.set_text_color(0, 122, 255)  # Bleu Apple
     pdf.cell(0, 10, 'Cliquez ici pour plus d\'informations', 0, 1, 'L', link="https://www.example.com")
-
+    pdf.set_text_color(0, 0, 0)  # Retour au noir
     pdf.ln(10)
     pdf.set_font_safe('Inter', 'B', 12)
-    pdf.set_text_color(44, 62, 80)  # Retour au bleu foncé
     pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
-
+    if logo_path and os.path.exists(logo_path):
+        pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
     return pdf.output(dest='S').encode('latin-1', errors='replace')
-
 def main():
-    initialize_session_state()
-
-    st.title("Générateur de Rapport Financier")
-
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        generate_button = st.button("Générer le rapport PDF", use_container_width=True)
-    with col2:
-        prenom = st.text_input("Entrez votre prénom", help="Seulement pour mettre le rapport à votre nom", key="prenom_input")
-
-    if generate_button:
-        if not prenom:
-            st.warning("Veuillez entrer votre prénom avant de générer le rapport.")
-        else:
-            try:
-                st.session_state.params['nom_client'] = prenom
-                
-                
+    global resultats_df, params
+    # Exemple de bouton pour générer le PDF
+    if st.button("Générer le rapport PDF"):
+        try:
+            pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
+            # Créer un lien de téléchargement pour le PDF
+            b64 = base64.b64encode(pdf_bytes).decode()
+            href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
+            st.markdown(href, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
+            print(f"Detailed error: {e}")
+if __name__ == "__main__":
+    main()       
                 pdf_bytes = create_pdf(st.session_state.params, img_buffers, st.session_state.resultats_df, st.session_state.params, st.session_state.objectives)
                 
                 st.download_button(
