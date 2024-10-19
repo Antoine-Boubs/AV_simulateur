@@ -1734,11 +1734,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(20)
 
     # Détail des versements
-    pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Détail des versements', 0, 1)
     pdf.ln(5)
-    pdf.set_font_safe('Inter', '', 12)
 
     versements_libres = params.get('versements_libres', [])
     modifications_versements = params.get('modifications_versements', [])
@@ -1748,7 +1747,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.cell(0, 8, "Versements libres :", 0, 1)
         pdf.set_font_safe('Inter', '', 12)
         for vl in versements_libres:
-            add_info_line(f"Année {vl['annee']} :", f"{vl['montant']} €")
+            pdf.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
         pdf.ln(5)
 
     if modifications_versements:
@@ -1757,9 +1756,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_font_safe('Inter', '', 12)
         for mv in modifications_versements:
             if mv['montant'] == 0:
-                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", "Versements arrêtés")
+                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Versements arrêtés", 0, 1)
             else:
-                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", f"Modifiés à {mv['montant']} €")
+                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Modifiés à {mv['montant']} €", 0, 1)
         pdf.ln(5)
 
     if not versements_libres and not modifications_versements:
@@ -1780,6 +1779,22 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             img = Image.open(img_buffer)
             img.save(tmpfile.name, format="PNG")
             pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+
+    # Ajout du graphique en camembert
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 18)
+    pdf.cell(0, 10, 'Répartition du capital final', 0, 1)
+    
+    # Création du graphique en camembert
+    duree_capi_max = len(resultats_df)
+    donut_chart = create_donut_chart(resultats_df, duree_capi_max)
+    
+    img_bytes = donut_chart.to_image(format="png")
+    img_buffer = io.BytesIO(img_bytes)
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+        Image.open(img_buffer).save(tmpfile.name, format="PNG")
+        pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
     # Objectifs de l'investisseur
     pdf.add_page()
@@ -1837,7 +1852,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.ln(10)
 
-    # Dernière page
+    # Dernière page (inchangée)
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Informations complémentaires', 0, 1, 'C')
@@ -1881,16 +1896,16 @@ def main():
 
     st.title("Générateur de Rapport Financier")
 
-    # Créer une disposition en colonnes
-    col1, col2 = st.columns([3, 1])
+    # Créer une disposition en colonnes avec un ratio de 2:1
+    col1, col2 = st.columns([2, 1])
 
-    # Champ de saisie pour le prénom dans la première colonne
+    # Bouton pour générer le PDF dans la première colonne (à gauche)
     with col1:
-        prenom = st.text_input("Entrez votre prénom", key="prenom_input")
+        generate_button = st.button("Générer le rapport PDF", use_container_width=True)
 
-    # Bouton pour générer le PDF dans la deuxième colonne
+    # Champ de saisie pour le prénom dans la deuxième colonne (à droite)
     with col2:
-        generate_button = st.button("Générer le rapport PDF")
+        prenom = st.text_input("Entrez votre prénom", help= "Seulement pour mettre le rapport à votre nom", key="prenom_input")
 
     if generate_button:
         if not prenom:
