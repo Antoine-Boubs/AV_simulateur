@@ -1855,11 +1855,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Dernière page
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 28)  # Increased font size
+    pdf.set_font_safe('Inter', 'B', 28)
     pdf.cell(0, 20, 'Informations complémentaires', 0, 1, 'C')
     pdf.ln(10)
 
-    pdf.set_font_safe('Inter', '', 16)  # Increased font size
+    pdf.set_font_safe('Inter', '', 16)
     pdf.multi_cell(0, 8, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
                          "Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité "
                          "d'un acteur historique de l'assurance-vie.")
@@ -1875,15 +1875,15 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                          "versements quand vous le souhaitez.")
     pdf.ln(10)
 
-    pdf.set_font_safe('Inter', 'B', 20)  # Increased font size
+    pdf.set_font_safe('Inter', 'B', 20)
     pdf.cell(0, 12, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
-    pdf.set_font_safe('Inter', '', 16)  # Increased font size
+    pdf.set_font_safe('Inter', '', 16)
     pdf.set_text_color(0, 122, 255)  # Bleu Apple
     pdf.cell(0, 10, 'Cliquez ici pour plus d\'informations', 0, 1, 'L', link="https://www.example.com")
     pdf.set_text_color(0, 0, 0)  # Retour au noir
 
     pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 18)  # Increased font size
+    pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
 
     if logo_path and os.path.exists(logo_path):
