@@ -1626,13 +1626,21 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     left_margin = 20
     pdf.set_left_margin(left_margin)
     pdf.alias_nb_pages()
+
+    # Page de couverture
     pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 24)
+    pdf.cell(0, 20, 'Rapport de Simulation Financière', 0, 1, 'C')
+    pdf.set_font_safe('Inter', '', 14)
+    pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
+    pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
 
     # Avertissement
+    pdf.ln(20)
     pdf.add_warning()
-    pdf.ln(10)
 
-    # Informations du client
+    # Paramètres de la simulation
+    pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 16)
     pdf.cell(0, 10, 'Paramètres de la simulation', 0, 1)
     pdf.ln(5)
@@ -1640,32 +1648,34 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font_safe('Inter', '', 12)
     pdf.set_fill_color(245, 245, 247)  # Couleur de fond légère inspirée d'Apple
 
-    # Fonction pour ajouter une ligne d'information
     def add_info_line(label, value):
         pdf.set_fill_color(245, 245, 247)
         pdf.cell(60, 8, label, 0, 0, 'L', 1)
         pdf.set_fill_color(255, 255, 255)
         pdf.cell(0, 8, str(value), 0, 1, 'L', 1)
 
-    # Ajout de toutes les informations du sidebar
     add_info_line("Capital initial :", f"{params.get('capital_initial', 'Non spécifié')} €")
     add_info_line("Versement mensuel :", f"{params.get('versement_mensuel', 'Non spécifié')} €")
     add_info_line("Rendement annuel :", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié")
     add_info_line("Durée de simulation :", f"{params.get('duree_simulation', 'Non spécifié')} ans")
     add_info_line("Frais de gestion :", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
-    
-    # Ajout des versements libres s'ils existent
+
+    # Détail des versements
+    pdf.ln(10)
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Détail des versements', 0, 1)
+    pdf.ln(5)
+    pdf.set_font_safe('Inter', '', 12)
+
     if 'versements_libres' in params and params['versements_libres']:
-        pdf.ln(5)
         pdf.set_font_safe('Inter', 'B', 12)
         pdf.cell(0, 8, "Versements libres :", 0, 1)
         pdf.set_font_safe('Inter', '', 12)
         for vl in params['versements_libres']:
             add_info_line(f"Année {vl['annee']} :", f"{vl['montant']} €")
-
-    # Ajout des modifications de versements s'ils existent
-    if 'modifications_versements' in params and params['modifications_versements']:
         pdf.ln(5)
+
+    if 'modifications_versements' in params and params['modifications_versements']:
         pdf.set_font_safe('Inter', 'B', 12)
         pdf.cell(0, 8, "Modifications de versements :", 0, 1)
         pdf.set_font_safe('Inter', '', 12)
@@ -1674,149 +1684,83 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                 add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", "Versements arrêtés")
             else:
                 add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", f"Modifiés à {mv['montant']} €")
+        pdf.ln(5)
 
-    pdf.ln(10)
+    if (not 'versements_libres' in params or not params['versements_libres']) and \
+       (not 'modifications_versements' in params or not params['modifications_versements']):
+        pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
+
+    # Graphiques
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.cell(0, 10, 'Évolution de votre investissement', 0, 1)
+
+    # Premier graphique
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+        img = Image.open(img_buffers[0])
+        img.save(tmpfile.name, format="PNG")
+        pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=95)
+
+    # Texte explicatif à droite du premier graphique
+    pdf.set_xy(110, pdf.get_y()+10)
+    pdf.set_font_safe('Inter', '', 10)
+    pdf.multi_cell(90, 5, "Ce graphique montre l'évolution de votre capital au fil du temps. La ligne bleue représente le capital total, la ligne verte l'épargne investie, et les barres rouges les éventuels rachats.")
+
+    # Deuxième graphique (composition du capital)
+    derniere_annee = resultats_df.iloc[-1]
+    capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
+    versements = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
+    plus_values = capital_final - versements
+    annee = len(resultats_df)
+
+    pie_chart = create_pie_chart(capital_final, versements, plus_values, annee)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as pie_tmpfile:
+        Image.open(pie_chart).save(pie_tmpfile.name, format="PNG")
+        pdf.image(pie_tmpfile.name, x=110, y=pdf.get_y()+100, w=95)
+
+    # Texte explicatif à gauche du deuxième graphique
+    pdf.set_xy(10, pdf.get_y()+100)
+    pdf.set_font_safe('Inter', '', 10)
+    pdf.multi_cell(90, 5, f"Ce graphique illustre la composition de votre capital à la fin de la simulation. Sur un total de {capital_final:,.0f} €, {versements:,.0f} € proviennent de vos versements et {plus_values:,.0f} € des plus-values générées.")
 
     # Objectifs de l'investisseur
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1, 'C')
+    pdf.set_font_safe('Inter', 'B', 16)
+    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1)
     pdf.ln(5)
 
-    # Couleurs inspirées d'Apple pour les cartes
-    colors = [
-        (88, 86, 214),   # Violet
-        (0, 122, 255),   # Bleu
-        (52, 199, 89),   # Vert
-        (255, 149, 0),   # Orange
-        (255, 59, 48)    # Rouge
-    ]
-
     if objectives:
-        card_width = (pdf.w - 2*left_margin - 10) / 2  # 2 cartes par ligne avec un espace de 10 entre elles
-        card_height = 80
-        card_margin = 5
-        x_positions = [left_margin, left_margin + card_width + 10]
-        current_x = 0
-        current_y = pdf.get_y()
-
-        for i, obj in enumerate(objectives):
-            color = colors[i % len(colors)]
-            pdf.set_fill_color(*color)
-            pdf.set_draw_color(*color)
-
-            # Dessiner un rectangle simple
-            x, y = x_positions[current_x], current_y
-            pdf.rect(x, y, card_width, card_height, 'F')
-
-            # Ajouter une bordure plus claire pour un effet de profondeur
-            lighter_color = tuple(min(c + 40, 255) for c in color)
-            pdf.set_draw_color(*lighter_color)
-            pdf.rect(x, y, card_width, card_height, 'D')
-
-            pdf.set_text_color(255, 255, 255)  # Texte blanc pour contraste
-            pdf.set_xy(x + card_margin, y + card_margin)
-            pdf.set_font_safe('Inter', 'B', 12)
-            pdf.cell(card_width - 2*card_margin, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
-
-            pdf.set_xy(x + card_margin, pdf.get_y())
-            pdf.set_font_safe('Inter', '', 10)
-            pdf.multi_cell(card_width - 2*card_margin, 5, 
-                f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €\n"
-                f"Année : {obj.get('annee', 'Non spécifiée')}\n"
-                f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans"
-            )
-
-            current_x = (current_x + 1) % 2
-            if current_x == 0:
-                current_y += card_height + 10
-                pdf.set_y(current_y)
-
-        pdf.set_y(current_y + card_height + 10)
+        for obj in objectives:
+            pdf.set_font_safe('Inter', 'B', 14)
+            pdf.cell(0, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
+            pdf.set_font_safe('Inter', '', 12)
+            pdf.cell(0, 8, f"Montant annuel : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1)
+            pdf.cell(0, 8, f"Année de réalisation : {obj.get('annee', 'Non spécifiée')}", 0, 1)
+            pdf.cell(0, 8, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1)
+            pdf.ln(5)
     else:
         pdf.set_font_safe('Inter', 'I', 12)
-        pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1, 'C')
+        pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1)
 
-    pdf.set_text_color(0, 0, 0)  # Rétablir la couleur du texte en noir
-    pdf.ln(10)
+    # Performance historique
+    if len(img_buffers) > 2:
+        pdf.add_page()
+        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.cell(0, 10, 'Performance historique', 0, 1)
+        pdf.set_font_safe('Inter', '', 12)
+        pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                             'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                             "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                             "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                             "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                             'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                             'performances supérieures.')
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+            img = Image.open(img_buffers[2])
+            img.save(tmpfile.name, format="PNG")
+            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
-    # Graphiques
-    for i, img_buffer in enumerate(img_buffers):
-        try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-                img = Image.open(img_buffer)
-                img.save(tmpfile.name, format="PNG")
-                tmpfile.flush()
-                
-                pdf.add_page()
-                if i == 2:  # Pour le troisième graphique (performances historiques)
-                    pdf.set_font_safe('Inter', 'B', 14)
-                    pdf.cell(0, 10, 'Performance historique', 0, 1)
-                    pdf.set_font_safe('Inter', '', 12)
-                    pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
-                                         'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
-                                         "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
-                                         "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
-                                         "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
-                                         'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
-                                         'performances supérieures.')
-                pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
-        except Exception as e:
-            print(f"Error adding image to PDF: {e}")
-
-    # Résumé des résultats
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
-    pdf.set_font_safe('Inter', '', 12)
-    
-    derniere_annee = resultats_df.iloc[-1]
-    capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
-    epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
-    gains_totaux = capital_final - epargne_investie
-    
-    resume_text = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
-    resume_text += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
-    resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
-    
-    pdf.multi_cell(0, 10, resume_text)
-    
-    # Tableau détaillé
-    create_detailed_table(pdf, resultats_df)
-
-    pdf.set_xy(10, pdf.get_y() + 10)
-    pdf.set_font_safe('Inter', 'I', 8)
-    pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
-                         "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
-                         "Les valeurs sont arrondies à deux décimales près.")
-
-    # Avertissement légal
-    pdf.add_page()
-    pdf.set_fill_color(240, 240, 240)
-    pdf.set_draw_color(200, 200, 200)
-    pdf.set_font_safe('Inter', 'B', 12)
-    pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
-    pdf.set_font_safe('Inter', 'I', 10)
-    pdf.set_text_color(80, 80, 80)
-    disclaimer_text = (
-        "Les performances passées ne préjugent pas des performances futures. "
-        "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. "
-        "Les résultats présentés sont des estimations potentielles destinées à faciliter la compréhension "
-        "du développement de votre patrimoine. Nous vous recommandons de consulter un professionnel "
-        "qualifié avant de prendre toute décision d'investissement."
-    )
-    pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
-
-    # Dernière page
-    pdf.add_last_page()
-
-    try:
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
-    except UnicodeEncodeError:
-        print("Warning: Some characters could not be encoded. They will be replaced.")
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
-
-    return pdf_output
+    return pdf.output(dest='S').encode('latin-1', errors='replace')
 
 
 def main():
