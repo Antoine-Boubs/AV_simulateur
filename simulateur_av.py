@@ -1725,19 +1725,5 @@ def main():
             st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
             print(f"Detailed error: {e}")
 if __name__ == "__main__":
-    main()       
-                pdf_bytes = create_pdf(st.session_state.params, img_buffers, st.session_state.resultats_df, st.session_state.params, st.session_state.objectives)
-                
-                st.download_button(
-                    label="Télécharger le rapport PDF",
-                    data=pdf_bytes,
-                    file_name=f"rapport_simulation_financiere_{prenom}.pdf",
-                    mime="application/pdf"
-                )
-            except Exception as e:
-                st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-                print(f"Erreur détaillée : {e}")
-
-if __name__ == "__main__":
     main()
 
