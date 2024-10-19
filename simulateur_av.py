@@ -1663,7 +1663,7 @@ def create_waterfall_chart(resultats_df):
     img_bytes = fig.to_image(format="png")
     return io.BytesIO(img_bytes)
 
-def create_pdf(session_state, img_buffers, resultats_df, logo_path):
+def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
     pdf = PDF()
     pdf.add_page()
     pdf.set_left_margin(20)
@@ -1676,8 +1676,8 @@ def create_pdf(session_state, img_buffers, resultats_df, logo_path):
     pdf.set_font_safe('Inter', 'B', 24)
     pdf.cell(0, 20, 'Simulation Financière', 0, 1, 'C')
     pdf.set_font_safe('Inter', '', 14)
-    pdf.cell(0, 10, f"Préparé pour : {session_state.get('nom_client', 'Client')}", 0, 1, 'C')
-    pdf.cell(0, 10, f"Date : {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'C')
+    pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
+    pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
 
     # Paramètres de la simulation
     pdf.add_page()
@@ -1686,11 +1686,11 @@ def create_pdf(session_state, img_buffers, resultats_df, logo_path):
     pdf.ln(5)
 
     parameters = [
-        ("Capital initial", f"{session_state.get('capital_initial', 'Non spécifié')} €"),
-        ("Versement mensuel", f"{session_state.get('versement_mensuel', 'Non spécifié')} €"),
-        ("Rendement annuel", f"{session_state.get('rendement_annuel', 0)*100:.2f}%"),
-        ("Durée de simulation", f"{session_state.get('duree_simulation', 'Non spécifié')} ans"),
-        ("Frais de gestion", f"{session_state.get('frais_gestion', 0)*100:.2f}%")
+        ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
+        ("Versement mensuel", f"{params.get('versement_mensuel', 'Non spécifié')} €"),
+        ("Rendement annuel", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié"),
+        ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
+        ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
     ]
 
     for label, value in parameters:
@@ -1706,8 +1706,8 @@ def create_pdf(session_state, img_buffers, resultats_df, logo_path):
     pdf.cell(0, 15, 'Détail des versements', 0, 1)
     pdf.ln(5)
 
-    versements_libres = session_state.get('versements_libres', [])
-    modifications_versements = session_state.get('modifications_versements', [])
+    versements_libres = params.get('versements_libres', [])
+    modifications_versements = params.get('modifications_versements', [])
 
     if versements_libres:
         pdf.set_font_safe('Inter', 'B', 14)
@@ -1744,7 +1744,7 @@ def create_pdf(session_state, img_buffers, resultats_df, logo_path):
             pdf.cell(0, 10, 'Performance historique', 0, 1)
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            img = Image.open(io.BytesIO(img_buffer))
+            img = Image.open(img_buffer)
             img.save(tmpfile.name, format="PNG")
             pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
@@ -1754,7 +1754,6 @@ def create_pdf(session_state, img_buffers, resultats_df, logo_path):
     pdf.cell(0, 15, 'Objectifs de l\'investisseur', 0, 1, 'C')
     pdf.ln(5)
 
-    objectives = session_state.get('objectifs', [])
     if objectives:
         colors = ['#7E57C2', '#2196F3', '#4CAF50', '#FFC107']
         card_width = 85
@@ -1832,10 +1831,8 @@ def create_pdf(session_state, img_buffers, resultats_df, logo_path):
 def main():
     global resultats_df, params
 
-    st.title("Générateur de Rapport Financier")
-
     # Créer une disposition en colonnes avec un ratio de 2:1
-    col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([2,,1, 1])
 
     # Bouton pour générer le PDF dans la première colonne (à gauche)
     with col1:
