@@ -1735,34 +1735,35 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Détail des versements
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Détail des versements', 0, 1)
+    pdf.set_font_safe('Inter', 'B', 28)  # Increased font size
+    pdf.cell(0, 20, 'Détail des versements', 0, 1)
     pdf.ln(5)
 
     versements_libres = params.get('versements_libres', [])
     modifications_versements = params.get('modifications_versements', [])
 
     if versements_libres:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 8, "Versements libres :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
+        pdf.set_font_safe('Inter', 'B', 20)  # Increased font size
+        pdf.cell(0, 12, "Versements libres :", 0, 1)
+        pdf.set_font_safe('Inter', '', 18)  # Increased font size
         for vl in versements_libres:
-            pdf.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
+            pdf.cell(0, 10, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
         pdf.ln(5)
 
     if modifications_versements:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 8, "Modifications de versements :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
+        pdf.set_font_safe('Inter', 'B', 20)  # Increased font size
+        pdf.cell(0, 12, "Modifications de versements :", 0, 1)
+        pdf.set_font_safe('Inter', '', 18)  # Increased font size
         for mv in modifications_versements:
             if mv['montant'] == 0:
-                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Versements arrêtés", 0, 1)
+                pdf.cell(0, 10, f"De l'année {mv['debut']} à {mv['fin']} : Versements arrêtés", 0, 1)
             else:
-                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Modifiés à {mv['montant']} €", 0, 1)
+                pdf.cell(0, 10, f"De l'année {mv['debut']} à {mv['fin']} : Modifiés à {mv['montant']} €", 0, 1)
         pdf.ln(5)
 
     if not versements_libres and not modifications_versements:
-        pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
+        pdf.set_font_safe('Inter', 'I', 18)  # Increased font size
+        pdf.cell(0, 10, "Aucun versement libre ou modification de versement défini", 0, 1)
 
     # Graphiques
     for i, img_buffer in enumerate(img_buffers):
@@ -1852,37 +1853,37 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.ln(10)
 
-    # Dernière page (inchangée)
+    # Dernière page
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Informations complémentaires', 0, 1, 'C')
+    pdf.set_font_safe('Inter', 'B', 28)  # Increased font size
+    pdf.cell(0, 20, 'Informations complémentaires', 0, 1, 'C')
     pdf.ln(10)
 
-    pdf.set_font_safe('Inter', '', 12)
-    pdf.multi_cell(0, 5, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
+    pdf.set_font_safe('Inter', '', 16)  # Increased font size
+    pdf.multi_cell(0, 8, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
                          "Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité "
                          "d'un acteur historique de l'assurance-vie.")
     pdf.ln(5)
-    pdf.multi_cell(0, 5, "L'assurance-vie offre de nombreux avantages, parmi lesquels :")
+    pdf.multi_cell(0, 8, "L'assurance-vie offre de nombreux avantages, parmi lesquels :")
     pdf.ln(5)
-    pdf.multi_cell(0, 5, "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains "
+    pdf.multi_cell(0, 8, "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains "
                          "réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la "
                          "transmission de votre patrimoine.")
     pdf.ln(5)
-    pdf.multi_cell(0, 5, "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous "
+    pdf.multi_cell(0, 8, "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous "
                          "le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des "
                          "versements quand vous le souhaitez.")
     pdf.ln(10)
 
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
-    pdf.set_font_safe('Inter', '', 10)
+    pdf.set_font_safe('Inter', 'B', 20)  # Increased font size
+    pdf.cell(0, 12, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
+    pdf.set_font_safe('Inter', '', 16)  # Increased font size
     pdf.set_text_color(0, 122, 255)  # Bleu Apple
     pdf.cell(0, 10, 'Cliquez ici pour plus d\'informations', 0, 1, 'L', link="https://www.example.com")
     pdf.set_text_color(0, 0, 0)  # Retour au noir
 
     pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 12)
+    pdf.set_font_safe('Inter', 'B', 18)  # Increased font size
     pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
 
     if logo_path and os.path.exists(logo_path):
