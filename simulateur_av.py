@@ -5,6 +5,12 @@ import math
 from streamlit_extras.card import card
 from plotly.subplots import make_subplots
 import plotly.io as pio
+import os
+import tempfile
+from datetime import datetime
+from PIL import Image
+import plotly.graph_objects as go
+import io
 
 st.set_page_config(
     layout="centered", 
@@ -1615,6 +1621,29 @@ def create_detailed_table(pdf, resultats_df):
     
 import tempfile
 from PIL import Image
+
+def create_pie_chart(capital_final, versements, plus_values, annee):
+    fig = go.Figure(data=[go.Pie(
+        labels=['Versements', 'Plus-values'],
+        values=[versements, plus_values],
+        hole=.3,
+        marker_colors=['#007AFF', '#34C759']  # Couleurs Apple (bleu et vert)
+    )])
+
+    fig.update_layout(
+        title=f"Composition du capital en année {annee}",
+        annotations=[
+            dict(text=f'{capital_final:,.0f} €', x=0.5, y=0.5, font_size=20, showarrow=False),
+            dict(text='Capital final', x=0.5, y=0.35, font_size=12, showarrow=False)
+        ],
+        width=400,
+        height=300,
+        margin=dict(l=0, r=0, t=40, b=0)
+    )
+
+    img_bytes = fig.to_image(format="png")
+    return io.BytesIO(img_bytes)
+    
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
