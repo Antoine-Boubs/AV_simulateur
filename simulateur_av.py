@@ -1663,113 +1663,79 @@ def create_waterfall_chart(resultats_df):
     img_bytes = fig.to_image(format="png")
     return io.BytesIO(img_bytes)
 
-def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
-    if not os.path.exists(logo_path):
-        print(f"Warning: Logo file not found at {logo_path}")
-        logo_path = None
-
-    pdf = PDF(logo_path)
-    left_margin = 20
-    pdf.set_left_margin(left_margin)
-    pdf.alias_nb_pages()
+def create_pdf(session_state, img_buffers, resultats_df, logo_path):
+    pdf = PDF()
+    pdf.add_page()
+    pdf.set_left_margin(20)
+    pdf.set_right_margin(20)
+    pdf.set_auto_page_break(auto=True, margin=15)
 
     # Page de couverture
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 28)
+    if logo_path and os.path.exists(logo_path):
+        pdf.image(logo_path, x=10, y=10, w=30)
+    pdf.set_font_safe('Inter', 'B', 24)
     pdf.cell(0, 20, 'Simulation Financière', 0, 1, 'C')
-    pdf.set_font_safe('Inter', '', 16)
-    pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
-    pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
-
-    # Avertissement
-    pdf.ln(20)
-    pdf.add_warning()
+    pdf.set_font_safe('Inter', '', 14)
+    pdf.cell(0, 10, f"Préparé pour : {session_state.get('nom_client', 'Client')}", 0, 1, 'C')
+    pdf.cell(0, 10, f"Date : {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'C')
 
     # Paramètres de la simulation
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 24)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 20, 'Paramètres de la simulation', 0, 1, 'C')
-    pdf.ln(10)
+    pdf.set_font_safe('Inter', 'B', 18)
+    pdf.cell(0, 15, 'Paramètres de la simulation', 0, 1, 'C')
+    pdf.ln(5)
 
-    # Définition des couleurs
-    light_gray = 245
-    dark_gray = 80
-    blue = (0, 122, 255)  # Bleu Apple
-
-    # Création d'un tableau stylisé
     parameters = [
-        ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
-        ("Versement mensuel", f"{params.get('versement_mensuel', 'Non spécifié')} €"),
-        ("Rendement annuel", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié"),
-        ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
-        ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
+        ("Capital initial", f"{session_state.get('capital_initial', 'Non spécifié')} €"),
+        ("Versement mensuel", f"{session_state.get('versement_mensuel', 'Non spécifié')} €"),
+        ("Rendement annuel", f"{session_state.get('rendement_annuel', 0)*100:.2f}%"),
+        ("Durée de simulation", f"{session_state.get('duree_simulation', 'Non spécifié')} ans"),
+        ("Frais de gestion", f"{session_state.get('frais_gestion', 0)*100:.2f}%")
     ]
 
-    # Largeur de colonne et hauteur de ligne
-    col_width = pdf.w / 2 - 20
-    row_height = 14
-    
-    for i, (label, value) in enumerate(parameters):
-        # Alternance de couleurs de fond
-        if i % 2 == 0:
-            pdf.set_fill_color(light_gray, light_gray, light_gray)
-        else:
-            pdf.set_fill_color(255, 255, 255)
-        
-        # Label
+    for label, value in parameters:
         pdf.set_font_safe('Inter', 'B', 12)
-        pdf.set_text_color(dark_gray, dark_gray, dark_gray)
-        pdf.cell(col_width, row_height, label, 0, 0, 'L', 1)
-        
-        # Value
+        pdf.cell(80, 10, label, 0)
         pdf.set_font_safe('Inter', '', 12)
-        pdf.set_text_color(*blue)
-        pdf.cell(col_width, row_height, value, 0, 1, 'R', 1)
-    
-    # Bordure autour du tableau
-    pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
+        pdf.cell(0, 10, value, 0, 1)
+    pdf.ln(5)
 
-    pdf.ln(20)
-
-   # Détail des versements
-    check_page_break(pdf)
-    pdf.set_font_safe('Inter', 'B', 24)
+    # Détail des versements
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 18)
     pdf.cell(0, 15, 'Détail des versements', 0, 1)
     pdf.ln(5)
 
-    versements_libres = params.get('versements_libres', [])
-    modifications_versements = params.get('modifications_versements', [])
+    versements_libres = session_state.get('versements_libres', [])
+    modifications_versements = session_state.get('modifications_versements', [])
 
     if versements_libres:
-        pdf.set_font_safe('Inter', 'B', 20)
-        pdf.cell(0, 12, "Versements libres :", 0, 1)
-        pdf.set_font_safe('Inter', '', 18)
+        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.cell(0, 10, "Versements libres :", 0, 1)
+        pdf.set_font_safe('Inter', '', 12)
         for vl in versements_libres:
-            pdf.cell(0, 10, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
+            pdf.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
         pdf.ln(5)
 
     if modifications_versements:
-        pdf.set_font_safe('Inter', 'B', 20)
-        pdf.cell(0, 12, "Modifications de versements :", 0, 1)
-        pdf.set_font_safe('Inter', '', 18)
+        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.cell(0, 10, "Modifications de versements :", 0, 1)
+        pdf.set_font_safe('Inter', '', 12)
         for mv in modifications_versements:
             if mv['montant'] == 0:
-                pdf.cell(0, 10, f"De l'année {mv['debut']} à {mv['fin']} : Versements arrêtés", 0, 1)
+                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Versements arrêtés", 0, 1)
             else:
-                pdf.cell(0, 10, f"De l'année {mv['debut']} à {mv['fin']} : Modifiés à {mv['montant']} €", 0, 1)
+                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Modifiés à {mv['montant']} €", 0, 1)
         pdf.ln(5)
 
     if not versements_libres and not modifications_versements:
-        pdf.set_font_safe('Inter', 'I', 18)
+        pdf.set_font_safe('Inter', 'I', 12)
         pdf.cell(0, 10, "Aucun versement libre ou modification de versement défini", 0, 1)
-
 
     # Graphiques
     for i, img_buffer in enumerate(img_buffers):
         pdf.add_page()
-        pdf.set_font_safe('Inter', 'B', 18)
+        pdf.set_font_safe('Inter', 'B', 16)
         if i == 0:
             pdf.cell(0, 10, 'Évolution de votre investissement', 0, 1)
         elif i == 1:
@@ -1778,39 +1744,22 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.cell(0, 10, 'Performance historique', 0, 1)
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            img = Image.open(img_buffer)
+            img = Image.open(io.BytesIO(img_buffer))
             img.save(tmpfile.name, format="PNG")
             pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
-    # Ajout du graphique en camembert
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Répartition du capital final', 0, 1)
-    
-    # Création du graphique en camembert
-    duree_capi_max = len(resultats_df)
-    donut_chart = create_donut_chart(resultats_df, duree_capi_max)
-    
-    img_bytes = donut_chart.to_image(format="png")
-    img_buffer = io.BytesIO(img_bytes)
-    
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-        Image.open(img_buffer).save(tmpfile.name, format="PNG")
-        pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
-
     # Objectifs de l'investisseur
-    check_page_break(pdf)
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1, 'C')
+    pdf.cell(0, 15, 'Objectifs de l\'investisseur', 0, 1, 'C')
     pdf.ln(5)
 
+    objectives = session_state.get('objectifs', [])
     if objectives:
-        colors = ['#7E57C2', '#2196F3', '#4CAF50', '#FFC107']  # Violet, Bleu, Vert, Jaune
+        colors = ['#7E57C2', '#2196F3', '#4CAF50', '#FFC107']
         card_width = 85
         card_height = 50
         margin = 10
-        padding = 5
         start_x = (pdf.w - (card_width * 2 + margin)) / 2
         start_y = pdf.get_y()
 
@@ -1821,88 +1770,63 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             x = start_x + (card_width + margin) * col
             y = start_y + (card_height + margin) * row
 
-            # Dessiner la bordure
-            pdf.set_draw_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
-            pdf.set_line_width(3)
-            pdf.rect(x, y, card_width, card_height, 'D')
-
-            # Remplir le fond
             pdf.set_fill_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
             pdf.rect(x, y, card_width, card_height, 'F')
             
-            # Ajouter le padding
-            x += padding
-            y += padding
             pdf.set_xy(x, y)
-            
-            # Nom de l'objectif
             pdf.set_font_safe('Inter', 'B', 12)
             pdf.set_text_color(255, 255, 255)
-            pdf.cell(card_width - 2*padding, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1, 'C')
+            pdf.multi_cell(card_width, 10, obj.get('nom', 'Objectif non spécifié'), 0, 'C')
             
-            # Détails de l'objectif
+            pdf.set_xy(x, y + 20)
             pdf.set_font_safe('Inter', '', 8)
-            pdf.cell(card_width - 2*padding, 6, f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1, 'C')
-            pdf.cell(card_width - 2*padding, 6, f"Année : {obj.get('annee', 'Non spécifiée')}", 0, 1, 'C')
-            pdf.cell(card_width - 2*padding, 6, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1, 'C')
+            pdf.multi_cell(card_width, 5, f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €\n"
+                                          f"Année : {obj.get('annee', 'Non spécifiée')}\n"
+                                          f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 'C')
 
-        # Ajuster la position Y pour la suite du document
         pdf.set_y(start_y + ((len(objectives) + 1) // 2) * (card_height + margin))
-
     else:
         pdf.set_font_safe('Inter', 'I', 12)
         pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1, 'C')
 
-    if pdf.get_y() > pdf.h - 40:  # Si on est trop bas sur la page
-        pdf.add_page()
-
-    pdf.ln(10)
-
     # Dernière page
-    check_page_break(pdf)
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 24)  # Réduire légèrement la taille de la police
+    pdf.set_font_safe('Inter', 'B', 18)
+    pdf.set_text_color(44, 62, 80)  # Bleu foncé
     pdf.cell(0, 15, 'Informations complémentaires', 0, 1, 'C')
     pdf.ln(5)
 
-    pdf.set_font_safe('Inter', '', 12)  # Réduire la taille de la police pour le texte principal
-    pdf.multi_cell(0, 8, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
+    pdf.set_font_safe('Inter', '', 12)
+    pdf.multi_cell(0, 5, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
                          "Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité "
                          "d'un acteur historique de l'assurance-vie.")
     pdf.ln(5)
-    pdf.multi_cell(0, 8, "L'assurance-vie offre de nombreux avantages, parmi lesquels :")
+    pdf.multi_cell(0, 5, "L'assurance-vie offre de nombreux avantages, parmi lesquels :")
     pdf.ln(5)
-    pdf.multi_cell(0, 8, "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains "
+    pdf.multi_cell(0, 5, "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains "
                          "réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la "
                          "transmission de votre patrimoine.")
     pdf.ln(5)
-    pdf.multi_cell(0, 8, "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous "
+    pdf.multi_cell(0, 5, "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous "
                          "le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des "
                          "versements quand vous le souhaitez.")
     pdf.ln(10)
 
-    pdf.set_font_safe('Inter', 'B', 20)
-    pdf.cell(0, 12, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
-    pdf.set_font_safe('Inter', '', 16)
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
+    pdf.set_font_safe('Inter', '', 12)
     pdf.set_text_color(0, 122, 255)  # Bleu Apple
     pdf.cell(0, 10, 'Cliquez ici pour plus d\'informations', 0, 1, 'L', link="https://www.example.com")
-    pdf.set_text_color(0, 0, 0)  # Retour au noir
 
     pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 18)
+    pdf.set_font_safe('Inter', 'B', 12)
+    pdf.set_text_color(44, 62, 80)  # Retour au bleu foncé
     pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
-
-    if pdf.get_y() > pdf.h - 40:
-        pdf.add_page()
 
     if logo_path and os.path.exists(logo_path):
         pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
 
     return pdf.output(dest='S').encode('latin-1', errors='replace')
-
-def check_page_break(pdf, height=30):
-    if pdf.get_y() + height > pdf.h - 40:
-        pdf.add_page()
 
 
 def main():
