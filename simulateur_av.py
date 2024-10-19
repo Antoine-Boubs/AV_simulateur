@@ -1738,50 +1738,20 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
     # Graphiques
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Évolution de votre investissement', 0, 1)
-
-    # Premier graphique
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-        img = Image.open(img_buffers[0])
-        img.save(tmpfile.name, format="PNG")
-        pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
-
-    # Texte explicatif sous le premier graphique
-    pdf.set_y(pdf.get_y() + 140)
-    pdf.set_font_safe('Inter', '', 10)
-    pdf.multi_cell(0, 5, "Ce graphique montre l'évolution de votre capital au fil du temps. La ligne bleue représente le capital total, la ligne verte l'épargne investie, et les barres rouges les éventuels rachats.")
-
-    # Deuxième graphique (waterfall)
-    pdf.add_page()
-    waterfall_chart = create_waterfall_chart(resultats_df)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as waterfall_tmpfile:
-        Image.open(waterfall_chart).save(waterfall_tmpfile.name, format="PNG")
-        pdf.image(waterfall_tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
-
-    # Texte explicatif sous le deuxième graphique
-    pdf.set_y(pdf.get_y() + 140)
-    pdf.set_font_safe('Inter', '', 10)
-    pdf.multi_cell(0, 5, "Ce graphique en cascade illustre l'évolution de votre capital année par année, montrant les variations annuelles et la progression globale de votre investissement.")
-
-    # Troisième graphique (composition du capital)
-    pdf.add_page()
-    derniere_annee = resultats_df.iloc[-1]
-    capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
-    versements = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
-    plus_values = capital_final - versements
-    annee = len(resultats_df)
-
-    pie_chart = create_pie_chart(capital_final, versements, plus_values, annee)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as pie_tmpfile:
-        Image.open(pie_chart).save(pie_tmpfile.name, format="PNG")
-        pdf.image(pie_tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
-
-    # Texte explicatif sous le troisième graphique
-    pdf.set_y(pdf.get_y() + 140)
-    pdf.set_font_safe('Inter', '', 10)
-    pdf.multi_cell(0, 5, f"Ce graphique illustre la composition de votre capital à la fin de la simulation. Sur un total de {capital_final:,.0f} €, {versements:,.0f} € proviennent de vos versements et {plus_values:,.0f} € des plus-values générées, représentant une croissance de {(plus_values/versements)*100:.1f}% sur votre investissement initial.")
+    for i, img_buffer in enumerate(img_buffers):
+        pdf.add_page()
+        pdf.set_font_safe('Inter', 'B', 18)
+        if i == 0:
+            pdf.cell(0, 10, 'Évolution de votre investissement', 0, 1)
+        elif i == 1:
+            pdf.cell(0, 10, 'Composition du capital', 0, 1)
+        elif i == 2:
+            pdf.cell(0, 10, 'Performance historique', 0, 1)
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+            img = Image.open(img_buffer)
+            img.save(tmpfile.name, format="PNG")
+            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
     # Objectifs de l'investisseur
     pdf.add_page()
@@ -1790,35 +1760,25 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(5)
 
     if objectives:
-        for obj in objectives:
+        colors = ['#7E57C2', '#2196F3', '#4CAF50']  # Violet, Bleu, Vert
+        for i, obj in enumerate(objectives):
+            pdf.set_fill_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
+            pdf.rect(pdf.get_x(), pdf.get_y(), 190, 40, 'F')
+            
             pdf.set_font_safe('Inter', 'B', 14)
+            pdf.set_text_color(255, 255, 255)
             pdf.cell(0, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
+            
             pdf.set_font_safe('Inter', '', 12)
             pdf.cell(0, 8, f"Montant annuel : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1)
             pdf.cell(0, 8, f"Année de réalisation : {obj.get('annee', 'Non spécifiée')}", 0, 1)
             pdf.cell(0, 8, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1)
-            pdf.ln(5)
+            
+            pdf.set_text_color(0, 0, 0)
+            pdf.ln(10)
     else:
         pdf.set_font_safe('Inter', 'I', 12)
         pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1)
-
-    # Performance historique
-    if len(img_buffers) > 2:
-        pdf.add_page()
-        pdf.set_font_safe('Inter', 'B', 16)
-        pdf.cell(0, 10, 'Performance historique', 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
-                             'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
-                             "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
-                             "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
-                             "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
-                             'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
-                             'performances supérieures.')
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            img = Image.open(img_buffers[2])
-            img.save(tmpfile.name, format="PNG")
-            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
 
     # Dernière page
     pdf.add_page()
@@ -1835,7 +1795,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(5)
     pdf.multi_cell(0, 5, "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains "
                          "réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la "
-                         
                          "transmission de votre patrimoine.")
     pdf.ln(5)
     pdf.multi_cell(0, 5, "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous "
