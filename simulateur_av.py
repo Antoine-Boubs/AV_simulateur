@@ -1521,7 +1521,8 @@ import tempfile
 from PIL import Image
 
 
-def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
+# Création du PDF
+def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf = PDF()
     pdf.add_page()
     pdf.set_left_margin(20)
@@ -1529,13 +1530,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
     pdf.set_auto_page_break(auto=True, margin=15)
 
     # Page de couverture
-    if logo_path and os.path.exists(logo_path):
-        pdf.image(logo_path, x=10, y=10, w=30)
     pdf.set_font_safe('Inter', 'B', 24)
     pdf.cell(0, 20, 'Simulation Financière', 0, 1, 'C')
     pdf.set_font_safe('Inter', '', 14)
     pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
-    pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
+    pdf.cell(0, 10, f"Date : {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'C')
 
     # Paramètres de la simulation
     pdf.add_page()
@@ -1546,9 +1545,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
     parameters = [
         ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
         ("Versement mensuel", f"{params.get('versement_mensuel', 'Non spécifié')} €"),
-        ("Rendement annuel", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié"),
+        ("Rendement annuel", f"{params.get('rendement_annuel', 0)*100:.2f}%"),
         ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
-        ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
+        ("Frais de gestion", f"{params.get('frais_gestion', 0)*100:.2f}%")
     ]
 
     for label, value in parameters:
@@ -1557,38 +1556,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
         pdf.set_font_safe('Inter', '', 12)
         pdf.cell(0, 10, value, 0, 1)
     pdf.ln(5)
-
-    # Détail des versements
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 15, 'Détail des versements', 0, 1)
-    pdf.ln(5)
-
-    versements_libres = params.get('versements_libres', [])
-    modifications_versements = params.get('modifications_versements', [])
-
-    if versements_libres:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 10, "Versements libres :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        for vl in versements_libres:
-            pdf.cell(0, 8, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
-        pdf.ln(5)
-
-    if modifications_versements:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 10, "Modifications de versements :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        for mv in modifications_versements:
-            if mv['montant'] == 0:
-                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Versements arrêtés", 0, 1)
-            else:
-                pdf.cell(0, 8, f"De l'année {mv['debut']} à {mv['fin']} : Modifiés à {mv['montant']} €", 0, 1)
-        pdf.ln(5)
-
-    if not versements_libres and not modifications_versements:
-        pdf.set_font_safe('Inter', 'I', 12)
-        pdf.cell(0, 10, "Aucun versement libre ou modification de versement défini", 0, 1)
 
     # Graphiques
     chart_titles = [
@@ -1606,65 +1573,21 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
         pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
 
     # Objectifs de l'investisseur
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 15, 'Objectifs de l\'investisseur', 0, 1, 'C')
-    pdf.ln(5)
-
     if objectives:
-        colors = ['#7E57C2', '#2196F3', '#4CAF50', '#FFC107']
-        card_width = 85
-        card_height = 50
-        margin = 10
-        start_x = (pdf.w - (card_width * 2 + margin)) / 2
-        start_y = pdf.get_y()
-
-        for i, obj in enumerate(objectives):
-            col = i % 2
-            row = i // 2
-            
-            x = start_x + (card_width + margin) * col
-            y = start_y + (card_height + margin) * row
-
-            pdf.set_fill_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
-            pdf.rect(x, y, card_width, card_height, 'F')
-            
-            pdf.set_xy(x, y)
-            pdf.set_font_safe('Inter', 'B', 12)
-            pdf.set_text_color(255, 255, 255)
-            pdf.multi_cell(card_width, 10, obj.get('nom', 'Objectif non spécifié'), 0, 'C')
-            
-            pdf.set_xy(x, y + 20)
-            pdf.set_font_safe('Inter', '', 8)
-            pdf.multi_cell(card_width, 5, f"Montant : {obj.get('montant_annuel', 'Non spécifié')} €\n"
-                                          f"Année : {obj.get('annee', 'Non spécifiée')}\n"
-                                          f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 'C')
-
-        pdf.set_y(start_y + ((len(objectives) + 1) // 2) * (card_height + margin))
-    else:
-        pdf.set_font_safe('Inter', 'I', 12)
-        pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1, 'C')
-
-
-    # Performance historique
-    if len(img_buffers) > 2:
         pdf.add_page()
-        pdf.set_font_safe('Inter', 'B', 16)
-        pdf.cell(0, 10, 'Performance historique', 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
-                             'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
-                             "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
-                             "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
-                             "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
-                             'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
-                             'performances supérieures.')
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            img = Image.open(img_buffers[2])
-            img.save(tmpfile.name, format="PNG")
-            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+        pdf.set_font_safe('Inter', 'B', 18)
+        pdf.cell(0, 15, 'Objectifs de l\'investisseur', 0, 1, 'C')
+        pdf.ln(5)
 
-    
+        for obj in objectives:
+            pdf.set_font_safe('Inter', 'B', 14)
+            pdf.cell(0, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
+            pdf.set_font_safe('Inter', '', 12)
+            pdf.cell(0, 8, f"Montant annuel : {obj.get('montant_annuel', 'Non  spécifié')} €", 0, 1)
+            pdf.cell(0, 8, f"Année de réalisation : {obj.get('annee', 'Non spécifiée')}", 0, 1)
+            pdf.cell(0, 8, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1)
+            pdf.ln(5)
+
     # Dernière page
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
@@ -1699,42 +1622,30 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives, logo_path):
     pdf.set_text_color(44, 62, 80)  # Retour au bleu foncé
     pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
 
-    if logo_path and os.path.exists(logo_path):
-        pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
-
     return pdf.output(dest='S').encode('latin-1', errors='replace')
-
 
 def main():
     initialize_session_state()
-    global resultats_df, params
 
-    # Créer une disposition en colonnes avec un ratio de 2:1
+    st.title("Générateur de Rapport Financier")
+
     col1, col2 = st.columns([2, 1])
-
-    # Bouton pour générer le PDF dans la première colonne (à gauche)
     with col1:
         generate_button = st.button("Générer le rapport PDF", use_container_width=True)
-
-    # Champ de saisie pour le prénom dans la deuxième colonne (à droite)
     with col2:
-        prenom = st.text_input("Entrez votre prénom", help= "Seulement pour mettre le rapport à votre nom", key="prenom_input")
+        prenom = st.text_input("Entrez votre prénom", help="Seulement pour mettre le rapport à votre nom", key="prenom_input")
 
     if generate_button:
         if not prenom:
             st.warning("Veuillez entrer votre prénom avant de générer le rapport.")
         else:
             try:
-                # Mettre à jour le nom du client dans les paramètres
                 st.session_state.params['nom_client'] = prenom
                 
-                # Générer les images des graphiques
                 img_buffers = generate_chart_images(st.session_state.resultats_df)
                 
-                # Créer le PDF
                 pdf_bytes = create_pdf(st.session_state.params, img_buffers, st.session_state.resultats_df, st.session_state.params, st.session_state.objectives)
                 
-                # Créer un lien de téléchargement pour le PDF
                 st.download_button(
                     label="Télécharger le rapport PDF",
                     data=pdf_bytes,
@@ -1743,7 +1654,8 @@ def main():
                 )
             except Exception as e:
                 st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-                print(f"Detailed error: {e}")
+                print(f"Erreur détaillée : {e}")
 
 if __name__ == "__main__":
     main()
+
