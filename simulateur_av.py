@@ -1832,7 +1832,7 @@ def main():
     global resultats_df, params
 
     # Créer une disposition en colonnes avec un ratio de 2:1
-    col1, col2 = st.columns([2,1, 1])
+    col1, col2 = st.columns([2, 1])
 
     # Bouton pour générer le PDF dans la première colonne (à gauche)
     with col1:
