@@ -1714,27 +1714,29 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(5)
     pdf.set_font_safe('Inter', '', 12)
 
-    if 'versements_libres' in params and params['versements_libres']:
+    versements_libres = params.get('versements_libres', [])
+    modifications_versements = params.get('modifications_versements', [])
+
+    if versements_libres:
         pdf.set_font_safe('Inter', 'B', 14)
         pdf.cell(0, 8, "Versements libres :", 0, 1)
         pdf.set_font_safe('Inter', '', 12)
-        for vl in params['versements_libres']:
+        for vl in versements_libres:
             add_info_line(f"Année {vl['annee']} :", f"{vl['montant']} €")
         pdf.ln(5)
 
-    if 'modifications_versements' in params and params['modifications_versements']:
+    if modifications_versements:
         pdf.set_font_safe('Inter', 'B', 14)
         pdf.cell(0, 8, "Modifications de versements :", 0, 1)
         pdf.set_font_safe('Inter', '', 12)
-        for mv in params['modifications_versements']:
+        for mv in modifications_versements:
             if mv['montant'] == 0:
                 add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", "Versements arrêtés")
             else:
                 add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", f"Modifiés à {mv['montant']} €")
         pdf.ln(5)
 
-    if (not 'versements_libres' in params or not params['versements_libres']) and \
-       (not 'modifications_versements' in params or not params['modifications_versements']):
+    if not versements_libres and not modifications_versements:
         pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
     # Graphiques
