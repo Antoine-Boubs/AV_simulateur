@@ -1847,7 +1847,50 @@ def main():
             st.warning("Veuillez entrer votre prénom avant de générer le rapport.")
         else:
             try:
-                # Mettre à jour le nom du client dans les paramètres
+                
+                # Générer les graphiques
+                img_buffer1 = generate_chart1(st.session_state.resultats_df)
+                img_buffer2 = generate_chart2(st.session_state.resultats_df)
+                
+                # Créer le troisième graphique (performance historique)
+                fig3 = go.Figure()
+                years = [2019, 2020, 2021, 2022, 2023]
+                performances = [22.69, -0.80, 25.33, -12.17, 11.91]
+
+                fig3.add_trace(go.Bar(
+                    x=years,
+                    y=performances,
+                    text=[f"{p:+.2f}%" for p in performances],
+                    textposition='outside',
+                    marker_color=['#4CAF50' if p >= 0 else '#F44336' for p in performances],
+                    marker_line_color='rgba(0,0,0,0.5)',
+                    marker_line_width=1.5,
+                    opacity=0.8,
+                    name='Performance annuelle'
+                ))
+                fig3.update_layout(
+                    title={
+                        'text': 'Performances historiques',
+                        'y':0.95,
+                        'x':0.5,
+                        'xanchor': 'center',
+                        'yanchor': 'top',
+                        'font': dict(size=24, color='#1E3A8A')
+                    },
+                    xaxis_title='Année',
+                    yaxis_title='Performance annuelle (%)',
+                    plot_bgcolor='rgba(240,240,240,0.5)',
+                    paper_bgcolor='white',
+                    yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
+                    xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
+                    margin=dict(l=50, r=50, t=80, b=50),
+                    hovermode="x unified"
+                )
+
+                img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
+                img_buffer3 = io.BytesIO(img_bytes3)
+                img_buffer3.seek(0)  # Rembobiner le buffer
+                
                 params['nom_client'] = prenom
                 
                 pdf_bytes = create_pdf(st.session_state, img_buffers, resultats_df, logo_path)
