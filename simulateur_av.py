@@ -1290,6 +1290,19 @@ class PDF(FPDF):
 import plotly.graph_objects as go
 import pandas as pd
 
+def initialize_session_state():
+    if 'params' not in st.session_state:
+        st.session_state.params = {
+            'capital_initial': 10000,  # Valeur par défaut
+            'versement_mensuel': 500,  # Valeur par défaut
+            'rendement_annuel': 0.05,  # Valeur par défaut (5%)
+            'duree_simulation': 20,  # Valeur par défaut
+            'frais_gestion': 0.01,  # Valeur par défaut (1%)
+            'nom_client': '',  # Sera rempli plus tard
+            'versements_libres': [],
+            'modifications_versements': []
+        }
+        
 def create_evolution_chart(annees, capital_fin_annee, epargne_investie, rachats):
     fig = go.Figure()
 
