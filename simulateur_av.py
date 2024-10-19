@@ -1735,7 +1735,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Détail des versements
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 28)  # Increased font size
+    pdf.set_font_safe('Inter', 'B', 28)
     pdf.cell(0, 20, 'Détail des versements', 0, 1)
     pdf.ln(5)
 
@@ -1743,17 +1743,17 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     modifications_versements = params.get('modifications_versements', [])
 
     if versements_libres:
-        pdf.set_font_safe('Inter', 'B', 20)  # Increased font size
+        pdf.set_font_safe('Inter', 'B', 20)
         pdf.cell(0, 12, "Versements libres :", 0, 1)
-        pdf.set_font_safe('Inter', '', 18)  # Increased font size
+        pdf.set_font_safe('Inter', '', 18)
         for vl in versements_libres:
             pdf.cell(0, 10, f"Année {vl['annee']} : {vl['montant']} €", 0, 1)
         pdf.ln(5)
 
     if modifications_versements:
-        pdf.set_font_safe('Inter', 'B', 20)  # Increased font size
+        pdf.set_font_safe('Inter', 'B', 20)
         pdf.cell(0, 12, "Modifications de versements :", 0, 1)
-        pdf.set_font_safe('Inter', '', 18)  # Increased font size
+        pdf.set_font_safe('Inter', '', 18)
         for mv in modifications_versements:
             if mv['montant'] == 0:
                 pdf.cell(0, 10, f"De l'année {mv['debut']} à {mv['fin']} : Versements arrêtés", 0, 1)
@@ -1762,7 +1762,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.ln(5)
 
     if not versements_libres and not modifications_versements:
-        pdf.set_font_safe('Inter', 'I', 18)  # Increased font size
+        pdf.set_font_safe('Inter', 'I', 18)
         pdf.cell(0, 10, "Aucun versement libre ou modification de versement défini", 0, 1)
 
     # Graphiques
