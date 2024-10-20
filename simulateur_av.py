@@ -1398,12 +1398,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_font('Inter', '', 'Inter-Regular.ttf', uni=True)
     pdf.add_font('Inter', 'B', 'Inter-Bold.ttf', uni=True)
     pdf.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
-    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_auto_page_break(auto=True, margin=20)  # Augmentation de la marge inférieure
 
     # Add a cover page
     pdf.add_page()
     pdf.set_font('Inter', 'B', 24)
-    pdf.cell(0, 60, 'Rapport financier', 0, 1, 'C')
+    pdf.cell(0, 80, 'Rapport financier', 0, 1, 'C')  # Augmentation de l'espace avant le titre
     pdf.set_font('Inter', '', 14)
     #pdf.cell(0, 10, f"Préparé pour: {params['nom_client']}", 0, 1, 'C')
     #pdf.cell(0, 10, f"Date: {params['date_rapport']}", 0, 1, 'C')
@@ -1438,68 +1438,50 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     left_margin = pdf.l_margin
 
     for i, (img_buffer, title, description) in enumerate(zip(img_buffers, chart_titles, chart_descriptions)):
-        if i == 0 or i == 1 or i == 3:  # Autres graphiques
-            pdf.add_page()
-            
-            # Ajout du titre avant le graphique
-            pdf.set_font_safe('Inter', 'B', 18)
-            pdf.cell(0, 15, title, 0, 1, 'C')
-            pdf.ln(5)
-            
-            # Ajout du graphique
-            chart_width = 180
-            add_image_to_pdf(pdf, img_buffer, x=(210-chart_width)/2, y=pdf.get_y(), w=chart_width)
-            
-            # Ajout de la description
-            pdf.ln(10)  # Espace approximatif pour le graphique
-            pdf.set_font_safe('Inter', '', 10)
-            pdf.set_left_margin(left_margin + 10)  # Augmente la marge de 10 points
-            pdf.multi_cell(0, 5, description, 0, 'L')
-            pdf.set_left_margin(left_margin)  # Rétablit la marge originale
-            pdf.ln(10)  # Espace après chaque graphique
-        elif i == 2:  # Graphique de composition du capital
-            # Vérifier s'il y a assez d'espace sur la page actuelle
-            if pdf.get_y() + 100 > pdf.h - 20:  # Augmenter l'espace nécessaire
-                pdf.add_page()
-            else:
-                pdf.ln(20)  # Espace entre les graphiques
-            
-            # Ajout du titre
-            pdf.set_font_safe('Inter', 'B', 16)
-            pdf.cell(0, 10, title, 0, 1, 'C')
-            pdf.ln(5)
-            
-            # Calculer la position en bas de la page
-            chart_height = 80
-            start_y = pdf.h - pdf.b_margin - chart_height
-            
-            # Ajout du graphique (réduit) en bas à gauche
-            add_image_to_pdf(pdf, img_buffer, x=10, y=start_y, w=95)
-            
-            # Ajout de la description à droite du graphique
-            pdf.set_xy(115, start_y)  # Augmente légèrement la marge à droite du graphique
-            pdf.set_font_safe('Inter', '', 10)
-            pdf.multi_cell(85, 5, description, 0, 'L')  # Réduit légèrement la largeur du texte
-            
-            # S'assurer que le curseur est positionné correctement pour la suite
-            pdf.set_y(start_y + chart_height + 10)
+        pdf.add_page()
+        
+        # Ajout du titre avant le graphique
+        pdf.set_font('Inter', 'B', 18)
+        pdf.cell(0, 20, title, 0, 1, 'C')  # Augmentation de l'espace après le titre
+        pdf.ln(10)  # Espace supplémentaire après le titre
+        
+        # Ajout du graphique
+        chart_width = 180
+        if i == 1:  # Graphique de composition du capital
+            chart_width = 120  # Réduire la largeur pour ce graphique spécifique
+        add_image_to_pdf(pdf, img_buffer, x=(210-chart_width)/2, y=pdf.get_y(), w=chart_width)
+        
+        # Ajout de la description
+        pdf.ln(110)  # Augmentation de l'espace après le graphique
+        pdf.set_font('Inter', '', 11)
+        pdf.set_left_margin(left_margin + 15)  # Augmentation de la marge pour la description
+        pdf.multi_cell(0, 6, description, 0, 'L')
+        pdf.set_left_margin(left_margin)  # Rétablit la marge originale
+        pdf.ln(20)  # Espace supplémentaire après la description
 
-    
     # Ajouter la section de récapitulatif du projet
+    pdf.add_page()
+    pdf.set_font('Inter', 'B', 18)
+    pdf.cell(0, 20, 'Récapitulatif du projet', 0, 1, 'C')
+    pdf.ln(10)
     pdf.add_recap(params, objectives)
     
     # Ajouter le tableau détaillé
+    pdf.add_page()
+    pdf.set_font('Inter', 'B', 18)
+    pdf.cell(0, 20, 'Détails année par année', 0, 1, 'C')
+    pdf.ln(10)
     create_detailed_table(pdf, resultats_df)
 
     # Ajouter une note sur le tableau détaillé
-    pdf.set_xy(10, pdf.get_y() + 10)
-    pdf.set_font_safe('Inter', 'I', 8)
-    pdf.multi_cell(0, 4, "Note : Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
+    pdf.ln(20)
+    pdf.set_font('Inter', 'I', 9)
+    pdf.multi_cell(0, 5, "Note : Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
                          "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
                          "Les valeurs sont arrondies à deux décimales près.")
 
-
     # Ajouter la dernière page (informations de contact, etc.)
+    pdf.add_page()
     pdf.add_last_page()
 
     # Générer la sortie PDF
