@@ -1387,57 +1387,54 @@ def create_detailed_table(pdf, resultats_df):
 
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    # Configuration du chemin du logo
+    # Set up the logo path
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
-        print(f"Attention : Fichier logo non trouvé à {logo_path}")
+        print(f"Warning: Logo file not found at {logo_path}")
         logo_path = None
 
-    # Initialisation de l'objet PDF avec le logo
+    # Initialize the PDF object with the logo
     pdf = PDF(logo_path)
     left_margin = 20
     pdf.set_left_margin(left_margin)
-    pdf.alias_nb_pages()  # Activer la numérotation des pages
+    pdf.alias_nb_pages()  # Enable page numbering
     pdf.add_page()
-    pdf.add_warning()  # Ajouter la section d'avertissement
-    pdf.ln(20)  # Ajouter un espace vertical
+    pdf.add_warning()  # Add the warning section
+    pdf.ln(20)  # Add some vertical space
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    def add_image_to_pdf(pdf, img_buffer, x, y, w):
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-            img = Image.open(img_buffer)
-            img.save(temp_file.name, format='PNG')
-            pdf.image(temp_file.name, x=x, y=y, w=w)
-        os.unlink(temp_file.name)
-
-    # Ajouter le premier graphique (évolution financière)
+    # Add the first chart (financial evolution)
     pdf.add_page()
-    add_image_to_pdf(pdf, img_buffers[0], x=10, y=pdf.get_y(), w=190)
+    pdf.image(img_buffers[0], x=10, y=pdf.get_y(), w=190)
     
-    # Ajouter le graphique des performances historiques juste en dessous
-    pdf.ln(10)  # Espace entre les graphiques
-    add_image_to_pdf(pdf, img_buffers[3], x=10, y=pdf.get_y(), w=190)
+    # Add the historical performance chart just below
+    pdf.ln(10)  # Space between charts
+    pdf.image(img_buffers[3], x=10, y=pdf.get_y(), w=190)
     
-    # Ajouter un texte générique pour le graphique des performances historiques
-    pdf.ln(5)
+    # Add generic text for the historical performance chart
+    pdf.ln(20)
     pdf.set_font_safe('Inter', '', 12)
     pdf.multi_cell(0, 5, "Ce graphique présente les performances historiques de votre investissement. "
                          "Il montre les variations annuelles ainsi que la performance cumulée sur la période.", 0, 'L')
+    pdf.ln(10)
     
-    # Ajouter le graphique en donut (composition du capital)
+    # Add the donut chart (capital composition) with background
     pdf.add_page()
-    add_image_to_pdf(pdf, img_buffers[2], x=10, y=pdf.get_y(), w=190)
+    donut_chart_with_bg = add_background_to_image(img_buffers[2])
+    pdf.image(donut_chart_with_bg, x=10, y=pdf.get_y(), w=190)
     
-    # Ajouter un commentaire pour le graphique en donut
-    pdf.ln(5)
+    # Add comment for the donut chart
+    pdf.ln(20)
     pdf.set_font_safe('Inter', '', 12)
     pdf.multi_cell(0, 5, "Ce graphique illustre la répartition entre vos versements et les plus-values générées par votre investissement. "
                          "Il met en évidence la croissance de votre capital au fil du temps.", 0, 'L')
+    pdf.ln(10)
     
-    # Ajouter le graphique en cascade
+    # Add the waterfall chart
     pdf.add_page()
-    add_image_to_pdf(pdf, img_buffers[1], x=10, y=pdf.get_y(), w=190)
-    # Ajouter la section d'informations du client
+    pdf.image(img_buffers[1], x=10, y=pdf.get_y(), w=190)
+
+    # Add client information section
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.set_x(left_margin)
@@ -1456,7 +1453,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_x(left_margin)
         pdf.cell(0, 8, line, 0, 1, 'L')
 
-    # Ajouter la section de résumé des résultats
+    # Add results summary section
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
@@ -1473,20 +1470,20 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     pdf.multi_cell(0, 10, resume_text)
     
-    # Ajouter la section de récapitulatif du projet
+    # Add project recap section
     pdf.add_recap(params, objectives)
     
-    # Ajouter le tableau détaillé
+    # Add detailed table
     create_detailed_table(pdf, resultats_df)
 
-    # Ajouter une note sur le tableau détaillé
+    # Add note about the detailed table
     pdf.set_xy(10, pdf.get_y() + 10)
     pdf.set_font_safe('Inter', 'I', 8)
-    pdf.multi_cell(0, 4, "Note : Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
+    pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
                          "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
                          "Les valeurs sont arrondies à deux décimales près.")
 
-    # Ajouter l'avertissement légal
+    # Add legal disclaimer
     pdf.add_page()
     pdf.set_fill_color(240, 240, 240)
     pdf.set_draw_color(200, 200, 200)
@@ -1503,17 +1500,26 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     )
     pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
-    # Ajouter la dernière page (informations de contact, etc.)
+    # Add the last page (contact information, etc.)
     pdf.add_last_page()
 
-    # Générer la sortie PDF
+    # Generate the PDF output
     try:
         pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
     except UnicodeEncodeError:
-        print("Attention : Certains caractères n'ont pas pu être encodés. Ils seront remplacés.")
+        print("Warning: Some characters could not be encoded. They will be replaced.")
         pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
 
     return pdf_output
+
+def add_image_to_pdf(pdf, img_buffer, x=10, y=None, w=190):
+    if y is None:
+        y = pdf.get_y()
+    pdf.image(img_buffer, x=x, y=y, w=w)
+
+if len(img_buffers) < 4:
+    print(f"Attention : Nombre insuffisant de graphiques. Attendu : 4, Reçu : {len(img_buffers)}")
+    return None
 
 
 def main():
