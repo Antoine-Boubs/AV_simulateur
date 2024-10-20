@@ -1239,13 +1239,222 @@ def format_value(value):
     return str(value)
 
 
+def generate_pdf_report(resultats_df, params, objectives):
+    print("Entering generate_pdf_report")
+    print(f"resultats_df shape: {resultats_df.shape}")
+    print(f"params: {params}")
+    print(f"objectives: {objectives}")
+
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
+    ]
+
+    # Ajouter les informations des objectifs à data
+    for i, obj in enumerate(objectives, start=1):
+        data.extend([
+            [f"Objectif {i} - Nom", obj['nom']],
+            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
+            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
+            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
+        ])
+
+    # Générer les graphiques
+    img_buffer1 = generate_chart1(resultats_df)
+    img_buffer2 = generate_chart2(resultats_df)
+    img_buffer3 = generate_chart3()
+    
+    # Create the financial investment evolution chart
+    fig1 = go.Figure()
+    years = resultats_df['Année'].tolist()
+    capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
+    epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
+    rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
+
+    fig1.add_trace(go.Scatter(
+        x=years, y=capital_fin_annee,
+        mode='lines+markers',
+        name='Capital fin d\'année',
+        line=dict(color='#1f77b4', width=2)
+    ))
+
+    fig1.add_trace(go.Scatter(
+        x=years, y=epargne_investie,
+        mode='lines+markers',
+        name='Épargne investie',
+        line=dict(color='#2ca02c', width=2)
+    ))
+
+    fig1.add_trace(go.Bar(
+        x=years, y=rachats,
+        name='Rachats',
+        marker_color='#d62728'
+    ))
+
+    fig1.update_layout(
+        title='Évolution du placement financier',
+        xaxis_title='Année',
+        yaxis_title='Montant (€)',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5
+        ),
+        plot_bgcolor='white',
+        yaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey',
+            tickformat='.0f',
+            ticksuffix=' €'
+        ),
+        xaxis=dict(
+            gridcolor='lightgrey',
+            zerolinecolor='lightgrey'
+        ),
+        hovermode="x unified",
+        barmode='relative'
+    )
+
+    img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
+    img_buffer1 = io.BytesIO(img_bytes1)
+    img_buffer1.seek(0)  # Rembobiner le buffer
+
+    # Create the second chart (waterfall)
+    fig2 = go.Figure(go.Waterfall(
+        name="Evolution du capital",
+        orientation="v",
+        measure=["relative"] * len(resultats_df),
+        x=resultats_df['Année'],
+        y=resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).diff(),
+        connector={"line": {"color": "rgb(63, 63, 63)"}},
+        decreasing={"marker": {"color": "#CBA325"}},
+        increasing={"marker": {"color": "#A33432"}},
+        totals={"marker": {"color": "#F0D97A"}}
+    ))
+    fig2.update_layout(
+        title='Évolution annuelle du capital',
+        xaxis_title='Année',
+        yaxis_title='Variation du capital (€)',
+        plot_bgcolor='white',
+        yaxis=dict(gridcolor='#8DB3C5')
+    )
+
+    img_bytes2 = fig2.to_image(format="png", width=700, height=400)
+    img_buffer2 = io.BytesIO(img_bytes2)
+    img_buffer2.seek(0)  # Rembobiner le buffer
+
+    # Create the third chart (historical performance)
+    fig3 = go.Figure()
+    years = [2019, 2020, 2021, 2022, 2023]
+    performances = [22.69, -0.80, 25.33, -12.17, 11.91]
+
+    fig3.add_trace(go.Bar(
+        x=years,
+        y=performances,
+        text=[f"{p:+.2f}%" for p in performances],
+        textposition='outside',
+        marker_color=['#4CAF50' if p >= 0 else '#F44336' for p in performances],
+        marker_line_color='rgba(0,0,0,0.5)',
+        marker_line_width=1.5,
+        opacity=0.8,
+        name='Performance annuelle'
+    ))
+
+    cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
+    fig3.add_trace(go.Scatter(
+        x=years,
+        y=cumulative_performance,
+        mode='lines+markers',
+        name='Performance cumulée',
+        line=dict(color='#FFA500', width=3),
+        marker=dict(size=8, symbol='diamond', line=dict(width=2, color='DarkSlateGrey')),
+        yaxis='y2'
+    ))
+
+    fig3.update_layout(
+        title={
+            'text': 'Performances historiques',
+            'y':0.95,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top',
+            'font': dict(size=24, color='#1E3A8A')
+        },
+        xaxis_title='Année',
+        yaxis_title='Performance annuelle (%)',
+        yaxis2=dict(
+            title='Performance cumulée (%)',
+            overlaying='y',
+            side='right',
+            showgrid=False
+        ),
+        plot_bgcolor='rgba(240,240,240,0.5)',
+        paper_bgcolor='white',
+        yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
+        xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=50, r=50, t=80, b=50),
+        hovermode="x unified"
+    )
+
+    total_cumulative_performance = cumulative_performance[-1]
+    fig3.add_annotation(
+        x=0.5, y=1.15,
+        xref='paper', yref='paper',
+        text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
+        showarrow=False,
+        font=dict(size=16, color='#1E3A8A', weight='bold')
+    )
+
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
+        selector=dict(type='bar')
+    )
+    fig3.update_traces(
+        hovertemplate="<b>Année:</b> %{x}<br><b>Performance cumulée:</b> %{y:.2f}%<extra></extra>",
+        selector=dict(type='scatter')
+    )
+
+    img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
+    img_buffer3 = io.BytesIO(img_bytes3)
+    img_buffer3.seek(0)  # Rembobiner le buffer
+
+    # Créer le PDF
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
+
+    return pdf_bytes
+
+def format_value(value):
+    if isinstance(value, (int, float)):
+        formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
+        return f"{formatted} €"
+    elif isinstance(value, str):
+        try:
+            num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
+            return format_value(num_value)
+        except ValueError:
+            return value
+    return str(value)
+
 def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
     pdf.ln(5)
+
     col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
     headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
+
     data = [
         [row['Année'], 
          format_value(row['Capital initial (NET)']),
@@ -1258,254 +1467,132 @@ def create_detailed_table(pdf, resultats_df):
          format_value(row['Capital fin d\'année (NET)'])]
         for _, row in resultats_df.iterrows()
     ]
+
     pdf.colored_table(headers, data, col_widths)
-
-
-def fig_to_temp_file(fig):
-    # Convertir la figure Plotly en bytes d'image PNG
-    img_bytes = fig.to_image(format="png", width=1000, height=600, scale=2)
     
-    # Créer un fichier temporaire et y écrire les bytes de l'image
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-        tmpfile.write(img_bytes)
-        tmpfile.flush()
-        return tmpfile.name
-
-def generate_pdf_report(resultats_df, params, objectifs, img_buffers):
-    # Calculer la durée de simulation
-    duree_simulation = calculer_duree_capi_max(objectives)
-    params['duree_simulation'] = duree_simulation
-
-    # Créer les graphiques
-    financial_chart = create_financial_chart(resultats_df)
-    waterfall_chart = create_waterfall_chart(resultats_df)
-    donut_chart = create_donut_chart(resultats_df, duree_simulation)
-
-    # Convertir les graphiques en fichiers temporaires
-    temp_files = [
-        fig_to_temp_file(financial_chart),
-        fig_to_temp_file(waterfall_chart),
-        fig_to_temp_file(donut_chart)
-    ]
-
-    try:
-        # Créer le PDF
-        pdf_bytes = create_pdf(params, temp_files, resultats_df, objectives)
-        return pdf_bytes
-        
-    finally:
-        # Supprimer les fichiers temporaires
-        for file in temp_files:
-            os.remove(file)
-    
-
-def create_pdf(data, temp_files, resultats_df, params, objectives):
+def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
         print(f"Warning: Logo file not found at {logo_path}")
         logo_path = None
+
     pdf = PDF(logo_path)
     left_margin = 20
     pdf.set_left_margin(left_margin)
     pdf.alias_nb_pages()
-
-    
-    # Page de couverture
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 28)
-    pdf.cell(0, 20, 'Simulation Financière', 0, 1, 'C')
-    pdf.set_font_safe('Inter', '', 16)
-    pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
-    pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
-
-    
-    # Avertissement
-    pdf.ln(20)
     pdf.add_warning()
-
-    
-    # Paramètres de la simulation
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 24)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 20, 'Paramètres de la simulation', 0, 1, 'C')
-    pdf.ln(10)
-
-    
-    # Définition des couleurs
-    light_gray = 245
-    dark_gray = 80
-    blue = (0, 122, 255)  # Bleu Apple
-
-    
-    # Création d'un tableau stylisé
-    parameters = [
-        ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
-        ("Versement mensuel", f"{params.get('versement_mensuel', 'Non spécifié')} €"),
-        ("Rendement annuel", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié"),
-        ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
-        ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
-    ]
-    # Largeur de colonne et hauteur de ligne
-    col_width = pdf.w / 2 - 20
-    row_height = 14
-    for i, (label, value) in enumerate(parameters):
-        # Alternance de couleurs de fond
-        if i % 2 == 0:
-            pdf.set_fill_color(light_gray, light_gray, light_gray)
-        else:
-            pdf.set_fill_color(255, 255, 255)
-        # Label
-        pdf.set_font_safe('Inter', 'B', 12)
-        pdf.set_text_color(dark_gray, dark_gray, dark_gray)
-        pdf.cell(col_width, row_height, label, 0, 0, 'L', 1)
-        # Value
-        pdf.set_font_safe('Inter', '', 12)
-        pdf.set_text_color(*blue)
-        pdf.cell(col_width, row_height, value, 0, 1, 'R', 1)
-    # Bordure autour du tableau
-    pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
     pdf.ln(20)
+    pdf.set_auto_page_break(auto=True, margin=15)
 
-    
-    # Détail des versements
-    pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 16)
-    pdf.cell(0, 10, 'Détail des versements', 0, 1)
+    for i, img_buffer in enumerate(img_buffers):
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+                img = Image.open(img_buffer)
+                img.save(tmpfile.name, format="PNG")
+                tmpfile.flush()
+                
+                pdf.add_page()
+                if i == 2:  # Pour le troisième graphique (performances historiques)
+                    pdf.set_font_safe('Inter', 'B', 14)
+                    pdf.cell(0, 10, 'Performances historiques', 0, 1)
+                    pdf.set_font_safe('Inter', '', 12)
+                    pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
+                                         'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
+                                         "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
+                                         "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
+                                         "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
+                                         'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
+                                         'performances supérieures.')
+                pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+        except Exception as e:
+            print(f"Error adding image to PDF: {e}")
+
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.set_x(left_margin)
+    pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
     pdf.ln(5)
-    pdf.set_font_safe('Inter', '', 12)
-    versements_libres = params.get('versements_libres', [])
-    modifications_versements = params.get('modifications_versements', [])
-    if versements_libres:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 8, "Versements libres :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        for vl in versements_libres:
-            add_info_line(f"Année {vl['annee']} :", f"{vl['montant']} €")
-        pdf.ln(5)
-    if modifications_versements:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 8, "Modifications de versements :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        for mv in modifications_versements:
-            if mv['montant'] == 0:
-                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", "Versements arrêtés")
-            else:
-                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", f"Modifiés à {mv['montant']} €")
-        pdf.ln(5)
-    if not versements_libres and not modifications_versements:
-        pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
-    
-    # Ajout des graphiques
-    for i, (title, img_buffer) in enumerate(img_buffers.items()):
-        pdf.add_page()
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 10, title, 0, 1)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            tmpfile.write(img_buffer.getvalue())
-            pdf.image(tmpfile.name, x=10, y=pdf.get_y(), w=190)
-    
-    # Ajout du tableau de résultats
+    pdf.set_font_safe('Inter', '', 12)
+    info_text = [
+        f"Capital initial : {params['capital_initial']} €",
+        f"Versement mensuel : {params['versement_mensuel']} €",
+        f"Rendement annuel : {params['rendement_annuel']*100:.2f}%",
+        f"Durée de simulation : {len(resultats_df)} ans"
+    ]
+
+    for line in info_text:
+        pdf.set_x(left_margin)
+        pdf.cell(0, 8, line, 0, 1, 'L')
+
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, "Résultats de la simulation", 0, 1)
-    pdf.set_font_safe('Inter', '', 8)
-    col_width = pdf.w / 8
-    for col in resultats_df.columns[:8]:  # Limiter à 8 colonnes pour l'espace
-        pdf.cell(col_width, 10, str(col), 1)
-    pdf.ln()
-    for _, row in resultats_df.iterrows():
-        for item in row[:8]:  # Limiter à 8 colonnes pour l'espace
-            pdf.cell(col_width, 10, str(item), 1)
-        pdf.ln()
-    
-    return pdf.output(dest='S').encode('latin-1', errors='replace')
-            
-            
-    # Objectifs de l'investisseur
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1)
-    pdf.ln(5)
-    if objectives:
-        colors = ['#7E57C2', '#2196F3', '#4CAF50']  # Violet, Bleu, Vert
-        for i, obj in enumerate(objectives):
-            pdf.set_fill_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
-            pdf.rect(pdf.get_x(), pdf.get_y(), 190, 40, 'F')
-            pdf.set_font_safe('Inter', 'B', 14)
-            pdf.set_text_color(255, 255, 255)
-            pdf.cell(0, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
-            pdf.set_font_safe('Inter', '', 12)
-            pdf.cell(0, 8, f"Montant annuel : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1)
-            pdf.cell(0, 8, f"Année de réalisation : {obj.get('annee', 'Non spécifiée')}", 0, 1)
-            pdf.cell(0, 8, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1)
-            pdf.set_text_color(0, 0, 0)
-            pdf.ln(10)
-    else:
-        pdf.set_font_safe('Inter', 'I', 12)
-        pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1)
-
-    
-    # Dernière page
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Informations complémentaires', 0, 1, 'C')
-    pdf.ln(10)
+    pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
     pdf.set_font_safe('Inter', '', 12)
-    pdf.multi_cell(0, 5, "Avec Nalo, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. "
-                         "Le contrat Nalo Patrimoine est assuré par Generali Vie. Vous profitez ainsi de la pérennité "
-                         "d'un acteur historique de l'assurance-vie.")
-    pdf.ln(5)
-    pdf.multi_cell(0, 5, "L'assurance-vie offre de nombreux avantages, parmi lesquels :")
-    pdf.ln(5)
-    pdf.multi_cell(0, 5, "• Une fiscalité avantageuse durant la vie et à votre succession : la fiscalité sur les gains "
-                         "réalisés est réduite, de plus, vous profitez d'un cadre fiscal avantageux lors de la "
-                         "transmission de votre patrimoine.")
-    pdf.ln(5)
-    pdf.multi_cell(0, 5, "• La disponibilité de votre épargne : vous pouvez retirer (on parle de rachats), quand vous "
-                         "le souhaitez, tout ou partie de l'épargne atteinte. Vous pouvez aussi effectuer des "
-                         "versements quand vous le souhaitez.")
-    pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, "Pour en savoir plus sur la fiscalité de l'assurance-vie", 0, 1)
-    pdf.set_font_safe('Inter', '', 10)
-    pdf.set_text_color(0, 122, 255)  # Bleu Apple
-    pdf.cell(0, 10, 'Cliquez ici pour plus d\'informations', 0, 1, 'L', link="https://www.example.com")
-    pdf.set_text_color(0, 0, 0)  # Retour au noir
-    pdf.ln(10)
+    
+    derniere_annee = resultats_df.iloc[-1]
+    capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
+    epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
+    gains_totaux = capital_final - epargne_investie
+    
+    resume_text = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
+    resume_text += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
+    resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
+    
+    pdf.multi_cell(0, 10, resume_text)
+    
+    pdf.add_recap(params, objectives)
+    
+    create_detailed_table(pdf, resultats_df)
+
+    pdf.set_xy(10, pdf.get_y() + 10)
+    pdf.set_font_safe('Inter', 'I', 8)
+    pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
+                         "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
+                         "Les valeurs sont arrondies à deux décimales près.")
+
+    pdf.add_page()
+    pdf.set_fill_color(240, 240, 240)
+    pdf.set_draw_color(200, 200, 200)
     pdf.set_font_safe('Inter', 'B', 12)
-    pdf.cell(0, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 1, 'L')
-    if logo_path and os.path.exists(logo_path):
-        pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
-    return pdf.output(dest='S').encode('latin-1', errors='replace')
+    pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
+    pdf.set_font_safe('Inter', 'I', 10)
+    pdf.set_text_color(80, 80, 80)
+    disclaimer_text = (
+        "Les performances passées ne préjugent pas des performances futures. "
+        "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. "
+        "Les résultats présentés sont des estimations potentielles destinées à faciliter la compréhension "
+        "du développement de votre patrimoine. Nous vous recommandons de consulter un professionnel "
+        "qualifié avant de prendre toute décision d'investissement."
+    )
+    pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
+    pdf.add_last_page()
+
+    try:
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
+    except UnicodeEncodeError:
+        print("Warning: Some characters could not be encoded. They will be replaced.")
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
+
+    return pdf_output
 
 
 def main():
-    st.title("Générateur de Rapport Financier")
+    global resultats_df, params
 
-    params = input_simulateur()
-    objectifs = st.session_state.objectifs  # Use the objectifs from session state
-    resultats_df = optimiser_objectifs(params, calculer_duree_totale(objectifs))
-
+    # Exemple de bouton pour générer le PDF
     if st.button("Générer le rapport PDF"):
-        duree_capi_max = calculer_duree_capi_max(objectifs)
-        img_buffers = {
-            "Évolution du placement financier": fig_to_img_buffer(create_financial_chart(resultats_df)),
-            "Évolution du capital année par année": fig_to_img_buffer(create_waterfall_chart(resultats_df)),
-            f"Composition du capital en année {duree_capi_max}": fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
-        }
-    
         try:
-            pdf_bytes = generate_pdf_report(resultats_df, params, objectifs, img_buffers)
+            pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
             
+            # Créer un lien de téléchargement pour le PDF
             b64 = base64.b64encode(pdf_bytes).decode()
             href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
             st.markdown(href, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-            print(f"Erreur détaillée : {e}")
+            print(f"Detailed error: {e}")
 
 if __name__ == "__main__":
     main()
