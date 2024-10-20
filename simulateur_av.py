@@ -1243,24 +1243,40 @@ def fig_to_temp_file(fig):
         return tmpfile.name
 
 def generate_pdf_report(resultats_df, params, objectives):
+    # Debug: Print information about resultats_df
+    print(f"Shape of resultats_df: {resultats_df.shape}")
+    print(f"Columns of resultats_df: {resultats_df.columns.tolist()}")
+    print(f"First few rows of resultats_df:\n{resultats_df.head()}")
+
     # Calculer la durée de simulation
     duree_simulation = calculer_duree_capi_max(objectives)
     params['duree_simulation'] = duree_simulation
 
     # Créer les graphiques
-    financial_chart = create_financial_chart(resultats_df)
-    waterfall_chart = create_waterfall_chart(resultats_df)
-    donut_chart = create_donut_chart(resultats_df, duree_simulation)
+    try:
+        financial_chart = create_financial_chart(resultats_df)
+        waterfall_chart = create_waterfall_chart(resultats_df)
+        donut_chart = create_donut_chart(resultats_df, duree_simulation)
+    except Exception as e:
+        print(f"Error creating charts: {str(e)}")
+        raise
 
     # Convertir les graphiques en fichiers temporaires
-    temp_files = [
-        fig_to_temp_file(financial_chart),
-        fig_to_temp_file(waterfall_chart),
-        fig_to_temp_file(donut_chart)
-    ]
+    temp_files = []
+    for i, chart in enumerate([financial_chart, waterfall_chart, donut_chart]):
+        try:
+            temp_file = fig_to_temp_file(chart)
+            temp_files.append(temp_file)
+        except Exception as e:
+            print(f"Error converting chart {i} to temp file: {str(e)}")
+            raise
 
     # Créer le PDF
-    pdf_bytes = create_pdf(params, temp_files, resultats_df, params, objectives)
+    try:
+        pdf_bytes = create_pdf(params, temp_files, resultats_df, params, objectives)
+    except Exception as e:
+        print(f"Error creating PDF: {str(e)}")
+        raise
     
     # Supprimer les fichiers temporaires
     for file in temp_files:
