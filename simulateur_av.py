@@ -1254,7 +1254,7 @@ class PDF(FPDF):
     
         y2 = add_section("UNE SÉCURISATION PROGRESSIVE", 
                     "Pour mieux gérer votre prise de risque, nous opérons une sécurisation progressive de vos investissements au cours du temps. En fonction de vos projets, nous faisons en sorte que la proportion d'actifs peu risqués soit importante au moment où vous avez besoin de récupérer votre argent.",
-                    margin_left + col_width + 10, start_y, col_width, max_height)
+                    margin_left + col_width + 20, start_y, col_width - 10, max_height)  # Augmenté de 10 points
     
         # Ajuster la position Y pour la prochaine ligne
         next_y = max(y1, y2) + 5
