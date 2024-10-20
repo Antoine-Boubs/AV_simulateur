@@ -898,7 +898,9 @@ duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi
 st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True)
 
 
-
+def fig_to_img_buffer(fig):
+    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
+    return io.BytesIO(img_bytes)
 
 
 
@@ -1224,37 +1226,63 @@ class PDF(FPDF):
             self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
 
 
+def format_value(value):
+    if isinstance(value, (int, float)):
+        formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
+        return f"{formatted} €"
+    elif isinstance(value, str):
+        try:
+            num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
+            return format_value(num_value)
+        except ValueError:
+            return value
+    return str(value)
 
-def fig_to_temp_file(fig):
-    # Convertir la figure Plotly en bytes d'image PNG
-    img_bytes = fig.to_image(format="png", width=1000, height=600, scale=2)
-    # Créer un fichier temporaire et y écrire les bytes de l'image
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-        tmpfile.write(img_bytes)
-        tmpfile.flush()
-        return tmpfile.name
+
+def create_detailed_table(pdf, resultats_df):
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
+    pdf.ln(5)
+    col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
+    headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
+    data = [
+        [row['Année'], 
+         format_value(row['Capital initial (NET)']),
+         format_value(row['VP NET']),
+         format_value(row['Rendement']),
+         format_value(row['Frais de gestion']),
+         format_value(row.get('Rachat', 0)),
+         format_value(row.get('Fiscalite', 0)),
+         format_value(row.get('Rachat net', 0)),
+         format_value(row['Capital fin d\'année (NET)'])]
+        for _, row in resultats_df.iterrows()
+    ]
+    pdf.colored_table(headers, data, col_widths)
+
+
 def generate_pdf_report(resultats_df, params, objectives):
     # Calculer la durée de simulation
     duree_simulation = calculer_duree_capi_max(objectives)
     params['duree_simulation'] = duree_simulation
+
     # Créer les graphiques
     financial_chart = create_financial_chart(resultats_df)
     waterfall_chart = create_waterfall_chart(resultats_df)
     donut_chart = create_donut_chart(resultats_df, duree_simulation)
-    # Convertir les graphiques en fichiers temporaires
-    temp_files = [
-        fig_to_temp_file(financial_chart),
-        fig_to_temp_file(waterfall_chart),
-        fig_to_temp_file(donut_chart)
+
+    # Convertir les graphiques en buffers d'image
+    img_buffers = [
+        fig_to_img_buffer(financial_chart),
+        fig_to_img_buffer(waterfall_chart),
+        fig_to_img_buffer(donut_chart)
     ]
+
     # Créer le PDF
-    pdf_bytes = create_pdf(params, temp_files, resultats_df, params, objectives)
-    # Supprimer les fichiers temporaires
-    for file in temp_files:
-        os.remove(file)
+    pdf_bytes = create_pdf(params, img_buffers, resultats_df, params, objectives)
     return pdf_bytes
+
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    pdf = PDF()
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
         print(f"Warning: Logo file not found at {logo_path}")
@@ -1263,6 +1291,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     left_margin = 20
     pdf.set_left_margin(left_margin)
     pdf.alias_nb_pages()
+
+    
     # Page de couverture
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 28)
@@ -1270,19 +1300,27 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font_safe('Inter', '', 16)
     pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
     pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
+
+    
     # Avertissement
     pdf.ln(20)
     pdf.add_warning()
+
+    
     # Paramètres de la simulation
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 24)
     pdf.set_text_color(0, 0, 0)
     pdf.cell(0, 20, 'Paramètres de la simulation', 0, 1, 'C')
     pdf.ln(10)
+
+    
     # Définition des couleurs
     light_gray = 245
     dark_gray = 80
     blue = (0, 122, 255)  # Bleu Apple
+
+    
     # Création d'un tableau stylisé
     parameters = [
         ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
@@ -1311,6 +1349,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Bordure autour du tableau
     pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
     pdf.ln(20)
+
+    
     # Détail des versements
     pdf.ln(10)
     pdf.set_font_safe('Inter', 'B', 16)
@@ -1338,8 +1378,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.ln(5)
     if not versements_libres and not modifications_versements:
         pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
-    # Ajouter les graphiques au PDF
-    for i, temp_file in enumerate(temp_files):
+
+    
+    # Graphiques
+    for i, img_buffer in enumerate(img_buffers):
         pdf.add_page()
         pdf.set_font('Inter', 'B', 16)
         if i == 0:
@@ -1348,8 +1390,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.cell(0, 10, 'Évolution annuelle du capital', 0, 1, 'C')
         elif i == 2:
             pdf.cell(0, 10, f"Composition du capital en année {params['duree_simulation']}", 0, 1, 'C')
-        # Ajouter l'image au PDF en utilisant le chemin du fichier temporaire
-        pdf.image(temp_file, x=10, y=pdf.get_y()+10, w=190)
+        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
+            
+            
     # Objectifs de l'investisseur
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
@@ -1372,6 +1415,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     else:
         pdf.set_font_safe('Inter', 'I', 12)
         pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1)
+
+    
     # Dernière page
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
@@ -1404,8 +1449,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     if logo_path and os.path.exists(logo_path):
         pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
     return pdf.output(dest='S').encode('latin-1', errors='replace')
+
+
+
 def main():
     st.title("Générateur de Rapport Financier")
+
     if 'params' not in st.session_state:
         st.session_state.params = {
             'capital_initial': 10000,
@@ -1414,11 +1463,13 @@ def main():
             'frais_gestion': 0.01,
             'nom_client': '',
         }
+
     if 'objectives' not in st.session_state:
         st.session_state.objectives = []
+
     if st.button("Générer le rapport PDF"):
         try:
-            pdf_bytes = generate_pdf_report(resultats_df, st.session_state.params, st.session_state.objectives)
+            pdf_bytes = generate_pdf_report(st.session_state.resultats_df, st.session_state.params, st.session_state.objectives)
             st.download_button(
                 label="Télécharger le rapport PDF",
                 data=pdf_bytes,
@@ -1428,6 +1479,7 @@ def main():
         except Exception as e:
             st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
             print(f"Erreur détaillée : {e}")
+
 if __name__ == "__main__":
     main()
 
