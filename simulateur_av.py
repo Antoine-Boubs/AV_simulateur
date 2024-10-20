@@ -1295,7 +1295,7 @@ def generate_pdf_report(resultats_df, params, objectives):
     
     return pdf_bytes
 
-def create_pdf(data, img_buffers, resultats_df, params, objectives):
+def create_pdf(data, temp_files, resultats_df, params, objectives):
     pdf = PDF()
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
@@ -1397,7 +1397,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Ajouter les graphiques au PDF
     for i, temp_file in enumerate(temp_files):
         pdf.add_page()
-        pdf.set_font('Inter', 'B', 16)
+        pdf.set_font_safe('Inter', 'B', 16)
         if i == 0:
             pdf.cell(0, 10, 'Évolution du placement financier', 0, 1, 'C')
         elif i == 1:
