@@ -1512,7 +1512,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     return pdf_output
 
-
+def add_image_to_pdf(pdf, img_buffer, x=10, y=None, w=190):
+    if y is None:
+        y = pdf.get_y()
+    pdf.image(img_buffer, x=x, y=y, w=w)
 
 
 def main():
