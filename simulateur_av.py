@@ -950,9 +950,10 @@ from fpdf import FPDF
 import numpy as np 
 from datetime import datetime
 
-class RapportFinancierPDF(FPDF):
+class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
+       
         self.is_custom_font_loaded = False
         font_path = os.path.join(os.path.dirname(__file__), "assets", "Fonts")
         self.logo_path = logo_path or os.path.join(os.path.dirname(__file__), "assets", "Logo1.png")
