@@ -1400,68 +1400,36 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
     pdf.set_auto_page_break(auto=True, margin=20)
 
-    # Couleurs
-    pdf.set_draw_color(200, 200, 200)  # Couleur de bordure gris clair
-    pdf.set_fill_color(255, 255, 255)  # Fond blanc
-    title_color = (185, 151, 91)  # Couleur dorée pour le titre
-
-    # Page de couverture
-    pdf.add_page()
-    pdf.set_font('Inter', 'B', 24)
-    pdf.set_text_color(*title_color)
-    pdf.cell(0, 20, "SIMULATION D'INVESTISSEMENT DANS CORUM LIFE", 0, 1, 'C')
-    pdf.ln(10)
-
-    # Fonction pour ajouter des images au PDF
-    def add_image_to_pdf(pdf, img_buffer, x, y, w):
+    # Fonction pour ajouter des images au PDF avec une taille uniforme
+    def add_image_to_pdf(pdf, img_buffer, x, y, w, h):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             img = Image.open(img_buffer)
+            img = img.resize((int(w * 300 / 25.4), int(h * 300 / 25.4)), Image.LANCZOS)  # Redimensionner l'image
             img.save(temp_file.name, format='PNG')
-            pdf.image(temp_file.name, x=x, y=y, w=w)
+            pdf.image(temp_file.name, x=x, y=y, w=w, h=h)
         os.unlink(temp_file.name)
 
-    # Informations du client et graphique en cascade
-    pdf.set_font('Inter', 'B', 14)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 10, "La simulation présentée est basée sur les informations suivantes :", 0, 1, 'L')
-    pdf.ln(5)
+    # Définir une taille uniforme pour tous les graphiques
+    graph_width = 180
+    graph_height = 100
 
-    # Cadre pour les informations du client
-    start_y = pdf.get_y()
-    pdf.rect(10, start_y, 90, 80)
-    
-    # Informations du client
-    pdf.set_font('Inter', '', 10)
-    info_client = [
-        f"MONTANT À INVESTIR\n{params['capital_initial']} €",
-        f"VERSEMENTS PROGRAMMÉS\n{params['versement_mensuel']} €/mois",
-        f"TYPE DE GESTION\n{params.get('type_gestion', 'CORUM Life Rosetta 100%')}",
-        f"HORIZON DE PLACEMENT\n{params['duree']} ANS",
-        f"HYPOTHÈSE PERFORMANCE ANNUELLE\n{params['rendement_annuel']*100:.2f}%",
-        f"GAINS POTENTIELS\n{params['gains_potentiels']:.2f} €"
-    ]
-    
-    for info in info_client:
-        pdf.set_xy(15, pdf.get_y() + 5)
-        pdf.multi_cell(80, 5, info, 0, 'L')
-        pdf.ln(2)
-
-    # Ajout du graphique en cascade
-    cascade_graph = img_buffers[2]  # Assurez-vous que c'est le bon index pour le graphique en cascade
-    pdf.image(cascade_graph, x=105, y=start_y, w=95)
-
-    # Autres graphiques
-    for i, img_buffer in enumerate(img_buffers):
-        if i != 2:  # Nous avons déjà utilisé le graphique en cascade
-            pdf.add_page()
-            pdf.set_font('Inter', 'B', 16)
-            pdf.cell(0, 10, graph_titles[i], 0, 1, 'C')
-            pdf.ln(5)
-            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
-            pdf.ln(10)
-            pdf.set_font('Inter', '', 10)
-            pdf.multi_cell(0, 5, graph_descriptions[i], 0, 'L')
-            pdf.ln(10)
+    # Ajouter les graphiques
+    for i, (img_buffer, title, description) in enumerate(zip(img_buffers, graph_titles, graph_descriptions)):
+        pdf.add_page()
+        
+        # Ajout du titre avant le graphique
+        pdf.set_font('Inter', 'B', 16)
+        pdf.cell(0, 10, title, 0, 1, 'C')
+        pdf.ln(5)
+        
+        # Ajout du graphique avec une taille uniforme
+        add_image_to_pdf(pdf, img_buffer, x=(210-graph_width)/2, y=pdf.get_y(), w=graph_width, h=graph_height)
+        
+        # Ajout de la description
+        pdf.ln(graph_height + 10)
+        pdf.set_font('Inter', '', 10)
+        pdf.multi_cell(0, 5, description, 0, 'L')
+        pdf.ln(10)
 
     # Ajouter la section de récapitulatif du projet
     pdf.add_page()
@@ -1485,6 +1453,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                          "Les valeurs sont arrondies à deux décimales près.")
 
     # Ajouter la dernière page (informations de contact, etc.)
+    pdf.add_page()
     pdf.add_last_page()
 
     # Générer la sortie PDF
