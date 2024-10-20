@@ -1440,16 +1440,20 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     for i, (img_buffer, title, description) in enumerate(zip(img_buffers, graph_titles, graph_descriptions)):
         pdf.add_page()
+        
+        # Ajout du titre avant le graphique
+        pdf.set_font_safe('Inter', 'B', 16)
+        pdf.cell(0, 10, title, 0, 1, 'C')
+        pdf.ln(5)  # Espace après le titre
+        
+        # Ajout du graphique
         add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
         
-        pdf.ln(20)  # Espace après le graphique
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 10, title, 0, 1, 'C')
-        
-        pdf.ln(10)  # Espace après le titre
+        # Ajout de la description après le graphique
+        pdf.ln(15)  # Espace après le graphique
         pdf.set_font_safe('Inter', '', 12)
         pdf.multi_cell(0, 5, description, 0, 'L')
-        pdf.ln(20)  # Espace après la description
+        pdf.ln(10)  # Espace après la description
 
     # Ajouter la section d'informations du client
     pdf.add_page()
