@@ -1302,27 +1302,6 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     dark_gray = 80
     blue = (0, 122, 255)  # Bleu Apple
 
-    # Ajout du tableau détaillé
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
-    pdf.ln(5)
-
-    # Définir les largeurs de colonnes
-    col_widths = [10, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 15, 20]
-
-    # Ajouter les en-têtes
-    headers = resultats_df.columns.tolist()
-    for i, header in enumerate(headers):
-        pdf.cell(col_widths[i], 7, str(header), 1, 0, 'C')
-    pdf.ln()
-
-    # Ajouter les données
-    for _, row in resultats_df.iterrows():
-        for i, value in enumerate(row):
-            pdf.cell(col_widths[i], 6, str(value), 1, 0, 'L')
-        pdf.ln()
-
     
     # Détail des versements
     pdf.ln(10)
