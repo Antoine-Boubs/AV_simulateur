@@ -1379,18 +1379,20 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(20)  # Ajouter un espace vertical
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    def save_bytesio_to_file(bytesio_object):
+    def add_image_to_pdf(pdf, img_buffer, x, y, w):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-            temp_file.write(bytesio_object.getvalue())
-            return temp_file.name
+            img = Image.open(img_buffer)
+            img.save(temp_file.name, format='PNG')
+            pdf.image(temp_file.name, x=x, y=y, w=w)
+        os.unlink(temp_file.name)
 
     # Ajouter le premier graphique (évolution financière)
     pdf.add_page()
-    pdf.image(img_buffers[0], x=10, y=pdf.get_y(), w=190)
+    add_image_to_pdf(pdf, img_buffers[0], x=10, y=pdf.get_y(), w=190)
     
     # Ajouter le graphique des performances historiques juste en dessous
     pdf.ln(10)  # Espace entre les graphiques
-    pdf.image(img_buffers[3], x=10, y=pdf.get_y(), w=190)
+    add_image_to_pdf(pdf, img_buffers[3], x=10, y=pdf.get_y(), w=190)
     
     # Ajouter un texte générique pour le graphique des performances historiques
     pdf.ln(5)
@@ -1400,7 +1402,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     # Ajouter le graphique en donut (composition du capital)
     pdf.add_page()
-    pdf.image(img_buffers[2], x=10, y=pdf.get_y(), w=190)
+    add_image_to_pdf(pdf, img_buffers[2], x=10, y=pdf.get_y(), w=190)
     
     # Ajouter un commentaire pour le graphique en donut
     pdf.ln(5)
@@ -1410,8 +1412,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     # Ajouter le graphique en cascade
     pdf.add_page()
-    pdf.image(img_buffers[1], x=10, y=pdf.get_y(), w=190)
-
+    add_image_to_pdf(pdf, img_buffers[1], x=10, y=pdf.get_y(), w=190)
     # Ajouter la section d'informations du client
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
