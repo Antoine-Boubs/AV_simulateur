@@ -947,6 +947,7 @@ def fig_to_img_buffer(fig):
 
 import os
 from fpdf import FPDF
+import numpy as np 
 from datetime import datetime
 
 class RapportFinancierPDF(FPDF):
