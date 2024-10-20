@@ -989,6 +989,7 @@ class PDF(FPDF):
             print(f"Error setting font: {e}")
             print("Falling back to default font.")
             self.set_font('Arial', '', 12)
+            
     def header(self):
         # Couleurs inspirées d'Apple
         apple_gray = (128, 128, 128)
@@ -1421,7 +1422,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font('Inter', '', 18)
     pdf.set_text_color(*apple_gray)
     pdf.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'C')
-    pdf.image('path_to_your_logo.png', x=10, y=10, w=30)
+    pdf.image('assets/Logo1.png', x=10, y=10, w=30)
 
     # Sommaire
     pdf.add_page()
