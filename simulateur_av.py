@@ -1515,8 +1515,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
 
-    return pdf.output(dest='S')
-
+    return pdf.output(dest='S').encode('latin-1', errors='replace')
+    
 
 def main():
     global resultats_df, params
