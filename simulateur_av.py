@@ -1416,44 +1416,68 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.image(temp_file.name, x=x, y=y, w=w)
         os.unlink(temp_file.name)
 
-    # Ajouter les graphiques
-    graph_titles = [
-        "Évolution du placement financier",
-        "Analyse en cascade de l'évolution du capital",
-        "Composition du capital",
-        "Performances historiques"
-    ]
-    
-    graph_descriptions = [
-        "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
-        "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
-        
-        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
-        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
-        
-        "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
-        "Il met en évidence la croissance de votre capital au fil du temps.",
-        
-        "Ce graphique présente les performances historiques de votre investissement. "
-        "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
-    ]
+    # Réorganiser l'ordre des graphiques
+    graph_order = [0, 2, 1, 3]  # 0: Évolution, 2: Composition, 1: Cascade, 3: Performances
 
-    for i, (img_buffer, title, description) in enumerate(zip(img_buffers, graph_titles, graph_descriptions)):
-        pdf.add_page()
+    # Ajouter les graphiques
+    for i in graph_order:
+        title = graph_titles[i]
+        description = graph_descriptions[i]
+        img_buffer = img_buffers[i]
         
-        # Ajout du titre avant le graphique
-        pdf.set_font_safe('Inter', 'B', 18)  # Augmentation de la taille de la police
-        pdf.cell(0, 15, title, 0, 1, 'C')  # Augmentation de la hauteur de la cellule
-        pdf.ln(10)  # Augmentation de l'espace après le titre
+        if i == 0:  # Premier graphique (Évolution du placement financier)
+            pdf.add_page()
+            
+            # Ajout du titre avant le graphique
+            pdf.set_font_safe('Inter', 'B', 16)
+            pdf.cell(0, 10, title, 0, 1, 'C')
+            pdf.ln(5)
+            
+            # Ajout du graphique
+            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+            
+            # Ajout de la description
+            pdf.ln(10)
+            pdf.set_font_safe('Inter', '', 10)
+            pdf.multi_cell(0, 5, description, 0, 'L')
+            
+        elif i == 2:  # Deuxième graphique (Composition du capital)
+            # Vérifier s'il y a assez d'espace sur la page actuelle
+            if pdf.get_y() + 100 > pdf.h - 20:  # 100 est une estimation de la hauteur nécessaire
+                pdf.add_page()
+            else:
+                pdf.ln(20)  # Espace entre les graphiques
+            
+            # Ajout du titre
+            pdf.set_font_safe('Inter', 'B', 16)
+            pdf.cell(0, 10, title, 0, 1, 'C')
+            pdf.ln(5)
+            
+            # Ajout du graphique
+            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+            
+            # Ajout de la description
+            pdf.ln(10)
+            pdf.set_font_safe('Inter', '', 10)
+            pdf.multi_cell(0, 5, description, 0, 'L')
+            
+        else:  # Autres graphiques
+            pdf.add_page()
+            
+            # Ajout du titre avant le graphique
+            pdf.set_font_safe('Inter', 'B', 16)
+            pdf.cell(0, 10, title, 0, 1, 'C')
+            pdf.ln(5)
+            
+            # Ajout du graphique
+            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+            
+            # Ajout de la description
+            pdf.ln(10)
+            pdf.set_font_safe('Inter', '', 12)
+            pdf.multi_cell(0, 5, description, 0, 'L')
         
-        # Ajout du graphique
-        add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
-        
-        # Ajout de la description après le graphique
-        pdf.ln(20)  # Augmentation de l'espace après le graphique
-        pdf.set_font_safe('Inter', '', 12)
-        pdf.multi_cell(0, 6, description, 0, 'L')  # Augmentation de la hauteur de ligne
-        pdf.ln(15)  # Augmentation de l'espace après la description
+        pdf.ln(10)  # Espace après chaque graphique
 
     # Ajouter la section d'informations du client
     pdf.add_page()
