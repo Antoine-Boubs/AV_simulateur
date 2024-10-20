@@ -1379,6 +1379,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(20)  # Ajouter un espace vertical
     pdf.set_auto_page_break(auto=True, margin=15)
 
+    def save_bytesio_to_file(bytesio_object):
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+            temp_file.write(bytesio_object.getvalue())
+            return temp_file.name
+
     # Ajouter le premier graphique (évolution financière)
     pdf.add_page()
     pdf.image(img_buffers[0], x=10, y=pdf.get_y(), w=190)
