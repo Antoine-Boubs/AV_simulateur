@@ -1479,7 +1479,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             start_y = pdf.get_y()
             # Rotation du graphique pour positionner les plus-values en bas
             img = Image.open(img_buffer)
-            img_rotated = img.rotate(90, expand=True)  # Rotation de 90 degrés
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 img_rotated.save(temp_file.name, format='PNG')
                 add_image_to_pdf(pdf, temp_file.name, x=10, y=start_y, w=95)
@@ -1511,42 +1510,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         
         pdf.ln(10)  # Espace après chaque graphique
 
-    # Ajouter la section d'informations du client
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 16)  # Augmentation de la taille de la police
-    pdf.set_x(left_margin)
-    pdf.cell(0, 12, 'Informations du client', 0, 1, 'L')
-    pdf.ln(10)  # Augmentation de l'espace après le titre
-
-    pdf.set_font_safe('Inter', '', 12)
-    info_text = [
-        f"Capital initial : {params['capital_initial']} €",
-        f"Versement mensuel : {params['versement_mensuel']} €",
-        f"Rendement annuel : {params['rendement_annuel']*100:.2f}%",
-        f"Durée de simulation : {len(resultats_df)} ans"
-    ]
-
-    for line in info_text:
-        pdf.set_x(left_margin)
-        pdf.cell(0, 8, line, 0, 1, 'L')
-
-    # Ajouter la section de résumé des résultats
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 16)  # Augmentation de la taille de la police
-    pdf.cell(0, 12, 'Résumé des résultats', 0, 1)
-    pdf.ln(10)  # Ajout d'un espace après le titre
-    pdf.set_font_safe('Inter', '', 12)
-    
-    derniere_annee = resultats_df.iloc[-1]
-    capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
-    epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
-    gains_totaux = capital_final - epargne_investie
-    
-    resume_text = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
-    resume_text += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
-    resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
-    
-    pdf.multi_cell(0, 10, resume_text)
     
     # Ajouter la section de récapitulatif du projet
     pdf.add_recap(params, objectives)
