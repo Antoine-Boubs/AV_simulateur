@@ -1597,7 +1597,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
 
-    self.add_nalo_page()
+    pdf.add_nalo_page()
 
     # Ajouter l'avertissement sur la page de couverture
     pdf.add_warning()
