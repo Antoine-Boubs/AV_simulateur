@@ -1386,7 +1386,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     
     # Graphiques
-   for i, img_buffer in enumerate(img_buffers):
+    for i, img_buffer in enumerate(img_buffers):
         pdf.add_page()
         pdf.set_font('Inter', 'B', 16)
         if i == 0:
