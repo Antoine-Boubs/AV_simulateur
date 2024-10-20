@@ -1224,26 +1224,6 @@ class PDF(FPDF):
             self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
 
 
-import pandas as pd
-
-def create_detailed_table(pdf, resultats_df):
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
-    pdf.ln(5)
-
-    # Utiliser les colonnes du DataFrame comme en-têtes
-    headers = resultats_df.columns.tolist()
-    col_widths = [20] * len(headers)  # Largeur fixe pour chaque colonne, à ajuster si nécessaire
-
-    # Convertir le DataFrame en liste de listes pour les données
-    data = resultats_df.values.tolist()
-
-    # Formater les valeurs
-    formatted_data = [[format_value(cell) for cell in row] for row in data]
-
-    pdf.colored_table(headers, formatted_data, col_widths)
-
 def format_value(value):
     if pd.isna(value):
         return 'N/A'
