@@ -1367,14 +1367,24 @@ class PDF(FPDF):
         self.cell(effective_width, 10, 'Performances historiques', 0, 1, 'L')
         self.ln(5)
     
-        # Données de performance
+        # Ajouter le divider ici
+        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour le divider
+        self.line(margin, self.get_y(), self.w - margin, self.get_y())
+        self.ln(10)  # Espace après le divider
+    
+        # Après avoir ajouté le titre "Performances historiques"
+        #self.ln(5)  # Petit espace après le titre
+        #self.set_draw_color(200, 200, 200)  # Couleur gris clair pour le divider
+        #self.line(margin, self.get_y(), self.w - margin, self.get_y())
+        #self.ln(10)  # Espace après le divider
+    
+        # Données de performance (5 dernières années)
         data = [
             (2019, 22.69),
             (2020, -0.80),
             (2021, 25.33),
             (2022, -12.17),
             (2023, 11.91),
-            (2024, 7.2),  # Supposons que c'est la dernière année
         ]
     
         # Calcul de la performance cumulée
@@ -1387,7 +1397,7 @@ class PDF(FPDF):
         comment_width = effective_width * 0.45
         self.set_font_safe('Inter', '', 10)
         self.set_text_color(*text_color)
-        self.multi_cell(comment_width, 5, "Rendement sur les 6 dernières années")
+        self.multi_cell(comment_width, 5, "Rendement sur les 5 dernières années")
         self.ln(2)
         self.set_font_safe('Inter', 'B', 14)
         self.cell(comment_width, 8, f"Performance cumulée : {cumulative_performance:.2f}%", 0, 1)
