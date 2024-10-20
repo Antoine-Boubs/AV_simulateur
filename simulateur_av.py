@@ -1265,7 +1265,7 @@ def create_detailed_table(pdf, resultats_df):
                 format_value(row.get('Rachat', 0)),
                 format_value(row.get('Fiscalite', 0)),
                 format_value(row.get('Rachat net', 0)),
-                format_value(row['Capital fin d\'année (NET)'])
+                format_value(row['Capital fin d''année (NET)'])
             ]
             data.append(data_row)
         except KeyError as e:
@@ -1357,6 +1357,7 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
         ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
         ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
     ]
+    
     # Largeur de colonne et hauteur de ligne
     col_width = pdf.w / 2 - 20
     row_height = 14
