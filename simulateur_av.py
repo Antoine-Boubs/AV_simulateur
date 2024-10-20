@@ -1354,10 +1354,11 @@ class PDF(FPDF):
     def add_performance_historique(self):
         self.add_page()
     
-        margin = 15
-        self.set_left_margin(margin)
-        self.set_right_margin(margin)
-        effective_width = self.w - 2*margin
+        left_margin = 20  # Increased left margin
+        right_margin = 15
+        self.set_left_margin(left_margin)
+        self.set_right_margin(right_margin)
+        effective_width = self.w - left_margin - right_margin
     
         text_color = (29, 29, 31)
         title_color = (0, 0, 0)
@@ -1369,14 +1370,9 @@ class PDF(FPDF):
     
         # Ajouter le divider ici
         self.set_draw_color(200, 200, 200)  # Couleur gris clair pour le divider
-        self.line(margin, self.get_y(), self.w - margin, self.get_y())
+        self.line(left_margin, self.get_y(), self.w - right_margin, self.get_y())
         self.ln(10)  # Espace après le divider
     
-        # Après avoir ajouté le titre "Performances historiques"
-        #self.ln(5)  # Petit espace après le titre
-        #self.set_draw_color(200, 200, 200)  # Couleur gris clair pour le divider
-        #self.line(margin, self.get_y(), self.w - margin, self.get_y())
-        #self.ln(10)  # Espace après le divider
     
         # Données de performance (5 dernières années)
         data = [
@@ -1394,7 +1390,8 @@ class PDF(FPDF):
         cumulative_performance = (cumulative_performance - 1) * 100
     
         # Section de commentaire (côté gauche)
-        comment_width = effective_width * 0.45
+        comment_width = effective_width * 0.40  # Reduced width for comment
+        graph_width = effective_width * 0.55  # Increased width for graph
         self.set_font_safe('Inter', '', 10)
         self.set_text_color(*text_color)
         self.multi_cell(comment_width, 5, "Rendement sur les 5 dernières années")
@@ -1409,17 +1406,20 @@ class PDF(FPDF):
         self.set_text_color(128, 128, 128)
         self.cell(comment_width, 4, "Source : Nalo", 0, 1)
     
+        self.ln(10)  # Add space between comment and graph
+    
         # Ajouter un divider
         self.ln(10)  # Espace avant le divider
         self.set_draw_color(200, 200, 200)  # Couleur gris clair pour le divider
-        self.line(margin, self.get_y(), self.w - margin, self.get_y())
+        self.line(left_margin, self.get_y(), self.w - right_margin, self.get_y())
         self.ln(10)  # Espace après le divider
     
     
         # Graphique (côté droit)
-        chart_width = effective_width * 0.55
+        graph_x = self.w - right_margin - graph_width
+        chart_width = graph_width
         chart_height = 80
-        chart_x = self.w - margin - chart_width
+        chart_x = graph_x
         chart_y = self.get_y() - 50  # Ajuster cette valeur pour aligner avec le texte
     
         # Dessiner le graphique
@@ -1452,6 +1452,7 @@ class PDF(FPDF):
     
         # Ajouter une ligne de base
         self.line(chart_x, chart_y + chart_height / 2, chart_x + chart_width, chart_y + chart_height / 2)
+
 
     
     def add_last_page(self):
