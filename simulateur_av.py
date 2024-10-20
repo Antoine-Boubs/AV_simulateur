@@ -1232,64 +1232,23 @@ def create_detailed_table(pdf, resultats_df):
     pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
     pdf.ln(5)
 
-    col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
-    headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
+    # Utiliser les colonnes du DataFrame comme en-têtes
+    headers = resultats_df.columns.tolist()
+    col_widths = [20] * len(headers)  # Largeur fixe pour chaque colonne, à ajuster si nécessaire
 
-    # Vérifier si resultats_df est bien un DataFrame
-    if not isinstance(resultats_df, pd.DataFrame):
-        print(f"Erreur : resultats_df n'est pas un DataFrame. Type reçu : {type(resultats_df)}")
-        return
+    # Convertir le DataFrame en liste de listes pour les données
+    data = resultats_df.values.tolist()
 
-    # Afficher les informations sur le DataFrame
-    print(f"Shape de resultats_df : {resultats_df.shape}")
-    print(f"Colonnes de resultats_df : {resultats_df.columns.tolist()}")
+    # Formater les valeurs
+    formatted_data = [[format_value(cell) for cell in row] for row in data]
 
-    # Vérifier si toutes les colonnes nécessaires existent
-    required_columns = ['Année', 'Capital initial (NET)', 'VP NET', 'Rendement', 'Frais de gestion', 'Capital fin d\'année (NET)']
-    missing_columns = [col for col in required_columns if col not in resultats_df.columns]
-
-    if missing_columns:
-        print(f"Attention : Les colonnes suivantes sont manquantes dans resultats_df : {', '.join(missing_columns)}")
-        # Créer des colonnes manquantes avec des valeurs par défaut
-        for col in missing_columns:
-            resultats_df[col] = 'N/A'
-
-    data = []
-    for index, row in resultats_df.iterrows():
-        try:
-            data_row = [
-                str(row.get('Année', index)),  # Utiliser l'index si 'Année' est manquant
-                format_value(row.get('Capital initial (NET)', 'N/A')),
-                format_value(row.get('VP NET', 'N/A')),
-                format_value(row.get('Rendement', 'N/A')),
-                format_value(row.get('Frais de gestion', 'N/A')),
-                format_value(row.get('Rachat', 'N/A')),
-                format_value(row.get('Fiscalite', 'N/A')),
-                format_value(row.get('Rachat net', 'N/A')),
-                format_value(row.get('Capital fin d\'année (NET)', 'N/A'))
-            ]
-            data.append(data_row)
-        except Exception as e:
-            print(f"Erreur lors du traitement de la ligne {index}: {str(e)}")
-            continue
-
-    if not data:
-        print("Attention : Aucune donnée n'a pu être extraite pour le tableau détaillé")
-        return
-
-    pdf.colored_table(headers, data, col_widths)
+    pdf.colored_table(headers, formatted_data, col_widths)
 
 def format_value(value):
     if pd.isna(value):
         return 'N/A'
     if isinstance(value, (int, float)):
         return f"{value:,.2f} €".replace(",", " ").replace(".", ",")
-    elif isinstance(value, str):
-        try:
-            num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
-            return format_value(num_value)
-        except ValueError:
-            return value
     return str(value)
 
 
