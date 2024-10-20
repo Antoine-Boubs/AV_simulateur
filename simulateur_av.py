@@ -898,11 +898,6 @@ duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi
 st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True)
 
 
-def fig_to_img_buffer(fig):
-    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
-    return io.BytesIO(img_bytes)
-
-
 
 def create_historical_performance_chart():
         fig = go.Figure()
@@ -987,7 +982,9 @@ def create_historical_performance_chart():
 
 
 
-
+def fig_to_img_buffer(fig):
+    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
+    return io.BytesIO(img_bytes)
 
 
 
