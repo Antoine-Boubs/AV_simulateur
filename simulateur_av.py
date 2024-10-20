@@ -1211,6 +1211,10 @@ class PDF(FPDF):
             self.cell(width, 6, title, ln=True)
             self.set_font_safe('Inter', '', 9)
             self.set_text_color(*text_color)
+            
+            # Ajuster la position x pour le contenu
+            self.set_x(x)
+            
             self.multi_cell(width, 4, content)
             return self.get_y()
 
