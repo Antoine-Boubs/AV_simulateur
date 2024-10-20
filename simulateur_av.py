@@ -957,7 +957,10 @@ from datetime import datetime
 import tempfile
 from PIL import Image
 import io
+from math import sqrt
 import streamlit as st
+
+
 
 class PDF(FPDF):
     def __init__(self, logo_path=None):
@@ -1036,32 +1039,35 @@ class PDF(FPDF):
         self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
 
     def add_warning(self):
-        self.ln(10)
-        margin = 20
-        self.set_left_margin(margin)
-        self.set_right_margin(margin)
-        
-        apple_light_gray = (247, 247, 247)
-        apple_dark_gray = (60, 60, 67)
-        apple_blue = (0, 122, 255)
-        
-        self.set_fill_color(*apple_light_gray)
-        self.rect(margin, self.get_y(), self.w - 2*margin, 60, 'F')
-        
-        self.set_xy(margin + 5, self.get_y() + 5)
-        self.set_font_safe('Inter', 'B', 14)
-        self.set_text_color(*apple_blue)
-        self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
-        
-        self.set_xy(margin + 5, self.get_y())
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(*apple_dark_gray)
-        self.multi_cell(self.w - 2*margin - 10, 5, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports "
-                              "en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à "
-                              "fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés "
-                              "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
-                              "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
-                              "sont pas stables dans le temps.", align='J')
+    # Revenir à la première page
+    self.set_page(1)
+    
+    # Définir les couleurs
+    warning_bg_color = (255, 247, 237)  # Couleur de fond légèrement orangée
+    warning_border_color = (255, 149, 0)  # Couleur de bordure orange
+    warning_text_color = (0, 0, 0)  # Texte en noir
+
+    # Positionner l'avertissement en bas de la page
+    self.set_y(-80)
+
+    # Dessiner le rectangle arrondi
+    self.set_fill_color(*warning_bg_color)
+    self.set_draw_color(*warning_border_color)
+    self.rounded_rect(10, self.get_y(), self.w - 20, 60, 5, 'FD')
+
+    # Ajouter le texte d'avertissement
+    self.set_xy(15, self.get_y() + 5)
+    self.set_font('Inter', 'B', 12)
+    self.set_text_color(*warning_text_color)
+    self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
+    
+    self.set_font('Inter', '', 9)
+    self.multi_cell(self.w - 30, 4, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports "
+                    "en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à "
+                    "fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés "
+                    "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
+                    "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
+                    "sont pas stables dans le temps.", align='J')
 
     def add_recap(self, params, objectives):
         self.add_page()
@@ -1140,6 +1146,37 @@ class PDF(FPDF):
             self.ln()
             fill_index += 1
 
+    def rounded_rect(self, x, y, w, h, r, style=''):
+        '''Draw a rounded rectangle'''
+        k = self.k
+        hp = self.h
+        if style=='F':
+            op='f'
+        elif style=='FD' or style=='DF':
+            op='B'
+        else:
+            op='S'
+        MyArc = 4/3 * (sqrt(2) - 1)
+        self._out('%.2F %.2F m' % ((x+r)*k,(hp-y)*k))
+        xc = x+w-r
+        yc = y+r
+        self._out('%.2F %.2F l' % (xc*k,(hp-y)*k))
+        self._curve(xc+r*MyArc, yc-r, xc+r, yc-r*MyArc, xc+r, yc)
+        xc = x+w-r
+        yc = y+h-r
+        self._out('%.2F %.2F l' % ((x+w)*k,(hp-yc)*k))
+        self._curve(xc+r, yc+r*MyArc, xc+r*MyArc, yc+r, xc, yc+r)
+        xc = x+r
+        yc = y+h-r
+        self._out('%.2F %.2F l' % (xc*k,(hp-(y+h))*k))
+        self._curve(xc-r*MyArc, yc+r, xc-r, yc+r*MyArc, xc-r, yc)
+        xc = x+r
+        yc = y+r
+        self._out('%.2F %.2F l' % (x*k,(hp-yc)*k))
+        self._curve(xc-r, yc-r*MyArc, xc-r*MyArc, yc-r, xc, yc-r)
+        self._out(op)
+
+    
     def add_last_page(self):
         self.add_page()
         margin = 20
@@ -1483,6 +1520,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_text_color(*apple_gray)
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
+
+    # Ajouter l'avertissement sur la page de couverture
+    pdf.add_warning()
+    
+    # Ajouter la dernière page
+    pdf.add_last_page()
 
     return pdf.output(dest='S').encode('latin-1', errors='replace')
     
