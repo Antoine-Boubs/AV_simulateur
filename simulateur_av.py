@@ -1189,84 +1189,84 @@ class PDF(FPDF):
 
 
     def add_nalo_page(self):
-    self.add_page()
+        self.add_page()
+        
+        # Définir les marges
+        margin_left = 15
+        margin_right = 15
+        margin_top = 15
+        margin_bottom = 15
+        
+        self.set_margins(margin_left, margin_top, margin_right)
+        self.set_auto_page_break(auto=True, margin=margin_bottom)
     
-    # Définir les marges
-    margin_left = 15
-    margin_right = 15
-    margin_top = 15
-    margin_bottom = 15
+        # Calculer la largeur effective
+        effective_width = self.w - margin_left - margin_right
+        
+        # Couleurs
+        text_color = (29, 29, 31)  # Gris foncé
+        title_color = (0, 0, 0)  # Noir
+        warning_bg_color = (230, 230, 250)  # Violet clair
     
-    self.set_margins(margin_left, margin_top, margin_right)
-    self.set_auto_page_break(auto=True, margin=margin_bottom)
-
-    # Calculer la largeur effective
-    effective_width = self.w - margin_left - margin_right
-    
-    # Couleurs
-    text_color = (29, 29, 31)  # Gris foncé
-    title_color = (0, 0, 0)  # Noir
-    warning_bg_color = (230, 230, 250)  # Violet clair
-
-    # Introduction
-    self.set_font_safe('Inter', '', 10)
-    self.set_text_color(*text_color)
-    self.multi_cell(effective_width, 5, "Nalo est un service d'investissements financiers innovant. En investissant avec Nalo, vous profitez de nombreux avantages :")
-    self.ln(3)
-
-    # Fonction pour ajouter une section
-    def add_section(title, content, x, y, width):
-        self.set_xy(x, y)
-        self.set_font_safe('Inter', 'B', 11)
-        self.set_text_color(*title_color)
-        self.cell(width, 6, title, ln=True)
-        self.set_font_safe('Inter', '', 9)
+        # Introduction
+        self.set_font_safe('Inter', '', 10)
         self.set_text_color(*text_color)
-        self.multi_cell(width, 4, content)
-
-    # Calculer la largeur des colonnes
-    col_width = effective_width / 2 - 5  # 5 est l'espace entre les colonnes
-
-    # Ligne de séparation
-    self.set_draw_color(200, 200, 200)
-    self.line(margin_left, self.get_y(), self.w - margin_right, self.get_y())
-    self.ln(3)
-
-    # Première ligne de sections
-    start_y = self.get_y()
-    add_section("UN INVESTISSEMENT SUR-MESURE", 
-                "Nalo vous permet d'investir en fonction de votre situation patrimoniale et de l'ensemble de vos objectifs financiers (achat immobilier, retraite, études des enfants, ou tout autre objectif). Pour chaque projet, vous disposez d'un investissement dédié et personnalisé au sein du même contrat d'assurance-vie.",
-                margin_left, start_y, col_width)
-
-    add_section("UNE SÉCURISATION PROGRESSIVE", 
-                "Pour mieux gérer votre prise de risque, nous opérons une sécurisation progressive de vos investissements au cours du temps. En fonction de vos projets, nous faisons en sorte que la proportion d'actifs peu risqués soit importante au moment où vous avez besoin de récupérer votre argent.",
-                margin_left + col_width + 10, start_y, col_width)
-
-    # Deuxième ligne de sections
-    self.ln(3)
-    self.line(margin_left, self.get_y(), self.w - margin_right, self.get_y())
-    self.ln(3)
-    start_y = self.get_y()
-
-    add_section("UN CONSEIL INDÉPENDANT", 
-                "Nalo est une société de conseil en investissement financier, qui accompagne ses clients de manière indépendante. Nous ne touchons pas de rétrocessions en fonction des fonds d'investissement choisis, cela nous permet de vous conseiller sans conflit d'intérêts.",
-                margin_left, start_y, col_width)
-
-    add_section("UNE MÉTHODE EFFICACE", 
-                "Notre méthode d'investissement est le résultat de plusieurs décennies de recherches économiques, financières et mathématiques. Elle tire son efficacité des travaux de plusieurs prix Nobel d'économie. Nous optimisons vos allocations et nous adaptons vos investissements aux conditions économiques et financières.",
-                margin_left + col_width + 10, start_y, col_width)
-
-    # Avertissement
-    self.ln(5)
-    warning_y = self.get_y()
-    self.set_fill_color(*warning_bg_color)
-    self.rect(margin_left, warning_y, effective_width, 35, 'F')
-    self.set_xy(margin_left + 5, warning_y + 2)
-    self.set_font_safe('Inter', 'B', 10)
-    self.cell(0, 5, "AVERTISSEMENT", ln=True)
-    self.set_font_safe('Inter', '', 8)
-    self.set_xy(margin_left + 5, self.get_y())
-    self.multi_cell(effective_width - 10, 3, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne sont pas stables dans le temps.")
+        self.multi_cell(effective_width, 5, "Nalo est un service d'investissements financiers innovant. En investissant avec Nalo, vous profitez de nombreux avantages :")
+        self.ln(3)
+    
+        # Fonction pour ajouter une section
+        def add_section(title, content, x, y, width):
+            self.set_xy(x, y)
+            self.set_font_safe('Inter', 'B', 11)
+            self.set_text_color(*title_color)
+            self.cell(width, 6, title, ln=True)
+            self.set_font_safe('Inter', '', 9)
+            self.set_text_color(*text_color)
+            self.multi_cell(width, 4, content)
+    
+        # Calculer la largeur des colonnes
+        col_width = effective_width / 2 - 5  # 5 est l'espace entre les colonnes
+    
+        # Ligne de séparation
+        self.set_draw_color(200, 200, 200)
+        self.line(margin_left, self.get_y(), self.w - margin_right, self.get_y())
+        self.ln(3)
+    
+        # Première ligne de sections
+        start_y = self.get_y()
+        add_section("UN INVESTISSEMENT SUR-MESURE", 
+                    "Nalo vous permet d'investir en fonction de votre situation patrimoniale et de l'ensemble de vos objectifs financiers (achat immobilier, retraite, études des enfants, ou tout autre objectif). Pour chaque projet, vous disposez d'un investissement dédié et personnalisé au sein du même contrat d'assurance-vie.",
+                    margin_left, start_y, col_width)
+    
+        add_section("UNE SÉCURISATION PROGRESSIVE", 
+                    "Pour mieux gérer votre prise de risque, nous opérons une sécurisation progressive de vos investissements au cours du temps. En fonction de vos projets, nous faisons en sorte que la proportion d'actifs peu risqués soit importante au moment où vous avez besoin de récupérer votre argent.",
+                    margin_left + col_width + 10, start_y, col_width)
+    
+        # Deuxième ligne de sections
+        self.ln(3)
+        self.line(margin_left, self.get_y(), self.w - margin_right, self.get_y())
+        self.ln(3)
+        start_y = self.get_y()
+    
+        add_section("UN CONSEIL INDÉPENDANT", 
+                    "Nalo est une société de conseil en investissement financier, qui accompagne ses clients de manière indépendante. Nous ne touchons pas de rétrocessions en fonction des fonds d'investissement choisis, cela nous permet de vous conseiller sans conflit d'intérêts.",
+                    margin_left, start_y, col_width)
+    
+        add_section("UNE MÉTHODE EFFICACE", 
+                    "Notre méthode d'investissement est le résultat de plusieurs décennies de recherches économiques, financières et mathématiques. Elle tire son efficacité des travaux de plusieurs prix Nobel d'économie. Nous optimisons vos allocations et nous adaptons vos investissements aux conditions économiques et financières.",
+                    margin_left + col_width + 10, start_y, col_width)
+    
+        # Avertissement
+        self.ln(5)
+        warning_y = self.get_y()
+        self.set_fill_color(*warning_bg_color)
+        self.rect(margin_left, warning_y, effective_width, 35, 'F')
+        self.set_xy(margin_left + 5, warning_y + 2)
+        self.set_font_safe('Inter', 'B', 10)
+        self.cell(0, 5, "AVERTISSEMENT", ln=True)
+        self.set_font_safe('Inter', '', 8)
+        self.set_xy(margin_left + 5, self.get_y())
+        self.multi_cell(effective_width - 10, 3, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne sont pas stables dans le temps.")
 
     
     def add_last_page(self):
