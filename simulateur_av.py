@@ -1421,6 +1421,16 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     return pdf.output(dest='S').encode('latin-1', errors='replace')
 
 
+def safe_access(df, column, index):
+    try:
+        return df.loc[index, column]
+    except KeyError:
+        print(f"Column '{column}' not found in DataFrame")
+        return None
+    except IndexError:
+        print(f"Index {index} is out of bounds for DataFrame with {len(df)} rows")
+        return None
+        
 
 def main():
     st.title("Générateur de Rapport Financier")
