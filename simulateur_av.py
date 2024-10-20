@@ -1259,29 +1259,40 @@ def create_detailed_table(pdf, resultats_df):
     pdf.colored_table(headers, data, col_widths)
 
 
-def fig_to_img_buffer(fig):
-    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
-    return io.BytesIO(img_bytes)
+def fig_to_temp_file(fig):
+    # Convertir la figure Plotly en bytes d'image PNG
+    img_bytes = fig.to_image(format="png", width=1000, height=600, scale=2)
+    
+    # Créer un fichier temporaire et y écrire les bytes de l'image
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+        tmpfile.write(img_bytes)
+        tmpfile.flush()
+        return tmpfile.name
 
 def generate_pdf_report(resultats_df, params, objectives):
-    # Calculate simulation duration
+    # Calculer la durée de simulation
     duree_simulation = calculer_duree_capi_max(objectives)
     params['duree_simulation'] = duree_simulation
 
-    # Create charts
+    # Créer les graphiques
     financial_chart = create_financial_chart(resultats_df)
     waterfall_chart = create_waterfall_chart(resultats_df)
     donut_chart = create_donut_chart(resultats_df, duree_simulation)
 
-    # Convert charts to image buffers
-    img_buffers = [
-        fig_to_img_buffer(financial_chart),
-        fig_to_img_buffer(waterfall_chart),
-        fig_to_img_buffer(donut_chart)
+    # Convertir les graphiques en fichiers temporaires
+    temp_files = [
+        fig_to_temp_file(financial_chart),
+        fig_to_temp_file(waterfall_chart),
+        fig_to_temp_file(donut_chart)
     ]
 
-    # Create PDF
-    pdf_bytes = create_pdf(params, img_buffers, resultats_df, params, objectives)
+    # Créer le PDF
+    pdf_bytes = create_pdf(params, temp_files, resultats_df, params, objectives)
+    
+    # Supprimer les fichiers temporaires
+    for file in temp_files:
+        os.remove(file)
+    
     return pdf_bytes
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
@@ -1383,8 +1394,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
     
-    # Graphiques
-    for i, img_buffer in enumerate(img_buffers):
+    # Ajouter les graphiques au PDF
+    for i, temp_file in enumerate(temp_files):
         pdf.add_page()
         pdf.set_font('Inter', 'B', 16)
         if i == 0:
@@ -1393,12 +1404,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.cell(0, 10, 'Évolution annuelle du capital', 0, 1, 'C')
         elif i == 2:
             pdf.cell(0, 10, f"Composition du capital en année {params['duree_simulation']}", 0, 1, 'C')
-        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            tmpfile.write(img_bytes)
-            tmpfile.flush()
-            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+        
+        # Ajouter l'image au PDF en utilisant le chemin du fichier temporaire
+        pdf.image(temp_file, x=10, y=pdf.get_y()+10, w=190)
             
             
     # Objectifs de l'investisseur
