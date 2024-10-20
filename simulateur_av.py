@@ -1528,12 +1528,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
 
     return pdf_output
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
-    except UnicodeEncodeError:
-        print("Attention : Certains caractères n'ont pas pu être encodés. Ils seront remplacés.")
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
-
-    return pdf_output
 
 
 def main():
