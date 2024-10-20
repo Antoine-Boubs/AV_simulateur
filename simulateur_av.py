@@ -1406,13 +1406,7 @@ class PDF(FPDF):
         self.set_text_color(128, 128, 128)
         self.cell(comment_width, 4, "Source : Nalo", 0, 1)
     
-        self.ln(10)  # Add space between comment and graph
-    
-        # Ajouter un divider
-        self.ln(10)  # Espace avant le divider
-        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour le divider
-        self.line(left_margin, self.get_y(), self.w - right_margin, self.get_y())
-        self.ln(10)  # Espace après le divider
+        self.ln(5)  # Reduced space between comment and graph
     
     
         # Graphique (côté droit)
@@ -1420,7 +1414,8 @@ class PDF(FPDF):
         chart_width = graph_width
         chart_height = 80
         chart_x = graph_x
-        chart_y = self.get_y() - 50  # Ajuster cette valeur pour aligner avec le texte
+        chart_y = self.get_y() - 80  # Increased offset to move the graph up
+        self.set_y(chart_y)  # Set the current Y position to the start of the graph
     
         # Dessiner le graphique
         bar_width = chart_width / len(data)
