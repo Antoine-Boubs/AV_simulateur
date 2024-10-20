@@ -1191,9 +1191,10 @@ class PDF(FPDF):
     def add_nalo_page(self):
         self.add_page()
     
-        margin_left = 15
-        margin_right = 15
-        effective_width = self.w - margin_left - margin_right
+        margin = 20  # Consistent margin for the entire page
+        self.set_left_margin(margin)
+        self.set_right_margin(margin)
+        effective_width = self.w - 2*margin
     
         text_color = (29, 29, 31)
         title_color = (0, 0, 0)
@@ -1260,12 +1261,12 @@ class PDF(FPDF):
         warning_width = effective_width * 0.9  # Slightly smaller than full width
         warning_x = (self.w - warning_width) / 2  # Centered horizontally
         warning_y = self.get_y() + 20  # Increased gap before warning
-        warning_height = 55  # Increased height
+        warning_height = 50  # Increased height
 
         self.set_fill_color(*warning_bg_color)
         self.rect(warning_x, warning_y, warning_width, warning_height, 'F')
         self.set_xy(warning_x + 10, warning_y + 5)  # Adjusted internal margins
-        self.set_font_safe('Inter', 'B', 11)  # Slightly larger font
+        self.set_font_safe('Inter', 'B', 12)  # Slightly larger font
         self.cell(0, 6, "AVERTISSEMENT", ln=True)
         self.set_font_safe('Inter', '', 9)
         self.set_xy(warning_x + 10, self.get_y())  # Consistent left margin
