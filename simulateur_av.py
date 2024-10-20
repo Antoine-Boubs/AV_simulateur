@@ -1262,9 +1262,9 @@ def generate_pdf_report(resultats_df, params, objectives):
         ])
 
     # Générer les graphiques
-    img_buffer1 = generate_chart1(resultats_df)
-    img_buffer2 = generate_chart2(resultats_df)
-    img_buffer3 = generate_chart3()
+    img_buffer1 = fig_to_img_buffer(create_financial_chart(resultats_df))
+    img_buffer2 = fig_to_img_buffer(create_waterfall_chart(resultats_df))
+    img_buffer3 = fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
     
     # Create the financial investment evolution chart
     fig1 = go.Figure()
