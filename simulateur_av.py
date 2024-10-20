@@ -1308,33 +1308,7 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     blue = (0, 122, 255)  # Bleu Apple
 
     
-    # Détail des versements
-    pdf.ln(10)
-    pdf.set_font_safe('Inter', 'B', 16)
-    pdf.cell(0, 10, 'Détail des versements', 0, 1)
-    pdf.ln(5)
-    pdf.set_font_safe('Inter', '', 12)
-    versements_libres = params.get('versements_libres', [])
-    modifications_versements = params.get('modifications_versements', [])
-    if versements_libres:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 8, "Versements libres :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        for vl in versements_libres:
-            add_info_line(f"Année {vl['annee']} :", f"{vl['montant']} €")
-        pdf.ln(5)
-    if modifications_versements:
-        pdf.set_font_safe('Inter', 'B', 14)
-        pdf.cell(0, 8, "Modifications de versements :", 0, 1)
-        pdf.set_font_safe('Inter', '', 12)
-        for mv in modifications_versements:
-            if mv['montant'] == 0:
-                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", "Versements arrêtés")
-            else:
-                add_info_line(f"De l'année {mv['debut']} à {mv['fin']} :", f"Modifiés à {mv['montant']} €")
-        pdf.ln(5)
-    if not versements_libres and not modifications_versements:
-        pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
+
 
     
     # Ajouter les graphiques au PDF
@@ -1351,29 +1325,6 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
         # Ajouter l'image au PDF en utilisant le chemin du fichier temporaire
         pdf.image(temp_file, x=10, y=pdf.get_y()+10, w=190)
             
-            
-    # Objectifs de l'investisseur
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 18)
-    pdf.cell(0, 10, 'Objectifs de l\'investisseur', 0, 1)
-    pdf.ln(5)
-    if objectives:
-        colors = ['#7E57C2', '#2196F3', '#4CAF50']  # Violet, Bleu, Vert
-        for i, obj in enumerate(objectives):
-            pdf.set_fill_color(*[int(colors[i % len(colors)][j:j+2], 16) for j in (1, 3, 5)])
-            pdf.rect(pdf.get_x(), pdf.get_y(), 190, 40, 'F')
-            pdf.set_font_safe('Inter', 'B', 14)
-            pdf.set_text_color(255, 255, 255)
-            pdf.cell(0, 10, obj.get('nom', 'Objectif non spécifié'), 0, 1)
-            pdf.set_font_safe('Inter', '', 12)
-            pdf.cell(0, 8, f"Montant annuel : {obj.get('montant_annuel', 'Non spécifié')} €", 0, 1)
-            pdf.cell(0, 8, f"Année de réalisation : {obj.get('annee', 'Non spécifiée')}", 0, 1)
-            pdf.cell(0, 8, f"Durée : {obj.get('duree_retrait', 'Non spécifiée')} ans", 0, 1)
-            pdf.set_text_color(0, 0, 0)
-            pdf.ln(10)
-    else:
-        pdf.set_font_safe('Inter', 'I', 12)
-        pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1)
 
     
     # Dernière page
