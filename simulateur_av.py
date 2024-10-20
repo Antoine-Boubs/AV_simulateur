@@ -1397,17 +1397,30 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
         pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
 
     
-    # Graphiques
-    for i, img_buffer in enumerate(img_buffers):
+    # Ajout des graphiques
+    for i, (title, img_buffer) in enumerate(img_buffers.items()):
         pdf.add_page()
-        pdf.set_font('Inter', 'B', 16)
-        if i == 0:
-            pdf.cell(0, 10, 'Évolution du placement financier', 0, 1, 'C')
-        elif i == 1:
-            pdf.cell(0, 10, 'Évolution annuelle du capital', 0, 1, 'C')
-        elif i == 2:
-            pdf.cell(0, 10, f"Composition du capital en année {params['duree_simulation']}", 0, 1, 'C')
-        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
+        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.cell(0, 10, title, 0, 1)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+            tmpfile.write(img_buffer.getvalue())
+            pdf.image(tmpfile.name, x=10, y=pdf.get_y(), w=190)
+    
+    # Ajout du tableau de résultats
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, "Résultats de la simulation", 0, 1)
+    pdf.set_font_safe('Inter', '', 8)
+    col_width = pdf.w / 8
+    for col in resultats_df.columns[:8]:  # Limiter à 8 colonnes pour l'espace
+        pdf.cell(col_width, 10, str(col), 1)
+    pdf.ln()
+    for _, row in resultats_df.iterrows():
+        for item in row[:8]:  # Limiter à 8 colonnes pour l'espace
+            pdf.cell(col_width, 10, str(item), 1)
+        pdf.ln()
+    
+    return pdf.output(dest='S').encode('latin-1', errors='replace')
             
             
     # Objectifs de l'investisseur
@@ -1487,27 +1500,21 @@ def main():
         st.session_state.objectives = []
 
     if st.button("Générer le rapport PDF"):
-        try:
-            # Vérifier si le DataFrame contient des données
-            if resultats_df.empty:
-                st.error("Le DataFrame de résultats est vide. Veuillez vous assurer que la simulation a été effectuée correctement.")
-                return
-
-            # Afficher un aperçu des données pour vérification
-            st.write("Aperçu des données de simulation :")
-            st.dataframe(resultats_df.head())
-
-            # Générer le PDF
-            pdf_bytes = generate_pdf_report(resultats_df, st.session_state.params, st.session_state.objectives)
-            st.download_button(
-                label="Télécharger le rapport PDF",
-                data=pdf_bytes,
-                file_name=f"rapport_simulation_financiere_{st.session_state.params['nom_client']}.pdf",
-                mime="application/pdf"
-            )
-        except Exception as e:
-            st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-            print(f"Erreur détaillée : {e}")
+    img_buffers = {
+        "Évolution du placement financier": fig_to_img_buffer(create_financial_chart(resultats_df)),
+        "Évolution du capital année par année": fig_to_img_buffer(create_waterfall_chart(resultats_df)),
+        f"Composition du capital en année {duree_capi_max}": fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
+    }
+    
+    try:
+        pdf_bytes = generate_pdf_report(resultats_df, params, objectifs, img_buffers)
+        
+        b64 = base64.b64encode(pdf_bytes).decode()
+        href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
+        st.markdown(href, unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
+        print(f"Erreur détaillée : {e}")
 
 if __name__ == "__main__":
     main()
