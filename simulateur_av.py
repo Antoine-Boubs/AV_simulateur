@@ -1261,26 +1261,54 @@ def create_detailed_table(pdf, resultats_df):
     pdf.colored_table(headers, data, col_widths)
 
 
+def fig_to_temp_file(fig):
+    # Convertir la figure Plotly en bytes d'image PNG
+    img_bytes = fig.to_image(format="png", width=1000, height=600, scale=2)
+    
+    # Créer un fichier temporaire et y écrire les bytes de l'image
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+        tmpfile.write(img_bytes)
+        tmpfile.flush()
+        return tmpfile.name
+
 def generate_pdf_report(resultats_df, params, objectives):
+
     # Calculer la durée de simulation
     duree_simulation = calculer_duree_capi_max(objectives)
     params['duree_simulation'] = duree_simulation
 
     # Créer les graphiques
-    financial_chart = create_financial_chart(resultats_df)
-    waterfall_chart = create_waterfall_chart(resultats_df)
-    donut_chart = create_donut_chart(resultats_df, duree_simulation)
+    try:
+        financial_chart = create_financial_chart(resultats_df)
+        waterfall_chart = create_waterfall_chart(resultats_df)
+        donut_chart = create_donut_chart(resultats_df, duree_simulation)
+    except Exception as e:
+        print(f"Error creating charts: {str(e)}")
+        raise
 
-    # Convertir les graphiques en buffers d'image
-    img_buffers = [
-        fig_to_img_buffer(financial_chart),
-        fig_to_img_buffer(waterfall_chart),
-        fig_to_img_buffer(donut_chart)
-    ]
+    # Convertir les graphiques en fichiers temporaires
+    temp_files = []
+    for i, chart in enumerate([financial_chart, waterfall_chart, donut_chart]):
+        try:
+            temp_file = fig_to_temp_file(chart)
+            temp_files.append(temp_file)
+        except Exception as e:
+            print(f"Error converting chart {i} to temp file: {str(e)}")
+            raise
 
     # Créer le PDF
-    pdf_bytes = create_pdf(params, img_buffers, resultats_df, params, objectives)
+    try:
+        pdf_bytes = create_pdf(params, temp_files, resultats_df, params, objectives)
+    except Exception as e:
+        print(f"Error creating PDF: {str(e)}")
+        raise
+    
+    # Supprimer les fichiers temporaires
+    for file in temp_files:
+        os.remove(file)
+    
     return pdf_bytes
+    
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
