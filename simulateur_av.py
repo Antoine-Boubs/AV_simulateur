@@ -1362,6 +1362,30 @@ def format_value(value):
             return value
     return str(value)
 
+
+def create_detailed_table(pdf, resultats_df):
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
+    pdf.ln(5)
+    col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
+    headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
+    data = [
+        [row['Année'], 
+         format_value(row['Capital initial (NET)']),
+         format_value(row['VP NET']),
+         format_value(row['Rendement']),
+         format_value(row['Frais de gestion']),
+         format_value(row.get('Rachat', 0)),
+         format_value(row.get('Fiscalite', 0)),
+         format_value(row.get('Rachat net', 0)),
+         format_value(row['Capital fin d\'année (NET)'])]
+        for _, row in resultats_df.iterrows()
+    ]
+    pdf.colored_table(headers, data, col_widths)
+
+
+
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Configuration du chemin du logo
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
