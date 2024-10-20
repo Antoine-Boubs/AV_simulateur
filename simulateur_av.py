@@ -1484,9 +1484,45 @@ def main():
     if 'objectives' not in st.session_state:
         st.session_state.objectives = []
 
+    # Ajouter une interface pour saisir les paramètres et les objectifs
+    st.session_state.params['capital_initial'] = st.number_input("Capital initial", value=st.session_state.params['capital_initial'])
+    st.session_state.params['versement_mensuel'] = st.number_input("Versement mensuel", value=st.session_state.params['versement_mensuel'])
+    st.session_state.params['rendement_annuel'] = st.number_input("Rendement annuel (%)", value=st.session_state.params['rendement_annuel']*100) / 100
+    st.session_state.params['frais_gestion'] = st.number_input("Frais de gestion (%)", value=st.session_state.params['frais_gestion']*100) / 100
+    st.session_state.params['nom_client'] = st.text_input("Nom du client", value=st.session_state.params['nom_client'])
+
+    # Interface pour ajouter des objectifs
+    with st.expander("Ajouter un objectif"):
+        nom_objectif = st.text_input("Nom de l'objectif")
+        annee_objectif = st.number_input("Année de réalisation", min_value=1, value=10)
+        montant_objectif = st.number_input("Montant annuel", min_value=0, value=5000)
+        duree_objectif = st.number_input("Durée (années)", min_value=1, value=5)
+        if st.button("Ajouter l'objectif"):
+            st.session_state.objectives.append({
+                "nom": nom_objectif,
+                "annee": annee_objectif,
+                "montant_annuel": montant_objectif,
+                "duree_retrait": duree_objectif
+            })
+            st.success("Objectif ajouté avec succès!")
+
+    # Afficher les objectifs actuels
+    if st.session_state.objectives:
+        st.write("Objectifs actuels:")
+        for i, obj in enumerate(st.session_state.objectives):
+            st.write(f"{i+1}. {obj['nom']} - {obj['montant_annuel']}€/an pendant {obj['duree_retrait']} ans à partir de l'année {obj['annee']}")
+
     if st.button("Générer le rapport PDF"):
         try:
-            pdf_bytes = generate_pdf_report(st.session_state.resultats_df, st.session_state.params, st.session_state.objectives)
+            # Calculer la durée de simulation
+            duree_simulation = calculer_duree_capi_max(st.session_state.objectives)
+            st.session_state.params['duree_simulation'] = duree_simulation
+
+            # Générer les résultats (vous devez implémenter cette fonction)
+            resultats_df = generer_resultats(st.session_state.params, st.session_state.objectives)
+
+            # Générer le PDF
+            pdf_bytes = generate_pdf_report(resultats_df, st.session_state.params, st.session_state.objectives)
             st.download_button(
                 label="Télécharger le rapport PDF",
                 data=pdf_bytes,
