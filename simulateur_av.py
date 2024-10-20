@@ -1353,38 +1353,36 @@ class PDF(FPDF):
     
     def add_performance_historique(self):
         self.add_page()
-    
+
         # Augmenter la marge supérieure
         top_margin = 30
         self.set_y(top_margin)
-    
+
         margin = 15
         self.set_left_margin(margin)
         self.set_right_margin(margin)
         effective_width = self.w - 2*margin
-    
+
         text_color = (29, 29, 31)
         title_color = (0, 0, 0)
-    
+
         # Titre de la section
         self.set_font_safe('Inter', 'B', 20)
         self.set_text_color(*title_color)
         self.cell(effective_width, 10, 'Performances historiques', 0, 1, 'L')
         self.ln(10)
-    
+
         # Utiliser la fonction existante pour créer le graphique
         fig = create_historical_performance_chart()
         
-        # Convertir le graphique en image
-        img_buffer = io.BytesIO()
-        fig.write_image(img_buffer, format="png")
-        img_buffer.seek(0)
-        img_bytes = img_buffer.getvalue()
-    
+        # Sauvegarder l'image temporairement sur le disque
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
+            fig.write_image(tmpfile.name)
+        
         # Calcul de la performance cumulée
         performances = [22.69, -0.80, 25.33, -12.17, 11.91]
         cumulative_performance = np.cumprod(1 + np.array(performances) / 100)[-1] * 100 - 100
-    
+
         # Section de commentaire (côté gauche)
         comment_width = effective_width * 0.45
         self.set_font_safe('Inter', '', 12)
@@ -1400,15 +1398,18 @@ class PDF(FPDF):
         self.set_font_safe('Inter', '', 9)
         self.set_text_color(128, 128, 128)
         self.cell(comment_width, 4, "Source : Nalo", 0, 1)
-    
+
         # Graphique (côté droit)
         chart_width = effective_width * 0.55
         chart_height = 100
         chart_x = self.w - margin - chart_width
         chart_y = top_margin + 20  # Ajuster cette valeur pour aligner avec le texte
-    
+
         # Insérer l'image du graphique
-        self.image(BytesIO(img_bytes), x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+        self.image(tmpfile.name, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+
+        # Supprimer le fichier temporaire
+        os.unlink(tmpfile.name)
 
         # Ajouter une légende ou des notes supplémentaires si nécessaire
         self.set_y(chart_y + chart_height + 10)
