@@ -1261,16 +1261,16 @@ class PDF(FPDF):
         warning_width = effective_width  # Use full width instead of 90%
         warning_x = margin  # Set to left margin
         warning_y = self.get_y() + 20  # Increased gap before warning
-        warning_height = 45  # Reduced from 55
+        warning_height = 35  # Reduced from 45
 
         self.set_fill_color(*warning_bg_color)
         self.rect(warning_x, warning_y, warning_width, warning_height, 'F')
-        self.set_xy(warning_x + 10, warning_y + 3)  # Reduced from +5
+        self.set_xy(warning_x + 10, warning_y + 2)  # Reduced from +3
         self.set_font_safe('Inter', 'B', 11)  # Slightly larger font
-        self.cell(0, 5, "AVERTISSEMENT", ln=True)  # Reduced from 6
+        self.cell(0, 4, "AVERTISSEMENT", ln=True)  # Reduced from 5
+        self.set_xy(warning_x + 10, self.get_y())  # Removed +1 spacing
         self.set_font_safe('Inter', '', 9)
-        self.set_xy(warning_x + 10, self.get_y() + 1)  # Added +1 for slight spacing
-        self.multi_cell(warning_width - 20, 3.5, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne sont pas stables dans le temps.")
+        self.multi_cell(warning_width - 20, 3, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne sont pas stables dans le temps.")
 
     
     def add_last_page(self):
