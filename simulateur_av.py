@@ -1413,6 +1413,7 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
 def main():
     st.title("Générateur de Rapport Financier")
 
+    # Initialisation des états de session
     if 'params' not in st.session_state:
         st.session_state.params = {
             'capital_initial': 10000,
@@ -1420,8 +1421,10 @@ def main():
             'rendement_annuel': 0.05,
             'frais_gestion': 0.01,
             'nom_client': '',
+            'versements_libres': [],
+            'modifications_versements': []
         }
-
+    
     if 'objectives' not in st.session_state:
         st.session_state.objectives = []
 
