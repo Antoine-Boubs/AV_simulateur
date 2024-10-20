@@ -1226,8 +1226,7 @@ class PDF(FPDF):
 
 def format_value(value):
     if isinstance(value, (int, float)):
-        formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
-        return f"{formatted} €"
+        return f"{value:,.2f} €".replace(",", " ").replace(".", ",")
     elif isinstance(value, str):
         try:
             num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
@@ -1242,20 +1241,41 @@ def create_detailed_table(pdf, resultats_df):
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
     pdf.ln(5)
+    
     col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
     headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
-    data = [
-        [row['Année'], 
-         format_value(row['Capital initial (NET)']),
-         format_value(row['VP NET']),
-         format_value(row['Rendement']),
-         format_value(row['Frais de gestion']),
-         format_value(row.get('Rachat', 0)),
-         format_value(row.get('Fiscalite', 0)),
-         format_value(row.get('Rachat net', 0)),
-         format_value(row['Capital fin d\'année (NET)'])]
-        for _, row in resultats_df.iterrows()
-    ]
+    
+    # Vérifier si toutes les colonnes nécessaires existent
+    required_columns = ['Année', 'Capital initial (NET)', 'VP NET', 'Rendement', 'Frais de gestion', 'Capital fin d\'année (NET)']
+    missing_columns = [col for col in required_columns if col not in resultats_df.columns]
+    
+    if missing_columns:
+        print(f"Attention : Les colonnes suivantes sont manquantes dans resultats_df : {', '.join(missing_columns)}")
+        return  # Sortir de la fonction si des colonnes sont manquantes
+    
+    data = []
+    for _, row in resultats_df.iterrows():
+        try:
+            data_row = [
+                row['Année'], 
+                format_value(row['Capital initial (NET)']),
+                format_value(row['VP NET']),
+                format_value(row['Rendement']),
+                format_value(row['Frais de gestion']),
+                format_value(row.get('Rachat', 0)),
+                format_value(row.get('Fiscalite', 0)),
+                format_value(row.get('Rachat net', 0)),
+                format_value(row['Capital fin d\'année (NET)'])
+            ]
+            data.append(data_row)
+        except KeyError as e:
+            print(f"Attention : Impossible d'accéder à la clé {e} pour la ligne {row.name}")
+            continue  # Passer à la ligne suivante si une clé est manquante
+    
+    if not data:
+        print("Attention : Aucune donnée n'a pu être extraite pour le tableau détaillé")
+        return  # Sortir de la fonction si aucune donnée n'a pu être extraite
+    
     pdf.colored_table(headers, data, col_widths)
 
 
