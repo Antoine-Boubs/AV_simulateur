@@ -1406,7 +1406,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.cell(0, 60, 'Rapport financier', 0, 1, 'C')
     pdf.set_font('Inter', '', 14)
     #pdf.cell(0, 10, f"Préparé pour: {params['nom_client']}", 0, 1, 'C')
-    pdf.cell(0, 10, f"Date: {params['date_rapport']}", 0, 1, 'C')
+    #pdf.cell(0, 10, f"Date: {params['date_rapport']}", 0, 1, 'C')
 
     # Function to add images to PDF
     def add_image_to_pdf(pdf, img_buffer, x, y, w):
