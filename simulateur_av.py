@@ -956,9 +956,9 @@ class PDF(FPDF):
        
         self.is_custom_font_loaded = False
         font_path = os.path.join(os.path.dirname(__file__), "assets", "Fonts")
-        pdf.add_font('Inter', '', 'Inter-Regular.ttf', uni=True)
-        pdf.add_font('Inter', 'B', 'Inter-Bold.ttf', uni=True)
-        pdf.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
+        self.add_font('Inter', '', 'Inter-Regular.ttf', uni=True)
+        self.add_font('Inter', 'B', 'Inter-Bold.ttf', uni=True)
+        self.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
         self.logo_path = logo_path or os.path.join(os.path.dirname(__file__), "assets", "Logo1.png")
         
         try:
@@ -1351,9 +1351,6 @@ from fpdf import FPDF
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf = PDF()
-    pdf.add_font('Inter', '', 'Inter-Regular.ttf', uni=True)
-    pdf.add_font('Inter', 'B', 'Inter-Bold.ttf', uni=True)
-    pdf.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
     pdf.set_auto_page_break(auto=True, margin=20)
 
     # Couleurs inspirées d'Apple
