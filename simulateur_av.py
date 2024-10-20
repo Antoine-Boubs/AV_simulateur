@@ -1238,8 +1238,8 @@ def format_value(value):
             return value
     return str(value)
 
-
-data = [
+def generate_pdf_report(resultats_df, params, objectives):
+    data = [
         ["Paramètre", "Valeur"],
         ["Capital initial", f"{params['capital_initial']} €"],
         ["Versement mensuel", f"{params['versement_mensuel']} €"],
@@ -1264,6 +1264,7 @@ data = [
     pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
 
     return pdf_bytes
+
 
 def format_value(value):
     if isinstance(value, (int, float)):
