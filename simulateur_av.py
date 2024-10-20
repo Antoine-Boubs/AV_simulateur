@@ -1486,28 +1486,26 @@ def main():
     st.title("Générateur de Rapport Financier")
 
     params = input_simulateur()
-    resultats_df = optimiser_objectifs(params, objectifs)
-
-
-    if 'objectives' not in st.session_state:
-        st.session_state.objectives = []
+    objectifs = st.session_state.objectifs  # Use the objectifs from session state
+    resultats_df = optimiser_objectifs(params, calculer_duree_totale(objectifs))
 
     if st.button("Générer le rapport PDF"):
+        duree_capi_max = calculer_duree_capi_max(objectifs)
         img_buffers = {
             "Évolution du placement financier": fig_to_img_buffer(create_financial_chart(resultats_df)),
             "Évolution du capital année par année": fig_to_img_buffer(create_waterfall_chart(resultats_df)),
             f"Composition du capital en année {duree_capi_max}": fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
         }
     
-    try:
-        pdf_bytes = generate_pdf_report(resultats_df, params, objectifs, img_buffers)
-        
-        b64 = base64.b64encode(pdf_bytes).decode()
-        href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
-        st.markdown(href, unsafe_allow_html=True)
-    except Exception as e:
-        st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-        print(f"Erreur détaillée : {e}")
+        try:
+            pdf_bytes = generate_pdf_report(resultats_df, params, objectifs, img_buffers)
+            
+            b64 = base64.b64encode(pdf_bytes).decode()
+            href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
+            st.markdown(href, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
+            print(f"Erreur détaillée : {e}")
 
 if __name__ == "__main__":
     main()
