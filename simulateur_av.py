@@ -1418,7 +1418,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font('Inter', 'B', 32)
     pdf.set_text_color(*apple_blue)
     pdf.cell(0, 60, 'Rapport Financier', 0, 1, 'C')
-    pdf.set_font('Inter', 'L', 18)
+    pdf.set_font('Inter', '', 18)
     pdf.set_text_color(*apple_gray)
     pdf.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'C')
     pdf.image('path_to_your_logo.png', x=10, y=10, w=30)
@@ -1464,7 +1464,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_fill_color(*apple_light_gray)
     pdf.rect(10, pdf.get_y(), 190, 100, 'F')
     pdf.set_xy(15, pdf.get_y() + 5)
-    pdf.set_font('SF Pro Display', '', 12)
+    pdf.set_font('Inter', '', 12)
     pdf.set_text_color(*apple_gray)
     for key, value in params.items():
         pdf.cell(0, 8, f"{key}: {value}", 0, 1)
