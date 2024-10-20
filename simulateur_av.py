@@ -1187,6 +1187,72 @@ class PDF(FPDF):
         
         self._out(op)
 
+
+    def add_nalo_page(self):
+        self.add_page()
+        self.set_auto_page_break(auto=True, margin=15)
+
+        # Couleurs
+        text_color = (29, 29, 31)  # Gris foncé
+        title_color = (0, 0, 0)  # Noir
+        warning_bg_color = (230, 230, 250)  # Violet clair
+
+        # Introduction
+        self.set_font_safe('Inter', '', 11)
+        self.set_text_color(*text_color)
+        self.multi_cell(0, 5, "Nalo est un service d'investissements financiers innovant. En investissant avec Nalo, vous profitez de nombreux avantages :")
+        self.ln(5)
+
+        # Fonction pour ajouter une section
+        def add_section(title, content):
+            self.set_font_safe('Inter', 'B', 12)
+            self.set_text_color(*title_color)
+            self.cell(0, 7, title, ln=True)
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(*text_color)
+            self.multi_cell(0, 5, content)
+            self.ln(5)
+
+        # Sections principales
+        self.set_draw_color(200, 200, 200)
+        self.line(10, self.get_y(), 200, self.get_y())
+        self.ln(5)
+
+        col_width = 90
+        line_height = 5
+
+        # Première ligne
+        self.set_xy(10, self.get_y())
+        add_section("UN INVESTISSEMENT SUR-MESURE", 
+                    "Nalo vous permet d'investir en fonction de votre situation patrimoniale et de l'ensemble de vos objectifs financiers (achat immobilier, retraite, études des enfants, ou tout autre objectif). Pour chaque projet, vous disposez d'un investissement dédié et personnalisé au sein du même contrat d'assurance-vie.")
+
+        self.set_xy(110, self.get_y() - 45)
+        add_section("UNE SÉCURISATION PROGRESSIVE", 
+                    "Pour mieux gérer votre prise de risque, nous opérons une sécurisation progressive de vos investissements au cours du temps. En fonction de vos projets, nous faisons en sorte que la proportion d'actifs peu risqués soit importante au moment où vous avez besoin de récupérer votre argent.")
+
+        # Deuxième ligne
+        self.ln(10)
+        self.line(10, self.get_y(), 200, self.get_y())
+        self.ln(5)
+
+        self.set_xy(10, self.get_y())
+        add_section("UN CONSEIL INDÉPENDANT", 
+                    "Nalo est une société de conseil en investissement financier, qui accompagne ses clients de manière indépendante. Nous ne touchons pas de rétrocessions en fonction des fonds d'investissement choisis, cela nous permet de vous conseiller sans conflit d'intérêts.")
+
+        self.set_xy(110, self.get_y() - 35)
+        add_section("UNE MÉTHODE EFFICACE", 
+                    "Notre méthode d'investissement est le résultat de plusieurs décennies de recherches économiques, financières et mathématiques. Elle tire son efficacité des travaux de plusieurs prix Nobel d'économie. Nous optimisons vos allocations et nous adaptons vos investissements aux conditions économiques et financières.")
+
+        # Avertissement
+        self.ln(10)
+        self.set_fill_color(*warning_bg_color)
+        self.rect(10, self.get_y(), 190, 40, 'F')
+        self.set_xy(15, self.get_y() + 5)
+        self.set_font_safe('Inter', 'B', 11)
+        self.cell(0, 5, "AVERTISSEMENT", ln=True)
+        self.set_font_safe('Inter', '', 9)
+        self.multi_cell(180, 4, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne sont pas stables dans le temps.")
+
     
     def add_last_page(self):
         self.add_page()
@@ -1530,6 +1596,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_text_color(*apple_gray)
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
+
+    self.add_nalo_page()
 
     # Ajouter l'avertissement sur la page de couverture
     pdf.add_warning()
