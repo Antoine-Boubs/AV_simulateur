@@ -1393,10 +1393,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.multi_cell(0, 5, "Ce graphique présente les performances historiques de votre investissement. "
                          "Il montre les variations annuelles ainsi que la performance cumulée sur la période.", 0, 'L')
     
-    # Ajouter le graphique en donut (composition du capital) avec arrière-plan
+    # Ajouter le graphique en donut (composition du capital)
     pdf.add_page()
-    donut_with_background = add_background_to_image(img_buffers[2])
-    pdf.image(donut_with_background, x=10, y=pdf.get_y(), w=190)
+    pdf.image(img_buffers[2], x=10, y=pdf.get_y(), w=190)
     
     # Ajouter un commentaire pour le graphique en donut
     pdf.ln(5)
