@@ -898,9 +898,7 @@ duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi
 st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True)
 
 
-def fig_to_img_buffer(fig):
-    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
-    return io.BytesIO(img_bytes)
+
 
 
 
@@ -1261,28 +1259,33 @@ def create_detailed_table(pdf, resultats_df):
     pdf.colored_table(headers, data, col_widths)
 
 
+def fig_to_img_buffer(fig):
+    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
+    return io.BytesIO(img_bytes)
+
 def generate_pdf_report(resultats_df, params, objectives):
-    # Calculer la durée de simulation
+    # Calculate simulation duration
     duree_simulation = calculer_duree_capi_max(objectives)
     params['duree_simulation'] = duree_simulation
 
-    # Créer les graphiques
+    # Create charts
     financial_chart = create_financial_chart(resultats_df)
     waterfall_chart = create_waterfall_chart(resultats_df)
     donut_chart = create_donut_chart(resultats_df, duree_simulation)
 
-    # Convertir les graphiques en buffers d'image
+    # Convert charts to image buffers
     img_buffers = [
         fig_to_img_buffer(financial_chart),
         fig_to_img_buffer(waterfall_chart),
         fig_to_img_buffer(donut_chart)
     ]
 
-    # Créer le PDF
+    # Create PDF
     pdf_bytes = create_pdf(params, img_buffers, resultats_df, params, objectives)
     return pdf_bytes
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
+    pdf = PDF()
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
         print(f"Warning: Logo file not found at {logo_path}")
@@ -1468,17 +1471,17 @@ def main():
         st.session_state.objectives = []
 
     if st.button("Générer le rapport PDF"):
-        try:
-            pdf_bytes = generate_pdf_report(st.session_state.resultats_df, st.session_state.params, st.session_state.objectives)
-            st.download_button(
-                label="Télécharger le rapport PDF",
-                data=pdf_bytes,
-                file_name="rapport_simulation_financiere.pdf",
-                mime="application/pdf"
-            )
-        except Exception as e:
-            st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-            print(f"Erreur détaillée : {e}")
+    try:
+        pdf_bytes = generate_pdf_report(resultats_df, st.session_state.params, st.session_state.objectives)
+        st.download_button(
+            label="Télécharger le rapport PDF",
+            data=pdf_bytes,
+            file_name="rapport_simulation_financiere.pdf",
+            mime="application/pdf"
+        )
+    except Exception as e:
+        st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
+        print(f"Erreur détaillée : {e}")
 
 if __name__ == "__main__":
     main()
