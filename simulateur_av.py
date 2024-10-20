@@ -949,6 +949,15 @@ import os
 from fpdf import FPDF
 import numpy as np 
 from datetime import datetime
+import base64
+import os
+from fpdf import FPDF
+import numpy as np 
+from datetime import datetime
+import tempfile
+from PIL import Image
+import io
+import streamlit as st
 
 class PDF(FPDF):
     def __init__(self, logo_path=None):
