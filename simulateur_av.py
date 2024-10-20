@@ -965,6 +965,14 @@ class PDF(FPDF):
             'I': 'Inter-Italic.ttf'
         }
 
+    for style, filename in font_files.items():
+    full_path = os.path.join(font_path, filename)
+    if os.path.exists(full_path):
+        self.add_font('Inter', style, full_path, uni=True)
+        self.is_custom_font_loaded = True
+    else:
+        print(f"Fichier de police non trouvé : {full_path}")
+
     def set_font_safe(self, family, style='', size=0):
         try:
             if self.is_custom_font_loaded and family == 'Inter':
