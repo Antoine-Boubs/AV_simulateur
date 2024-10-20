@@ -1273,6 +1273,71 @@ class PDF(FPDF):
         self.multi_cell(warning_width - 20, 3, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne sont pas stables dans le temps.")
 
     
+    def add_performance_historique(self):
+        self.add_page()
+    
+        # Augmenter la marge supérieure
+        top_margin = 30
+        self.set_y(top_margin)
+    
+        margin = 15
+        self.set_left_margin(margin)
+        self.set_right_margin(margin)
+        effective_width = self.w - 2*margin
+    
+        text_color = (29, 29, 31)
+        title_color = (0, 0, 0)
+    
+        # Titre de la section
+        self.set_font_safe('Inter', 'B', 20)
+        self.set_text_color(*title_color)
+        self.cell(effective_width, 10, 'Performances historiques', 0, 1, 'L')
+        self.ln(10)
+    
+        # Utiliser la fonction existante pour créer le graphique
+        fig = create_historical_performance_chart()
+        
+        # Convertir le graphique en image
+        img_buffer = io.BytesIO()
+        fig.write_image(img_buffer, format="png")
+        img_buffer.seek(0)
+    
+        # Calcul de la performance cumulée
+        performances = [22.69, -0.80, 25.33, -12.17, 11.91]
+        cumulative_performance = np.cumprod(1 + np.array(performances) / 100)[-1] * 100 - 100
+    
+        # Section de commentaire (côté gauche)
+        comment_width = effective_width * 0.45
+        self.set_font_safe('Inter', '', 12)
+        self.set_text_color(*text_color)
+        self.multi_cell(comment_width, 6, "Rendement sur les 5 dernières années")
+        self.ln(4)
+        self.set_font_safe('Inter', 'B', 16)
+        self.cell(comment_width, 8, f"Performance cumulée : {cumulative_performance:.2f}%", 0, 1)
+        self.ln(4)
+        self.set_font_safe('Inter', '', 11)
+        self.multi_cell(comment_width, 5, "Performance historique de la stratégie conseillée pour votre projet. C'est la performance que vous auriez eue en créant ce projet en 2019, prenant en compte les changements d'allocation conseillés par Nalo.")
+        self.ln(4)
+        self.set_font_safe('Inter', '', 9)
+        self.set_text_color(128, 128, 128)
+        self.cell(comment_width, 4, "Source : Nalo", 0, 1)
+    
+        # Graphique (côté droit)
+        chart_width = effective_width * 0.55
+        chart_height = 100
+        chart_x = self.w - margin - chart_width
+        chart_y = top_margin + 20  # Ajuster cette valeur pour aligner avec le texte
+    
+        # Insérer l'image du graphique
+        self.image(img_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+    
+        # Ajouter une légende ou des notes supplémentaires si nécessaire
+        self.set_y(chart_y + chart_height + 10)
+        self.set_font_safe('Inter', '', 9)
+        self.set_text_color(*text_color)
+        self.multi_cell(effective_width, 4, "Note : Les performances passées ne préjugent pas des performances futures.")
+
+    
     def add_last_page(self):
         self.add_page()
         margin = 20
@@ -1468,71 +1533,6 @@ def format_value(value):
         except ValueError:
             return value
     return str(value)
-
-
-def add_performance_historique(self):
-    self.add_page()
-
-    # Augmenter la marge supérieure
-    top_margin = 30
-    self.set_y(top_margin)
-
-    margin = 15
-    self.set_left_margin(margin)
-    self.set_right_margin(margin)
-    effective_width = self.w - 2*margin
-
-    text_color = (29, 29, 31)
-    title_color = (0, 0, 0)
-
-    # Titre de la section
-    self.set_font_safe('Inter', 'B', 20)
-    self.set_text_color(*title_color)
-    self.cell(effective_width, 10, 'Performances historiques', 0, 1, 'L')
-    self.ln(10)
-
-    # Utiliser la fonction existante pour créer le graphique
-    fig = create_historical_performance_chart()
-    
-    # Convertir le graphique en image
-    img_buffer = io.BytesIO()
-    fig.write_image(img_buffer, format="png")
-    img_buffer.seek(0)
-
-    # Calcul de la performance cumulée
-    performances = [22.69, -0.80, 25.33, -12.17, 11.91]
-    cumulative_performance = np.cumprod(1 + np.array(performances) / 100)[-1] * 100 - 100
-
-    # Section de commentaire (côté gauche)
-    comment_width = effective_width * 0.45
-    self.set_font_safe('Inter', '', 12)
-    self.set_text_color(*text_color)
-    self.multi_cell(comment_width, 6, "Rendement sur les 5 dernières années")
-    self.ln(4)
-    self.set_font_safe('Inter', 'B', 16)
-    self.cell(comment_width, 8, f"Performance cumulée : {cumulative_performance:.2f}%", 0, 1)
-    self.ln(4)
-    self.set_font_safe('Inter', '', 11)
-    self.multi_cell(comment_width, 5, "Performance historique de la stratégie conseillée pour votre projet. C'est la performance que vous auriez eue en créant ce projet en 2019, prenant en compte les changements d'allocation conseillés par Nalo.")
-    self.ln(4)
-    self.set_font_safe('Inter', '', 9)
-    self.set_text_color(128, 128, 128)
-    self.cell(comment_width, 4, "Source : Nalo", 0, 1)
-
-    # Graphique (côté droit)
-    chart_width = effective_width * 0.55
-    chart_height = 100
-    chart_x = self.w - margin - chart_width
-    chart_y = top_margin + 20  # Ajuster cette valeur pour aligner avec le texte
-
-    # Insérer l'image du graphique
-    self.image(img_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
-
-    # Ajouter une légende ou des notes supplémentaires si nécessaire
-    self.set_y(chart_y + chart_height + 10)
-    self.set_font_safe('Inter', '', 9)
-    self.set_text_color(*text_color)
-    self.multi_cell(effective_width, 4, "Note : Les performances passées ne préjugent pas des performances futures.")
 
 
 def create_detailed_table(pdf, resultats_df):
