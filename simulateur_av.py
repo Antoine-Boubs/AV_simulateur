@@ -945,16 +945,6 @@ def fig_to_img_buffer(fig):
 
 
 
-
-
-
-
-
-
-
-
-
-
 import textwrap
 import streamlit as st
 import pandas as pd
@@ -968,6 +958,8 @@ import io
 import numpy as np
 import tempfile
 class PDF(FPDF):
+
+    
     def __init__(self, logo_path=None):
         super().__init__()
         self.is_custom_font_loaded = False
@@ -1270,22 +1262,25 @@ def create_detailed_table(pdf, resultats_df):
 
 
 def generate_pdf_report(resultats_df, params, objectives):
-    # Create the graph figures
+    # Calculer la durée de simulation
+    duree_simulation = calculer_duree_capi_max(objectives)
+    params['duree_simulation'] = duree_simulation
+
+    # Créer les graphiques
     financial_chart = create_financial_chart(resultats_df)
     waterfall_chart = create_waterfall_chart(resultats_df)
-    donut_chart = create_donut_chart(resultats_df)
+    donut_chart = create_donut_chart(resultats_df, duree_simulation)
 
-    # Convert figures to image buffers
+    # Convertir les graphiques en buffers d'image
     img_buffers = [
         fig_to_img_buffer(financial_chart),
         fig_to_img_buffer(waterfall_chart),
         fig_to_img_buffer(donut_chart)
     ]
 
-    # Create the PDF
+    # Créer le PDF
     pdf_bytes = create_pdf(params, img_buffers, resultats_df, params, objectives)
     return pdf_bytes
-
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
@@ -1394,7 +1389,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         elif i == 1:
             pdf.cell(0, 10, 'Évolution annuelle du capital', 0, 1, 'C')
         elif i == 2:
-            pdf.cell(0, 10, f"Composition du capital en année", 0, 1, 'C')
+            pdf.cell(0, 10, f"Composition du capital en année {params['duree_simulation']}", 0, 1, 'C')
         pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
             
             
