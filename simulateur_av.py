@@ -1477,7 +1477,13 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             
             # Ajout du graphique (réduit) et de la description à droite
             start_y = pdf.get_y()
-            add_image_to_pdf(pdf, img_buffer, x=10, y=start_y, w=95)  # Réduire la largeur à 95
+            # Rotation du graphique pour positionner les plus-values en bas
+            img = Image.open(img_buffer)
+            img_rotated = img.rotate(90, expand=True)  # Rotation de 90 degrés
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                img_rotated.save(temp_file.name, format='PNG')
+                add_image_to_pdf(pdf, temp_file.name, x=10, y=start_y, w=95)
+            os.unlink(temp_file.name)
             
             # Ajout de la description à droite du graphique
             pdf.set_xy(110, start_y)  # Positionner le texte à droite du graphique
@@ -1555,22 +1561,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                          "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
                          "Les valeurs sont arrondies à deux décimales près.")
 
-    # Ajouter l'avertissement légal
-    pdf.add_page()
-    pdf.set_fill_color(240, 240, 240)
-    pdf.set_draw_color(200, 200, 200)
-    pdf.set_font_safe('Inter', 'B', 12)
-    pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
-    pdf.set_font_safe('Inter', 'I', 10)
-    pdf.set_text_color(80, 80, 80)
-    disclaimer_text = (
-        "Les performances passées ne préjugent pas des performances futures. "
-        "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. "
-        "Les résultats présentés sont des estimations potentielles destinées à faciliter la compréhension "
-        "du développement de votre patrimoine. Nous vous recommandons de consulter un professionnel "
-        "qualifié avant de prendre toute décision d'investissement."
-    )
-    pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
 
     # Ajouter la dernière page (informations de contact, etc.)
     pdf.add_last_page()
