@@ -1416,6 +1416,28 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.image(temp_file.name, x=x, y=y, w=w)
         os.unlink(temp_file.name)
 
+    # Définition des titres et descriptions des graphiques
+    graph_titles = [
+        "Évolution du placement financier",
+        "Analyse en cascade de l'évolution du capital",
+        "Composition du capital",
+        "Performances historiques"
+    ]
+    
+    graph_descriptions = [
+        "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
+        "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
+        
+        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
+        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
+        
+        "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
+        "Il met en évidence la croissance de votre capital au fil du temps.",
+        
+        "Ce graphique présente les performances historiques de votre investissement. "
+        "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
+    ]
+
     # Réorganiser l'ordre des graphiques
     graph_order = [0, 2, 1, 3]  # 0: Évolution, 2: Composition, 1: Cascade, 3: Performances
 
