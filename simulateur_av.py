@@ -955,29 +955,15 @@ class PDF(FPDF):
         super().__init__()
        
         self.is_custom_font_loaded = False
-        font_path = os.path.join(os.path.dirname(__file__), "assets", "Fonts")
-        self.add_font('Inter', '', 'Inter-Regular.ttf', uni=True)
-        self.add_font('Inter', 'B', 'Inter-Bold.ttf', uni=True)
-        self.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
-        self.logo_path = logo_path or os.path.join(os.path.dirname(__file__), "assets", "Logo1.png")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        font_path = os.path.join(current_dir, "assets", "Fonts")
+        self.logo_path = logo_path or os.path.join(current_dir, "assets", "Logo1.png")
         
-        try:
-            for style in ['', 'B', 'I']:
-                self.add_font('Inter', style, os.path.join(font_path, f'Inter-{style or "Regular"}.ttf'), uni=True)
-            self.is_custom_font_loaded = True
-        except Exception as e:
-            print(f"Erreur lors du chargement des polices personnalisées : {e}")
-            print("Utilisation des polices intégrées.")
-
-    def set_font_safe(self, family, style='', size=0):
-        try:
-            if self.is_custom_font_loaded:
-                self.set_font(family, style, size)
-            else:
-                self.set_font('Arial' if family == 'Inter' else family, style, size)
-        except Exception as e:
-            print(f"Erreur lors de la définition de la police : {e}")
-            self.set_font('Arial', '', 12)
+        font_files = {
+            '': 'Inter-Regular.ttf',
+            'B': 'Inter-Bold.ttf',
+            'I': 'Inter-Italic.ttf'
+        }
 
     def header(self):
         apple_blue = (0, 122, 255)
