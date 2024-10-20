@@ -1404,7 +1404,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     def add_image_to_pdf(pdf, img_buffer, x, y, w, h):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             img = Image.open(img_buffer)
-            img = img.resize((int(w * 300 / 25.4), int(h * 300 / 25.4)), Image.LANCZOS)  # Redimensionner l'image
+            img = img.resize((int(w * 300 / 25.4), int(h * 300 / 25.4)), Image.LANCZOS)
             img.save(temp_file.name, format='PNG')
             pdf.image(temp_file.name, x=x, y=y, w=w, h=h)
         os.unlink(temp_file.name)
@@ -1412,6 +1412,28 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Définir une taille uniforme pour tous les graphiques
     graph_width = 180
     graph_height = 100
+
+    # Définition des titres et descriptions des graphiques
+    graph_titles = [
+        "Évolution du placement financier",
+        "Composition du capital",
+        "Analyse en cascade de l'évolution du capital",
+        "Performances historiques"
+    ]
+    
+    graph_descriptions = [
+        "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
+        "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
+        
+        "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
+        "Il met en évidence la croissance de votre capital au fil du temps.",
+        
+        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
+        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
+        
+        "Ce graphique présente les performances historiques de votre investissement. "
+        "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
+    ]
 
     # Ajouter les graphiques
     for i, (img_buffer, title, description) in enumerate(zip(img_buffers, graph_titles, graph_descriptions)):
@@ -1453,7 +1475,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                          "Les valeurs sont arrondies à deux décimales près.")
 
     # Ajouter la dernière page (informations de contact, etc.)
-    pdf.add_page()
     pdf.add_last_page()
 
     # Générer la sortie PDF
