@@ -1393,22 +1393,21 @@ import io
 from fpdf import FPDF
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    # Configuration du chemin du logo
-    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
-    if not os.path.exists(logo_path):
-        print(f"Attention : Fichier logo non trouvé à {logo_path}")
-        logo_path = None
-
-    # Initialisation de l'objet PDF avec le logo
-    pdf = PDF(logo_path)
-    left_margin = 20
-    pdf.set_left_margin(left_margin)
-    pdf.alias_nb_pages()  # Activer la numérotation des pages
-    pdf.add_page()
-    pdf.add_warning()  # Ajouter la section d'avertissement
-    pdf.ln(20)  # Ajouter un espace vertical
+    pdf = PDF()
+    pdf.add_font('Inter', '', 'Inter-Regular.ttf', uni=True)
+    pdf.add_font('Inter', 'B', 'Inter-Bold.ttf', uni=True)
+    pdf.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
     pdf.set_auto_page_break(auto=True, margin=15)
 
+    # Add a cover page
+    pdf.add_page()
+    pdf.set_font('Inter', 'B', 24)
+    pdf.cell(0, 60, 'Rapport financier', 0, 1, 'C')
+    pdf.set_font('Inter', '', 14)
+    pdf.cell(0, 10, f"Préparé pour: {params['nom_client']}", 0, 1, 'C')
+    pdf.cell(0, 10, f"Date: {params['date_rapport']}", 0, 1, 'C')
+
+    # Function to add images to PDF
     def add_image_to_pdf(pdf, img_buffer, x, y, w):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             img = Image.open(img_buffer)
@@ -1416,99 +1415,73 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.image(temp_file.name, x=x, y=y, w=w)
         os.unlink(temp_file.name)
 
-    # Définition des titres et descriptions des graphiques
-    graph_titles = [
+    # Add charts
+    chart_titles = [
         "Évolution du placement financier",
-        "Analyse en cascade de l'évolution du capital",
         "Composition du capital",
+        "Analyse en cascade de l'évolution du capital",
         "Performances historiques"
     ]
-    
-    graph_descriptions = [
+
+    chart_descriptions = [
         "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
         "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
-        
-        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
-        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
-        
         "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
         "Il met en évidence la croissance de votre capital au fil du temps.",
-        
+        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
+        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
         "Ce graphique présente les performances historiques de votre investissement. "
         "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
     ]
 
-    # Réorganiser l'ordre des graphiques
-    graph_order = [0, 2, 1, 3]  # 0: Évolution, 2: Composition, 1: Cascade, 3: Performances
+    left_margin = pdf.get_left_margin()
 
-    # Ajouter les graphiques
-    for i in graph_order:
-        title = graph_titles[i]
-        description = graph_descriptions[i]
-        img_buffer = img_buffers[i]
-        
-        if i == 0:  # Premier graphique (Évolution du placement financier)
+    for i, (img_buffer, title, description) in enumerate(zip(img_buffers, chart_titles, chart_descriptions)):
+        if i == 0 or i == 1 or i == 3:  # Autres graphiques
             pdf.add_page()
             
             # Ajout du titre avant le graphique
-            pdf.set_font_safe('Inter', 'B', 16)
-            pdf.cell(0, 10, title, 0, 1, 'C')
+            pdf.set_font_safe('Inter', 'B', 18)
+            pdf.cell(0, 15, title, 0, 1, 'C')
             pdf.ln(5)
             
             # Ajout du graphique
-            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+            chart_width = 180
+            add_image_to_pdf(pdf, img_buffer, x=(210-chart_width)/2, y=pdf.get_y(), w=chart_width)
             
             # Ajout de la description
-            pdf.ln(10)
+            pdf.ln(10)  # Espace approximatif pour le graphique
             pdf.set_font_safe('Inter', '', 10)
+            pdf.set_left_margin(left_margin + 10)  # Augmente la marge de 10 points
             pdf.multi_cell(0, 5, description, 0, 'L')
-            
-        elif i == 2:  # Deuxième graphique (Composition du capital)
+            pdf.set_left_margin(left_margin)  # Rétablit la marge originale
+            pdf.ln(10)  # Espace après chaque graphique
+        elif i == 2:  # Graphique de composition du capital
             # Vérifier s'il y a assez d'espace sur la page actuelle
-            if pdf.get_y() + 80 > pdf.h - 20:  # Réduire la hauteur estimée
+            if pdf.get_y() + 100 > pdf.h - 20:  # Augmenter l'espace nécessaire
                 pdf.add_page()
             else:
                 pdf.ln(20)  # Espace entre les graphiques
             
             # Ajout du titre
-            pdf.set_font_safe('Inter', 'B', 14)  # Réduire légèrement la taille du titre
-            pdf.cell(0, 10, title, 0, 1, 'C')
-            pdf.ln(5)
-            
-            # Ajout du graphique (réduit) et de la description à droite
-            start_y = pdf.get_y()
-            # Rotation du graphique pour positionner les plus-values en bas
-            img = Image.open(img_buffer)
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-                img_rotated.save(temp_file.name, format='PNG')
-                add_image_to_pdf(pdf, temp_file.name, x=10, y=start_y, w=95)
-            os.unlink(temp_file.name)
-            
-            # Ajout de la description à droite du graphique
-            pdf.set_xy(110, start_y)  # Positionner le texte à droite du graphique
-            pdf.set_font_safe('Inter', '', 10)
-            pdf.multi_cell(90, 5, description, 0, 'L')  # Largeur réduite pour le texte
-            
-            # S'assurer que le curseur est positionné correctement après le graphique et le texte
-            pdf.set_y(max(pdf.get_y(), start_y + 95))  # 95 est une estimation de la hauteur du graphique réduit
-            
-        else:  # Autres graphiques
-            pdf.add_page()
-            
-            # Ajout du titre avant le graphique
             pdf.set_font_safe('Inter', 'B', 16)
             pdf.cell(0, 10, title, 0, 1, 'C')
             pdf.ln(5)
             
-            # Ajout du graphique
-            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+            # Calculer la position en bas de la page
+            chart_height = 80
+            start_y = pdf.h - pdf.b_margin - chart_height
             
-            # Ajout de la description
-            pdf.ln(10)
-            pdf.set_font_safe('Inter', '', 12)
-            pdf.multi_cell(0, 5, description, 0, 'L')
-        
-        pdf.ln(10)  # Espace après chaque graphique
+            # Ajout du graphique (réduit) en bas à gauche
+            add_image_to_pdf(pdf, img_buffer, x=10, y=start_y, w=95)
+            
+            # Ajout de la description à droite du graphique
+            pdf.set_xy(115, start_y)  # Augmente légèrement la marge à droite du graphique
+            pdf.set_font_safe('Inter', '', 10)
+            pdf.multi_cell(85, 5, description, 0, 'L')  # Réduit légèrement la largeur du texte
+            
+            # S'assurer que le curseur est positionné correctement pour la suite
+            pdf.set_y(start_y + chart_height + 10)
 
     
     # Ajouter la section de récapitulatif du projet
