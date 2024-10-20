@@ -1295,7 +1295,6 @@ def generate_pdf_report(resultats_df, params, objectives):
                 side='right',
                 showgrid=False
             ),
-            plot_bgcolor='rgba(240,240,240,0.5)',
             paper_bgcolor='white',
             yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
             xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
@@ -1308,15 +1307,6 @@ def generate_pdf_report(resultats_df, params, objectives):
             ),
             margin=dict(l=50, r=50, t=80, b=50),
             hovermode="x unified"
-        )
-
-        total_cumulative_performance = cumulative_performance[-1]
-        fig.add_annotation(
-            x=0.5, y=1.15,
-            xref='paper', yref='paper',
-            text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
-            showarrow=False,
-            font=dict(size=16, color='#1E3A8A', weight='bold')
         )
 
         fig.update_traces(
