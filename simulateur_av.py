@@ -1377,6 +1377,7 @@ class PDF(FPDF):
         # Convertir le graphique en image
         img_buffer = io.BytesIO()
         fig.write_image(img_buffer, format="png")
+        img_bytes = img_buffer.getvalue()  # Convertir BytesIO en bytes
         img_buffer.seek(0)
     
         # Calcul de la performance cumulée
@@ -1406,8 +1407,8 @@ class PDF(FPDF):
         chart_y = top_margin + 20  # Ajuster cette valeur pour aligner avec le texte
     
         # Insérer l'image du graphique
-        self.image(img_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
-    
+        self.image(img_bytes, x=chart_x, y=chart_y, w=chart_width, h=chart_height) 
+
         # Ajouter une légende ou des notes supplémentaires si nécessaire
         self.set_y(chart_y + chart_height + 10)
         self.set_font_safe('Inter', '', 9)
