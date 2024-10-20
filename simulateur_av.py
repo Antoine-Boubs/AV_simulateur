@@ -965,6 +965,16 @@ class PDF(FPDF):
             'I': 'Inter-Italic.ttf'
         }
 
+    def set_font_safe(self, family, style='', size=0):
+        try:
+            if self.is_custom_font_loaded and family == 'Inter':
+                self.set_font('Inter', style, size)
+            else:
+                self.set_font('Arial', style, size)
+        except Exception as e:
+            print(f"Erreur lors de la définition de la police : {e}")
+            self.set_font('Arial', '', 12)
+
     def header(self):
         apple_blue = (0, 122, 255)
         apple_gray = (128, 128, 128)
