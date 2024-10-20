@@ -1362,111 +1362,102 @@ def format_value(value):
             return value
     return str(value)
 
-def create_detailed_table(pdf, resultats_df):
+def creer_pdf(donnees, buffers_images, df_resultats, parametres, objectifs):
+    # Configuration du chemin du logo
+    chemin_logo = os.path.join(os.path.dirname(__file__), "Logo1.png")
+    if not os.path.exists(chemin_logo):
+        print(f"Attention : Fichier logo non trouvé à {chemin_logo}")
+        chemin_logo = None
+
+    # Initialisation de l'objet PDF avec le logo
+    pdf = PDF(chemin_logo)
+    marge_gauche = 20
+    pdf.set_left_margin(marge_gauche)
+    pdf.alias_nb_pages()  # Activer la numérotation des pages
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
-    pdf.ln(5)
-
-    col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
-    headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
-
-    data = [
-        [row['Année'], 
-         format_value(row['Capital initial (NET)']),
-         format_value(row['VP NET']),
-         format_value(row['Rendement']),
-         format_value(row['Frais de gestion']),
-         format_value(row.get('Rachat', 0)),
-         format_value(row.get('Fiscalite', 0)),
-         format_value(row.get('Rachat net', 0)),
-         format_value(row['Capital fin d\'année (NET)'])]
-        for _, row in resultats_df.iterrows()
-    ]
-
-    pdf.colored_table(headers, data, col_widths)
-    
-def create_pdf(data, img_buffers, resultats_df, params, objectives):
-    logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
-    if not os.path.exists(logo_path):
-        print(f"Warning: Logo file not found at {logo_path}")
-        logo_path = None
-
-    pdf = PDF(logo_path)
-    left_margin = 20
-    pdf.set_left_margin(left_margin)
-    pdf.alias_nb_pages()
-    pdf.add_page()
-    pdf.add_warning()
-    pdf.ln(20)
+    pdf.ajouter_avertissement()  # Ajouter la section d'avertissement
+    pdf.ln(20)  # Ajouter un espace vertical
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    for i, img_buffer in enumerate(img_buffers):
-        try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-                img = Image.open(img_buffer)
-                img.save(tmpfile.name, format="PNG")
-                tmpfile.flush()
-                
-                pdf.add_page()
-                if i == 2:  # Pour le troisième graphique (performances historiques)
-                    pdf.set_font_safe('Inter', 'B', 14)
-                    pdf.cell(0, 10, 'Performances historiques', 0, 1)
-                    pdf.set_font_safe('Inter', '', 12)
-                    pdf.multi_cell(0, 5, 'Performance historique indicative basée sur la stratégie générale recommandée. '
-                                         'Cette simulation illustre les résultats potentiels si ce projet avait été initié en 2019, '
-                                         "en suivant l'allocation d'actifs standard proposée par Antoine Berjoan. "
-                                         "Il est important de noter qu'aucune stratégie personnalisée ou ajustement spécifique "
-                                         "n'a été pris en compte dans ce calcul. Une approche sur mesure, adaptée à votre profil "
-                                         'individuel et réactive aux évolutions du marché, pourrait potentiellement générer des '
-                                         'performances supérieures.')
-                pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
-        except Exception as e:
-            print(f"Error adding image to PDF: {e}")
+    # Ajouter le premier graphique (évolution financière)
+    pdf.add_page()
+    pdf.image(buffers_images[0], x=10, y=pdf.get_y(), w=190)
+    
+    # Ajouter le graphique des performances historiques juste en dessous
+    pdf.ln(10)  # Espace entre les graphiques
+    pdf.image(buffers_images[3], x=10, y=pdf.get_y(), w=190)
+    
+    # Ajouter un texte générique pour le graphique des performances historiques
+    pdf.ln(5)
+    pdf.set_font_safe('Inter', '', 12)
+    pdf.multi_cell(0, 5, "Ce graphique présente les performances historiques de votre investissement. "
+                         "Il montre les variations annuelles ainsi que la performance cumulée sur la période.", 0, 'L')
+    
+    # Ajouter le graphique en donut (composition du capital) avec arrière-plan
+    pdf.add_page()
+    donut_avec_arriere_plan = ajouter_arriere_plan_a_image(buffers_images[2])
+    pdf.image(donut_avec_arriere_plan, x=10, y=pdf.get_y(), w=190)
+    
+    # Ajouter un commentaire pour le graphique en donut
+    pdf.ln(5)
+    pdf.set_font_safe('Inter', '', 12)
+    pdf.multi_cell(0, 5, "Ce graphique illustre la répartition entre vos versements et les plus-values générées par votre investissement. "
+                         "Il met en évidence la croissance de votre capital au fil du temps.", 0, 'L')
+    
+    # Ajouter le graphique en cascade
+    pdf.add_page()
+    pdf.image(buffers_images[1], x=10, y=pdf.get_y(), w=190)
 
+    # Ajouter la section d'informations du client
+    pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
-    pdf.set_x(left_margin)
+    pdf.set_x(marge_gauche)
     pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
     pdf.ln(5)
 
     pdf.set_font_safe('Inter', '', 12)
-    info_text = [
-        f"Capital initial : {params['capital_initial']} €",
-        f"Versement mensuel : {params['versement_mensuel']} €",
-        f"Rendement annuel : {params['rendement_annuel']*100:.2f}%",
-        f"Durée de simulation : {len(resultats_df)} ans"
+    texte_info = [
+        f"Capital initial : {parametres['capital_initial']} €",
+        f"Versement mensuel : {parametres['versement_mensuel']} €",
+        f"Rendement annuel : {parametres['rendement_annuel']*100:.2f}%",
+        f"Durée de simulation : {len(df_resultats)} ans"
     ]
 
-    for line in info_text:
-        pdf.set_x(left_margin)
-        pdf.cell(0, 8, line, 0, 1, 'L')
+    for ligne in texte_info:
+        pdf.set_x(marge_gauche)
+        pdf.cell(0, 8, ligne, 0, 1, 'L')
 
+    # Ajouter la section de résumé des résultats
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
     pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
     pdf.set_font_safe('Inter', '', 12)
     
-    derniere_annee = resultats_df.iloc[-1]
+    derniere_annee = df_resultats.iloc[-1]
     capital_final = float(derniere_annee['Capital fin d\'année (NET)'].replace(' €', '').replace(',', '.'))
     epargne_investie = float(derniere_annee['Épargne investie'].replace(' €', '').replace(',', '.'))
     gains_totaux = capital_final - epargne_investie
     
-    resume_text = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
-    resume_text += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
-    resume_text += "Gains totaux : {:.2f} €".format(gains_totaux)
+    texte_resume = "Capital final : {}\n".format(derniere_annee['Capital fin d\'année (NET)'])
+    texte_resume += "Total des versements : {}\n".format(derniere_annee['Épargne investie'])
+    texte_resume += "Gains totaux : {:.2f} €".format(gains_totaux)
     
-    pdf.multi_cell(0, 10, resume_text)
+    pdf.multi_cell(0, 10, texte_resume)
     
-    pdf.add_recap(params, objectives)
+    # Ajouter la section de récapitulatif du projet
+    pdf.ajouter_recap(parametres, objectifs)
     
-    create_detailed_table(pdf, resultats_df)
+    # Ajouter le tableau détaillé
+    creer_tableau_detaille(pdf, df_resultats)
 
+    # Ajouter une note sur le tableau détaillé
     pdf.set_xy(10, pdf.get_y() + 10)
     pdf.set_font_safe('Inter', 'I', 8)
-    pdf.multi_cell(0, 4, "Note: Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
+    pdf.multi_cell(0, 4, "Note : Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
                          "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
                          "Les valeurs sont arrondies à deux décimales près.")
 
+    # Ajouter l'avertissement légal
     pdf.add_page()
     pdf.set_fill_color(240, 240, 240)
     pdf.set_draw_color(200, 200, 200)
@@ -1474,22 +1465,26 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.cell(0, 10, 'AVERTISSEMENT LÉGAL', 1, 1, 'C', 1)
     pdf.set_font_safe('Inter', 'I', 10)
     pdf.set_text_color(80, 80, 80)
-    disclaimer_text = (
+    texte_avertissement = (
         "Les performances passées ne préjugent pas des performances futures. "
         "Ce document est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement. "
         "Les résultats présentés sont des estimations potentielles destinées à faciliter la compréhension "
         "du développement de votre patrimoine. Nous vous recommandons de consulter un professionnel "
         "qualifié avant de prendre toute décision d'investissement."
     )
-    pdf.multi_cell(0, 5, disclaimer_text, 1, 'J', 1)
+    pdf.multi_cell(0, 5, texte_avertissement, 1, 'J', 1)
 
-    pdf.add_last_page()
+    # Ajouter la dernière page (informations de contact, etc.)
+    pdf.ajouter_derniere_page()
 
+    # Générer la sortie PDF
     try:
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
+        sortie_pdf = pdf.output(dest='S').encode('latin-1', errors='ignore')
     except UnicodeEncodeError:
-        print("Warning: Some characters could not be encoded. They will be replaced.")
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
+        print("Attention : Certains caractères n'ont pas pu être encodés. Ils seront remplacés.")
+        sortie_pdf = pdf.output(dest='S').encode('latin-1', errors='replace')
+
+    return sortie_pdfdf.output(dest='S').encode('latin-1', errors='replace')
 
     return pdf_output
 
