@@ -1442,25 +1442,25 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.add_page()
         
         # Ajout du titre avant le graphique
-        pdf.set_font_safe('Inter', 'B', 16)
-        pdf.cell(0, 10, title, 0, 1, 'C')
-        pdf.ln(5)  # Espace après le titre
+        pdf.set_font_safe('Inter', 'B', 18)  # Augmentation de la taille de la police
+        pdf.cell(0, 15, title, 0, 1, 'C')  # Augmentation de la hauteur de la cellule
+        pdf.ln(10)  # Augmentation de l'espace après le titre
         
         # Ajout du graphique
         add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
         
         # Ajout de la description après le graphique
-        pdf.ln(15)  # Espace après le graphique
+        pdf.ln(20)  # Augmentation de l'espace après le graphique
         pdf.set_font_safe('Inter', '', 12)
-        pdf.multi_cell(0, 5, description, 0, 'L')
-        pdf.ln(10)  # Espace après la description
+        pdf.multi_cell(0, 6, description, 0, 'L')  # Augmentation de la hauteur de ligne
+        pdf.ln(15)  # Augmentation de l'espace après la description
 
     # Ajouter la section d'informations du client
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.set_font_safe('Inter', 'B', 16)  # Augmentation de la taille de la police
     pdf.set_x(left_margin)
-    pdf.cell(0, 10, 'Informations du client', 0, 1, 'L')
-    pdf.ln(5)
+    pdf.cell(0, 12, 'Informations du client', 0, 1, 'L')
+    pdf.ln(10)  # Augmentation de l'espace après le titre
 
     pdf.set_font_safe('Inter', '', 12)
     info_text = [
@@ -1476,8 +1476,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Ajouter la section de résumé des résultats
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Résumé des résultats', 0, 1)
+    pdf.set_font_safe('Inter', 'B', 16)  # Augmentation de la taille de la police
+    pdf.cell(0, 12, 'Résumé des résultats', 0, 1)
+    pdf.ln(10)  # Ajout d'un espace après le titre
     pdf.set_font_safe('Inter', '', 12)
     
     derniere_annee = resultats_df.iloc[-1]
