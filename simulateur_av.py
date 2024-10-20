@@ -1486,15 +1486,8 @@ def main():
     st.title("Générateur de Rapport Financier")
 
     resultats_df = optimiser_objectifs(params, objectifs)
+    params = input_simulateur()
 
-    if 'params' not in st.session_state:
-        st.session_state.params = {
-            'capital_initial': 10000,
-            'versement_mensuel': 500,
-            'rendement_annuel': 0.05,
-            'frais_gestion': 0.01,
-            'nom_client': '',
-        }
 
     if 'objectives' not in st.session_state:
         st.session_state.objectives = []
