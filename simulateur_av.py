@@ -1238,6 +1238,131 @@ def format_value(value):
             return value
     return str(value)
 
+def generate_pdf_report(resultats_df, params, objectives):
+    data = [
+        ["Paramètre", "Valeur"],
+        ["Capital initial", f"{params['capital_initial']} €"],
+        ["Versement mensuel", f"{params['versement_mensuel']} €"],
+        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
+    ]
+
+    # Ajouter les informations des objectifs à data
+    for i, obj in enumerate(objectives, start=1):
+        data.extend([
+            [f"Objectif {i} - Nom", obj['nom']],
+            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
+            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
+            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
+        ])
+
+    # Générer les graphiques
+    img_buffer1 = fig_to_img_buffer(create_financial_chart(resultats_df))
+    img_buffer2 = fig_to_img_buffer(create_waterfall_chart(resultats_df))
+    img_buffer3 = fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
+
+    def create_historical_performance_chart():
+        fig = go.Figure()
+        years = [2019, 2020, 2021, 2022, 2023]
+        performances = [22.69, -0.80, 25.33, -12.17, 11.91]
+    
+        fig.add_trace(go.Bar(
+            x=years,
+            y=performances,
+            text=[f"{p:+.2f}%" for p in performances],
+            textposition='outside',
+            marker_color=['#34C759' if p >= 0 else '#FF3B30' for p in performances],  # Apple green and red
+            marker_line_color='rgba(0,0,0,0.5)',
+            marker_line_width=1.5,
+            opacity=0.8,
+            name='Performance annuelle'
+        ))
+    
+        cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
+        fig.add_trace(go.Scatter(
+            x=years,
+            y=cumulative_performance,
+            mode='lines+markers',
+            name='Performance cumulée',
+            line=dict(color='#007AFF', width=3),  # Apple blue
+            marker=dict(size=8, symbol='diamond', line=dict(width=2, color='#1D1D1F')),
+            yaxis='y2'
+        ))
+    
+        fig.update_layout(
+            title={
+                'text': 'Performances historiques',
+                'y':0.95,
+                'x':0.5,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font': dict(size=24, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F')
+            },
+            font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color='#1D1D1F'),
+            xaxis_title='Année',
+            yaxis_title='Performance annuelle (%)',
+            yaxis2=dict(
+                title='Performance cumulée (%)',
+                overlaying='y',
+                side='right',
+                showgrid=False
+            ),
+            plot_bgcolor='rgba(240,240,240,0.5)',
+            paper_bgcolor='white',
+            yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='#1D1D1F', zerolinewidth=1.5),
+            xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
+            margin=dict(l=50, r=50, t=100, b=50),  # Increased top margin
+            hovermode="x unified"
+        )
+    
+        total_cumulative_performance = cumulative_performance[-1]
+        fig.add_annotation(
+            x=0.5, y=1.12,
+            xref='paper', yref='paper',
+            text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
+            showarrow=False,
+            font=dict(size=16, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F', weight='bold')
+        )
+    
+        fig.update_traces(
+            hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
+            selector=dict(type='bar')
+        )
+        fig.update_traces(
+            hovertemplate="<b>Année:</b> %{x}<br><b>Performance cumulée:</b> %{y:.2f}%<extra></extra>",
+            selector=dict(type='scatter')
+        )
+    
+        return fig
+
+    img_buffer4 = fig_to_img_buffer(create_historical_performance_chart())
+
+    # Créer le PDF
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3, img_buffer4], resultats_df, params, objectives)
+
+    return pdf_bytes
+
+
+
+def format_value(value):
+    if isinstance(value, (int, float)):
+        formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
+        return f"{formatted} €"
+    elif isinstance(value, str):
+        try:
+            num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
+            return format_value(num_value)
+        except ValueError:
+            return value
+    return str(value)
+
+
 def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
@@ -1259,12 +1384,13 @@ def create_detailed_table(pdf, resultats_df):
     ]
     pdf.colored_table(headers, data, col_widths)
 
-def add_image_to_pdf(pdf, img_buffer, x, y, w):
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-        img = Image.open(img_buffer)
-        img.save(temp_file.name, format='PNG')
-        pdf.image(temp_file.name, x=x, y=y, w=w)
-    os.unlink(temp_file.name)
+
+
+import tempfile
+import os
+from PIL import Image
+import io
+from fpdf import FPDF
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Configuration du chemin du logo
@@ -1283,23 +1409,42 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.ln(20)  # Ajouter un espace vertical
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Ajouter les graphiques
-    for i, img_buffer in enumerate(img_buffers):
-        pdf.add_page()
-        add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
-        
-        # Ajouter des commentaires pour chaque graphique
-        pdf.ln(20)
-        pdf.set_font_safe('Inter', '', 12)
-        if i == 0:
-            pdf.multi_cell(0, 5, "Ce graphique montre l'évolution de votre placement financier au fil du temps.")
-        elif i == 1:
-            pdf.multi_cell(0, 5, "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital.")
-        elif i == 2:
-            pdf.multi_cell(0, 5, "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées.")
-        elif i == 3:
-            pdf.multi_cell(0, 5, "Ce graphique présente les performances historiques de votre investissement.")
-        pdf.ln(10)
+    def add_image_to_pdf(pdf, img_buffer, x, y, w):
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+            img = Image.open(img_buffer)
+            img.save(temp_file.name, format='PNG')
+            pdf.image(temp_file.name, x=x, y=y, w=w)
+        os.unlink(temp_file.name)
+
+    # Ajouter le premier graphique (évolution financière)
+    pdf.add_page()
+    add_image_to_pdf(pdf, img_buffers[0], x=10, y=pdf.get_y(), w=190)
+    
+    # Ajouter le graphique des performances historiques juste en dessous
+    pdf.ln(10)  # Espace entre les graphiques
+    add_image_to_pdf(pdf, img_buffers[3], x=10, y=pdf.get_y(), w=190)
+    
+    # Ajouter un texte générique pour le graphique des performances historiques
+    pdf.ln(20)
+    pdf.set_font_safe('Inter', '', 12)
+    pdf.multi_cell(0, 5, "Ce graphique présente les performances historiques de votre investissement. "
+                         "Il montre les variations annuelles ainsi que la performance cumulée sur la période.", 0, 'L')
+    pdf.ln(10)
+    
+    # Ajouter le graphique en donut (composition du capital)
+    pdf.add_page()
+    add_image_to_pdf(pdf, img_buffers[2], x=10, y=pdf.get_y(), w=190)
+    
+    # Ajouter un commentaire pour le graphique en donut
+    pdf.ln(20)
+    pdf.set_font_safe('Inter', '', 12)
+    pdf.multi_cell(0, 5, "Ce graphique illustre la répartition entre vos versements et les plus-values générées par votre investissement. "
+                         "Il met en évidence la croissance de votre capital au fil du temps.", 0, 'L')
+    pdf.ln(10)
+    
+    # Ajouter le graphique en cascade
+    pdf.add_page()
+    add_image_to_pdf(pdf, img_buffers[1], x=10, y=pdf.get_y(), w=190)
 
     # Ajouter la section d'informations du client
     pdf.add_page()
@@ -1379,33 +1524,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     return pdf_output
 
-def generate_pdf_report(resultats_df, params, objectives):
-    data = [
-        ["Paramètre", "Valeur"],
-        ["Capital initial", f"{params['capital_initial']} €"],
-        ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
-    ]
-
-    # Ajouter les informations des objectifs à data
-    for i, obj in enumerate(objectives, start=1):
-        data.extend([
-            [f"Objectif {i} - Nom", obj['nom']],
-            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
-            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
-            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
-        ])
-
-    # Générer les graphiques
-    img_buffer1 = fig_to_img_buffer(create_financial_chart(resultats_df))
-    img_buffer2 = fig_to_img_buffer(create_waterfall_chart(resultats_df))
-    img_buffer3 = fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
-    img_buffer4 = fig_to_img_buffer(create_historical_performance_chart())
-
-    # Créer le PDF
-    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3, img_buffer4], resultats_df, params, objectives)
-
-    return pdf_bytes
 
 def main():
     global resultats_df, params
@@ -1425,3 +1543,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
