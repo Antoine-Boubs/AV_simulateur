@@ -1435,7 +1435,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
     ]
 
-    left_margin = pdf.get_left_margin()
+    left_margin = pdf.l_margin
 
     for i, (img_buffer, title, description) in enumerate(zip(img_buffers, chart_titles, chart_descriptions)):
         if i == 0 or i == 1 or i == 3:  # Autres graphiques
