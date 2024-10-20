@@ -1416,35 +1416,40 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.image(temp_file.name, x=x, y=y, w=w)
         os.unlink(temp_file.name)
 
-    # Ajouter le premier graphique (évolution financière)
-    pdf.add_page()
-    add_image_to_pdf(pdf, img_buffers[0], x=10, y=pdf.get_y(), w=190)
+    # Ajouter les graphiques
+    graph_titles = [
+        "Évolution du placement financier",
+        "Analyse en cascade de l'évolution du capital",
+        "Composition du capital",
+        "Performances historiques"
+    ]
     
-    # Ajouter le graphique des performances historiques juste en dessous
-    pdf.ln(10)  # Espace entre les graphiques
-    add_image_to_pdf(pdf, img_buffers[3], x=10, y=pdf.get_y(), w=190)
-    
-    # Ajouter un texte générique pour le graphique des performances historiques
-    pdf.ln(20)
-    pdf.set_font_safe('Inter', '', 12)
-    pdf.multi_cell(0, 5, "Ce graphique présente les performances historiques de votre investissement. "
-                         "Il montre les variations annuelles ainsi que la performance cumulée sur la période.", 0, 'L')
-    pdf.ln(10)
-    
-    # Ajouter le graphique en donut (composition du capital)
-    pdf.add_page()
-    add_image_to_pdf(pdf, img_buffers[2], x=10, y=pdf.get_y(), w=190)
-    
-    # Ajouter un commentaire pour le graphique en donut
-    pdf.ln(20)
-    pdf.set_font_safe('Inter', '', 12)
-    pdf.multi_cell(0, 5, "Ce graphique illustre la répartition entre vos versements et les plus-values générées par votre investissement. "
-                         "Il met en évidence la croissance de votre capital au fil du temps.", 0, 'L')
-    pdf.ln(10)
-    
-    # Ajouter le graphique en cascade
-    pdf.add_page()
-    add_image_to_pdf(pdf, img_buffers[1], x=10, y=pdf.get_y(), w=190)
+    graph_descriptions = [
+        "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
+        "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
+        
+        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
+        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
+        
+        "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
+        "Il met en évidence la croissance de votre capital au fil du temps.",
+        
+        "Ce graphique présente les performances historiques de votre investissement. "
+        "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
+    ]
+
+    for i, (img_buffer, title, description) in enumerate(zip(img_buffers, graph_titles, graph_descriptions)):
+        pdf.add_page()
+        add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+        
+        pdf.ln(10)
+        pdf.set_font_safe('Inter', 'B', 14)
+        pdf.cell(0, 10, title, 0, 1, 'C')
+        
+        pdf.ln(5)
+        pdf.set_font_safe('Inter', '', 12)
+        pdf.multi_cell(0, 5, description, 0, 'L')
+        pdf.ln(10)
 
     # Ajouter la section d'informations du client
     pdf.add_page()
