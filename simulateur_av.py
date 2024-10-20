@@ -1271,7 +1271,7 @@ def fig_to_temp_file(fig):
         tmpfile.flush()
         return tmpfile.name
 
-def generate_pdf_report(resultats_df, params, objectives):
+def generate_pdf_report(resultats_df, params, objectifs, img_buffers):
     # Calculer la durée de simulation
     duree_simulation = calculer_duree_capi_max(objectives)
     params['duree_simulation'] = duree_simulation
