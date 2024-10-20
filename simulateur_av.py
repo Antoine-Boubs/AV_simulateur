@@ -1296,7 +1296,6 @@ def generate_pdf_report(resultats_df, params, objectives):
     return pdf_bytes
 
 def create_pdf(data, temp_files, resultats_df, params, objectives):
-    pdf = PDF()
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
         print(f"Warning: Logo file not found at {logo_path}")
@@ -1306,7 +1305,6 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     pdf.set_left_margin(left_margin)
     pdf.alias_nb_pages()
 
-    
     # Page de couverture
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 28)
@@ -1315,12 +1313,10 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
     pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
 
-    
     # Avertissement
     pdf.ln(20)
     pdf.add_warning()
 
-    
     # Paramètres de la simulation
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 24)
@@ -1328,13 +1324,11 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     pdf.cell(0, 20, 'Paramètres de la simulation', 0, 1, 'C')
     pdf.ln(10)
 
-    
     # Définition des couleurs
     light_gray = 245
     dark_gray = 80
     blue = (0, 122, 255)  # Bleu Apple
 
-    
     # Création d'un tableau stylisé
     parameters = [
         ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
@@ -1363,6 +1357,9 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     # Bordure autour du tableau
     pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
     pdf.ln(20)
+
+    # Ajout du tableau détaillé
+    create_detailed_table(pdf, resultats_df)
 
     
     # Détail des versements
