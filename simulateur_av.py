@@ -1453,18 +1453,33 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
 
 def main():
-    global resultats_df, params
-    # Exemple de bouton pour générer le PDF
+    st.title("Générateur de Rapport Financier")
+
+    if 'params' not in st.session_state:
+        st.session_state.params = {
+            'capital_initial': 10000,
+            'versement_mensuel': 500,
+            'rendement_annuel': 0.05,
+            'frais_gestion': 0.01,
+            'nom_client': '',
+        }
+
+    if 'objectives' not in st.session_state:
+        st.session_state.objectives = []
+
     if st.button("Générer le rapport PDF"):
         try:
-            pdf_bytes = generate_pdf_report(resultats_df, params, st.session_state.objectifs)
-            # Créer un lien de téléchargement pour le PDF
-            b64 = base64.b64encode(pdf_bytes).decode()
-            href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
-            st.markdown(href, unsafe_allow_html=True)
+            pdf_bytes = generate_pdf_report(st.session_state.resultats_df, st.session_state.params, st.session_state.objectives)
+            st.download_button(
+                label="Télécharger le rapport PDF",
+                data=pdf_bytes,
+                file_name="rapport_simulation_financiere.pdf",
+                mime="application/pdf"
+            )
         except Exception as e:
             st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
-            print(f"Detailed error: {e}")
+            print(f"Erreur détaillée : {e}")
+
 if __name__ == "__main__":
     main()
 
