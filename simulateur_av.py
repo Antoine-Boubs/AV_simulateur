@@ -1322,38 +1322,26 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     dark_gray = 80
     blue = (0, 122, 255)  # Bleu Apple
 
-    # Création d'un tableau stylisé
-    parameters = [
-        ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
-        ("Versement mensuel", f"{params.get('versement_mensuel', 'Non spécifié')} €"),
-        ("Rendement annuel", f"{params.get('rendement_annuel', 'Non spécifié')*100:.2f}%" if params.get('rendement_annuel') is not None else "Non spécifié"),
-        ("Durée de simulation", f"{params.get('duree_simulation', 'Non spécifié')} ans"),
-        ("Frais de gestion", f"{params.get('frais_gestion', 'Non spécifié')*100:.2f}%" if params.get('frais_gestion') is not None else "Non spécifié")
-    ]
-    
-    # Largeur de colonne et hauteur de ligne
-    col_width = pdf.w / 2 - 20
-    row_height = 14
-    for i, (label, value) in enumerate(parameters):
-        # Alternance de couleurs de fond
-        if i % 2 == 0:
-            pdf.set_fill_color(light_gray, light_gray, light_gray)
-        else:
-            pdf.set_fill_color(255, 255, 255)
-        # Label
-        pdf.set_font_safe('Inter', 'B', 12)
-        pdf.set_text_color(dark_gray, dark_gray, dark_gray)
-        pdf.cell(col_width, row_height, label, 0, 0, 'L', 1)
-        # Value
-        pdf.set_font_safe('Inter', '', 12)
-        pdf.set_text_color(*blue)
-        pdf.cell(col_width, row_height, value, 0, 1, 'R', 1)
-    # Bordure autour du tableau
-    pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
-    pdf.ln(20)
-
     # Ajout du tableau détaillé
-    create_detailed_table(pdf, resultats_df)
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
+    pdf.ln(5)
+
+    # Définir les largeurs de colonnes
+    col_widths = [10, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 15, 20]
+
+    # Ajouter les en-têtes
+    headers = resultats_df.columns.tolist()
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 7, str(header), 1, 0, 'C')
+    pdf.ln()
+
+    # Ajouter les données
+    for _, row in resultats_df.iterrows():
+        for i, value in enumerate(row):
+            pdf.cell(col_widths[i], 6, str(value), 1, 0, 'L')
+        pdf.ln()
 
     
     # Détail des versements
