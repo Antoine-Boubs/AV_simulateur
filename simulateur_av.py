@@ -1500,11 +1500,11 @@ def main():
         st.session_state.objectives = []
 
     if st.button("Générer le rapport PDF"):
-    img_buffers = {
-        "Évolution du placement financier": fig_to_img_buffer(create_financial_chart(resultats_df)),
-        "Évolution du capital année par année": fig_to_img_buffer(create_waterfall_chart(resultats_df)),
-        f"Composition du capital en année {duree_capi_max}": fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
-    }
+        img_buffers = {
+            "Évolution du placement financier": fig_to_img_buffer(create_financial_chart(resultats_df)),
+            "Évolution du capital année par année": fig_to_img_buffer(create_waterfall_chart(resultats_df)),
+            f"Composition du capital en année {duree_capi_max}": fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
+        }
     
     try:
         pdf_bytes = generate_pdf_report(resultats_df, params, objectifs, img_buffers)
