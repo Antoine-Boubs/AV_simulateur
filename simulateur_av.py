@@ -966,12 +966,16 @@ class PDF(FPDF):
         }
 
         for style, filename in font_files.items():
-        full_path = os.path.join(font_path, filename)
-        if os.path.exists(full_path):
-            self.add_font('Inter', style, full_path, uni=True)
-            self.is_custom_font_loaded = True
-        else:
-            print(f"Fichier de police non trouvé : {full_path}")
+            full_path = os.path.join(font_path, filename)
+            if os.path.exists(full_path):
+                self.add_font('Inter', style, full_path, uni=True)
+                self.is_custom_font_loaded = True
+                print(f"Police {filename} chargée avec succès.")
+            else:
+                print(f"Fichier de police non trouvé : {full_path}")
+
+        if not self.is_custom_font_loaded:
+            print("Aucune police personnalisée n'a été chargée. Utilisation des polices par défaut.")
 
     def set_font_safe(self, family, style='', size=0):
         try:
