@@ -1400,7 +1400,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
     pdf.set_auto_page_break(auto=True, margin=20)
 
-    # Fonction pour ajouter des images au PDF avec une taille uniforme
+    # Couleurs inspirées d'Apple
+    apple_blue = (0, 122, 255)
+    apple_gray = (142, 142, 147)
+    apple_light_gray = (242, 242, 247)
+
     def add_image_to_pdf(pdf, img_buffer, x, y, w, h):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             img = Image.open(img_buffer)
@@ -1409,82 +1413,85 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.image(temp_file.name, x=x, y=y, w=w, h=h)
         os.unlink(temp_file.name)
 
-    # Définir une taille uniforme pour tous les graphiques
+    # Page de couverture
+    pdf.add_page()
+    pdf.set_font('Inter', 'B', 32)
+    pdf.set_text_color(*apple_blue)
+    pdf.cell(0, 60, 'Rapport Financier', 0, 1, 'C')
+    pdf.set_font('Inter', 'L', 18)
+    pdf.set_text_color(*apple_gray)
+    pdf.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'C')
+    pdf.image('path_to_your_logo.png', x=10, y=10, w=30)
+
+    # Sommaire
+    pdf.add_page()
+    pdf.set_font('Inter', 'B', 24)
+    pdf.set_text_color(*apple_blue)
+    pdf.cell(0, 20, 'Sommaire', 0, 1, 'L')
+    pdf.set_font('Inter', '', 14)
+    pdf.set_text_color(*apple_gray)
+    sommaire_items = [
+        "1. Évolution du placement financier",
+        "2. Composition du capital",
+        "3. Analyse en cascade de l'évolution du capital",
+        "4. Performances historiques",
+        "5. Récapitulatif du projet",
+        "6. Détails année par année"
+    ]
+    for item in sommaire_items:
+        pdf.cell(0, 10, item, 0, 1, 'L')
+
+    # Graphiques
     graph_width = 180
     graph_height = 100
-
-    # Définition des titres et descriptions des graphiques
-    graph_titles = [
-        "Évolution du placement financier",
-        "Composition du capital",
-        "Analyse en cascade de l'évolution du capital",
-        "Performances historiques"
-    ]
-    
-    graph_descriptions = [
-        "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
-        "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
-        
-        "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
-        "Il met en évidence la croissance de votre capital au fil du temps.",
-        
-        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
-        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
-        
-        "Ce graphique présente les performances historiques de votre investissement. "
-        "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
-    ]
-
-    # Ajouter les graphiques
-    for i, (img_buffer, title, description) in enumerate(zip(img_buffers, graph_titles, graph_descriptions)):
+    for i, (img_buffer, title) in enumerate(zip(img_buffers, graph_titles), start=1):
         pdf.add_page()
-        
-        # Ajout du titre avant le graphique
-        pdf.set_font('Inter', 'B', 16)
-        pdf.cell(0, 10, title, 0, 1, 'C')
-        pdf.ln(5)
-        
-        # Ajout du graphique avec une taille uniforme
-        add_image_to_pdf(pdf, img_buffer, x=(210-graph_width)/2, y=pdf.get_y(), w=graph_width, h=graph_height)
-        
-        # Ajout de la description
-        pdf.ln(graph_height + 10)
-        pdf.set_font('Inter', '', 10)
-        pdf.multi_cell(0, 5, description, 0, 'L')
-        pdf.ln(10)
+        pdf.set_font('Inter', 'B', 24)
+        pdf.set_text_color(*apple_blue)
+        pdf.cell(0, 20, f"{i}. {title}", 0, 1, 'L')
+        add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
+        pdf.ln(graph_height + 15)
+        pdf.set_font('Inter', '', 12)
+        pdf.set_text_color(*apple_gray)
+        pdf.multi_cell(0, 6, graph_descriptions[i-1], 0, 'L')
 
-    # Ajouter la section de récapitulatif du projet
+    # Récapitulatif du projet
     pdf.add_page()
-    pdf.set_font('Inter', 'B', 18)
-    pdf.cell(0, 20, 'Récapitulatif du projet', 0, 1, 'C')
+    pdf.set_font('Inter', 'B', 24)
+    pdf.set_text_color(*apple_blue)
+    pdf.cell(0, 20, '5. Récapitulatif du projet', 0, 1, 'L')
     pdf.ln(10)
-    pdf.add_recap(params, objectives)
-    
-    # Ajouter le tableau détaillé
+    pdf.set_fill_color(*apple_light_gray)
+    pdf.rect(10, pdf.get_y(), 190, 100, 'F')
+    pdf.set_xy(15, pdf.get_y() + 5)
+    pdf.set_font('SF Pro Display', '', 12)
+    pdf.set_text_color(*apple_gray)
+    for key, value in params.items():
+        pdf.cell(0, 8, f"{key}: {value}", 0, 1)
+    pdf.ln(10)
+    pdf.set_font('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Objectifs:', 0, 1)
+    for obj in objectives:
+        pdf.set_font('Inter', '', 12)
+        for key, value in obj.items():
+            pdf.cell(0, 8, f"{key}: {value}", 0, 1)
+        pdf.ln(5)
+
+    # Tableau détaillé
     pdf.add_page()
-    pdf.set_font('Inter', 'B', 18)
-    pdf.cell(0, 20, 'Détails année par année', 0, 1, 'C')
-    pdf.ln(10)
+    pdf.set_font('Inter', 'B', 24)
+    pdf.set_text_color(*apple_blue)
+    pdf.cell(0, 20, '6. Détails année par année', 0, 1, 'L')
     create_detailed_table(pdf, resultats_df)
 
-    # Ajouter une note sur le tableau détaillé
-    pdf.ln(20)
-    pdf.set_font('Inter', 'I', 9)
-    pdf.multi_cell(0, 5, "Note : Ce tableau présente une vue détaillée de l'évolution de votre investissement année par année, "
-                         "incluant les versements, les rendements, les frais, les rachats et leur impact fiscal. "
-                         "Les valeurs sont arrondies à deux décimales près.")
+    # Note de bas de page
+    pdf.set_y(-30)
+    pdf.set_font('Inter', 'I', 10)
+    pdf.set_text_color(*apple_gray)
+    pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
+                         "Veuillez consulter un professionnel pour des conseils personnalisés.")
 
-    # Ajouter la dernière page (informations de contact, etc.)
-    pdf.add_last_page()
-
-    # Générer la sortie PDF
-    try:
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
-    except UnicodeEncodeError:
-        print("Attention : Certains caractères n'ont pas pu être encodés. Ils seront remplacés.")
-        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
-
-    return pdf_output
+    return pdf.output(dest='S')
 
 
 def main():
