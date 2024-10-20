@@ -1219,9 +1219,9 @@ class PDF(FPDF):
             self.multi_cell(width, 4, content)
             return self.get_y()
 
-        col_width = (effective_width - 10) / 2
+        col_width = (effective_width - 20) / 2  # -20 pour tenir compte de l'espace entre les colonnes
 
-        self.line(margin_left, self.get_y(), self.w - margin_right, self.get_y())
+        self.line(margin, self.get_y(), self.w - margin, self.get_y())
         self.ln(3)
 
         start_y = self.get_y()
@@ -1230,43 +1230,43 @@ class PDF(FPDF):
         # Section 1
         y1 = add_section("UN INVESTISSEMENT SUR-MESURE", 
                     "Nalo vous permet d'investir en fonction de votre situation patrimoniale et de l'ensemble de vos objectifs financiers (achat immobilier, retraite, études des enfants, ou tout autre objectif). Pour chaque projet, vous disposez d'un investissement dédié et personnalisé au sein du même contrat d'assurance-vie.",
-                    margin_left, start_y, col_width, max_height)
+                    margin, start_y, col_width, max_height)
 
         # Section 2 (déplacée vers la droite)
         y2 = add_section("UNE SÉCURISATION PROGRESSIVE", 
                     "Pour mieux gérer votre prise de risque, nous opérons une sécurisation progressive de vos investissements au cours du temps. En fonction de vos projets, nous faisons en sorte que la proportion d'actifs peu risqués soit importante au moment où vous avez besoin de récupérer votre argent.",
-                    margin_left + col_width + 20, start_y, col_width - 10, max_height)
+                    margin + col_width + 20, start_y, col_width, max_height)
 
         next_y = max(y1, y2) + 5
         self.set_y(next_y)
 
-        self.line(margin_left, self.get_y(), self.w - margin_right, self.get_y())
+        self.line(margin, self.get_y(), self.w - margin, self.get_y())
         self.ln(3)
         start_y = self.get_y()
 
         # Section 3
         y3 = add_section("UN CONSEIL INDÉPENDANT", 
                     "Nalo est une société de conseil en investissement financier, qui accompagne ses clients de manière indépendante. Nous ne touchons pas de rétrocessions en fonction des fonds d'investissement choisis, cela nous permet de vous conseiller sans conflit d'intérêts.",
-                    margin_left, start_y, col_width, max_height)
+                    margin, start_y, col_width, max_height)
 
         # Section 4 (déplacée vers la droite)
         y4 = add_section("UNE MÉTHODE EFFICACE", 
                     "Notre méthode d'investissement est le résultat de plusieurs décennies de recherches économiques, financières et mathématiques. Elle tire son efficacité des travaux de plusieurs prix Nobel d'économie. Nous optimisons vos allocations et nous adaptons vos investissements aux conditions économiques et financières.",
-                    margin_left + col_width + 20, start_y, col_width - 10, max_height)
+                    margin + col_width + 20, start_y, col_width, max_height)
 
         next_y = max(y3, y4) + 5
         self.set_y(next_y)
 
         # Avertissement
-        warning_width = effective_width * 0.9  # Slightly smaller than full width
-        warning_x = (self.w - warning_width) / 2  # Centered horizontally
+        warning_width = effective_width  # Use full width instead of 90%
+        warning_x = margin  # Set to left margin
         warning_y = self.get_y() + 20  # Increased gap before warning
-        warning_height = 50  # Increased height
+        warning_height = 55  # Increased height
 
         self.set_fill_color(*warning_bg_color)
         self.rect(warning_x, warning_y, warning_width, warning_height, 'F')
         self.set_xy(warning_x + 10, warning_y + 5)  # Adjusted internal margins
-        self.set_font_safe('Inter', 'B', 12)  # Slightly larger font
+        self.set_font_safe('Inter', 'B', 11)  # Slightly larger font
         self.cell(0, 6, "AVERTISSEMENT", ln=True)
         self.set_font_safe('Inter', '', 9)
         self.set_xy(warning_x + 10, self.get_y())  # Consistent left margin
