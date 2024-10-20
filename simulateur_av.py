@@ -1237,7 +1237,7 @@ class PDF(FPDF):
             return self.get_y()  # Retourner la position Y finale
     
         # Calculer la largeur des colonnes
-        col_width = effective_width / 2 - 5  # 5 est l'espace entre les colonnes
+        col_width = (effective_width - 10) / 2  # 10 est l'espace entre les colonnes
     
         # Ligne de séparation
         self.set_draw_color(200, 200, 200)
@@ -1257,7 +1257,8 @@ class PDF(FPDF):
                     margin_left + col_width + 10, start_y, col_width, max_height)
     
         # Ajuster la position Y pour la prochaine ligne
-        self.set_y(max(y1, y2) + 5)
+        next_y = max(y1, y2) + 5
+        self.set_y(next_y)
     
         # Deuxième ligne de sections
         self.line(margin_left, self.get_y(), self.w - margin_right, self.get_y())
@@ -1273,7 +1274,8 @@ class PDF(FPDF):
                     margin_left + col_width + 10, start_y, col_width, max_height)
     
         # Ajuster la position Y pour l'avertissement
-        self.set_y(max(y3, y4) + 5)
+        next_y = max(y3, y4) + 5
+        self.set_y(next_y)
     
         # Avertissement
         warning_y = self.get_y()
