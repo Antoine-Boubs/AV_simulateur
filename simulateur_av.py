@@ -958,6 +958,7 @@ import tempfile
 from PIL import Image
 import io
 from math import sqrt
+from math import pi, sin, cos
 import streamlit as st
 
 
@@ -1040,7 +1041,7 @@ class PDF(FPDF):
 
     def add_warning(self):
         # Sauvegarder la page actuelle
-        current_page = self.page_no()
+        current_page = self.page
         
         # Aller à la première page
         self.page = 1
@@ -1071,7 +1072,7 @@ class PDF(FPDF):
                         "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
                         "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
                         "sont pas stables dans le temps.", align='J')
-    
+        
         # Retourner à la page où nous étions
         self.page = current_page
 
@@ -1156,30 +1157,34 @@ class PDF(FPDF):
         '''Draw a rounded rectangle'''
         k = self.k
         hp = self.h
-        if style=='F':
-            op='f'
-        elif style=='FD' or style=='DF':
-            op='B'
+        if style == 'F':
+            op = 'f'
+        elif style == 'FD' or style == 'DF':
+            op = 'B'
         else:
-            op='S'
-        MyArc = 4/3 * (sqrt(2) - 1)
-        self._out('%.2F %.2F m' % ((x+r)*k,(hp-y)*k))
-        xc = x+w-r
-        yc = y+r
-        self._out('%.2F %.2F l' % (xc*k,(hp-y)*k))
-        self._curve(xc+r*MyArc, yc-r, xc+r, yc-r*MyArc, xc+r, yc)
-        xc = x+w-r
-        yc = y+h-r
-        self._out('%.2F %.2F l' % ((x+w)*k,(hp-yc)*k))
-        self._curve(xc+r, yc+r*MyArc, xc+r*MyArc, yc+r, xc, yc+r)
-        xc = x+r
-        yc = y+h-r
-        self._out('%.2F %.2F l' % (xc*k,(hp-(y+h))*k))
-        self._curve(xc-r*MyArc, yc+r, xc-r, yc+r*MyArc, xc-r, yc)
-        xc = x+r
-        yc = y+r
-        self._out('%.2F %.2F l' % (x*k,(hp-yc)*k))
-        self._curve(xc-r, yc-r*MyArc, xc-r*MyArc, yc-r, xc, yc-r)
+            op = 'S'
+        
+        # Approximate the curve with 8 line segments per corner
+        nCorners = 8
+        
+        self._out('%.2F %.2F m' % ((x+r)*k, (hp-y)*k))
+        
+        for i in range(4):
+            if i == 0:
+                xc, yc = x+w-r, y+r
+            elif i == 1:
+                xc, yc = x+w-r, y+h-r
+            elif i == 2:
+                xc, yc = x+r, y+h-r
+            else:
+                xc, yc = x+r, y+r
+            
+            self._out('%.2F %.2F l' % ((xc + r)*k, (hp-yc)*k))
+            
+            for j in range(nCorners):
+                angle = (j+1) * (pi/2) / nCorners
+                self._out('%.2F %.2F l' % ((xc + r*cos(angle))*k, (hp-(yc + r*sin(angle)))*k))
+        
         self._out(op)
 
     
