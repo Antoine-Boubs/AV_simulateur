@@ -1472,6 +1472,8 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
 def main():
     st.title("Générateur de Rapport Financier")
 
+    resultats_df = optimiser_objectifs(params, objectifs)
+
     if 'params' not in st.session_state:
         st.session_state.params = {
             'capital_initial': 10000,
@@ -1484,27 +1486,23 @@ def main():
     if 'objectives' not in st.session_state:
         st.session_state.objectives = []
 
-    if 'resultats_df' not in st.session_state:
-        st.session_state.resultats_df = pd.DataFrame()  # Initialisation avec un DataFrame vide
-
     if st.button("Générer le rapport PDF"):
         try:
-            # Utiliser les données déjà présentes dans st.session_state
-            params = st.session_state.params
-            objectives = st.session_state.objectives
-            resultats_df = st.session_state.resultats_df
-
-            # Vérifier si resultats_df est vide
+            # Vérifier si le DataFrame contient des données
             if resultats_df.empty:
-                st.error("Aucune donnée de résultat n'est disponible. Veuillez d'abord effectuer une simulation.")
+                st.error("Le DataFrame de résultats est vide. Veuillez vous assurer que la simulation a été effectuée correctement.")
                 return
 
+            # Afficher un aperçu des données pour vérification
+            st.write("Aperçu des données de simulation :")
+            st.dataframe(resultats_df.head())
+
             # Générer le PDF
-            pdf_bytes = generate_pdf_report(resultats_df, params, objectives)
+            pdf_bytes = generate_pdf_report(resultats_df, st.session_state.params, st.session_state.objectives)
             st.download_button(
                 label="Télécharger le rapport PDF",
                 data=pdf_bytes,
-                file_name=f"rapport_simulation_financiere_{params['nom_client']}.pdf",
+                file_name=f"rapport_simulation_financiere_{st.session_state.params['nom_client']}.pdf",
                 mime="application/pdf"
             )
         except Exception as e:
