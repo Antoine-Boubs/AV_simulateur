@@ -1485,8 +1485,8 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
 def main():
     st.title("Générateur de Rapport Financier")
 
-    resultats_df = optimiser_objectifs(params, objectifs)
     params = input_simulateur()
+    resultats_df = optimiser_objectifs(params, objectifs)
 
 
     if 'objectives' not in st.session_state:
