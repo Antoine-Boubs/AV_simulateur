@@ -1265,6 +1265,149 @@ class PDF(FPDF):
         
         self._out(op)
 
+    def add_simulation_parameters(self):
+    self.add_page()
+    
+    # Marges et largeur effective
+    left_margin = 20
+    right_margin = 15
+    self.set_left_margin(left_margin)
+    self.set_right_margin(right_margin)
+    effective_width = self.w - left_margin - right_margin
+
+    # Couleurs
+    text_color = (29, 29, 31)
+    title_color = (0, 0, 0)
+    orange_color = (249, 115, 22)  # Couleur orange pour certains textes
+
+    # Titre principal
+    self.set_font_safe('Inter', 'B', 18)
+    self.set_text_color(*title_color)
+    self.cell(effective_width, 10, 'Les paramètres de votre simulation', 0, 1, 'L')
+    self.ln(5)
+
+    # Texte d'introduction
+    self.set_font_safe('Inter', '', 10)
+    self.set_text_color(*text_color)
+    self.multi_cell(effective_width, 5, "La simulation suivante vous permet d'avoir une illustration des évolutions possibles de votre investissement.")
+    self.ln(5)
+
+    # Paramètres & détails du projet
+    self.set_font_safe('Inter', 'B', 14)
+    self.cell(effective_width, 10, 'Paramètres & détails du projet', 0, 1, 'L')
+    self.ln(2)
+
+    # Tableau des paramètres
+    self.set_font_safe('Inter', '', 10)
+    param_data = [
+        ["Horizon de votre projet", self.horizon, "Premier versement", f"{self.initial_investment} €"],
+        ["Versements programmés", f"{self.monthly_savings} € par mois", "Type de projet", self.project_type],
+        ["Portefeuille", self.portfolio_type, "", ""]
+    ]
+    
+    for row in param_data:
+        for i in range(0, len(row), 2):
+            self.set_font_safe('Inter', 'B', 10)
+            self.cell(effective_width/4, 6, row[i], 0, 0)
+            self.set_font_safe('Inter', '', 10)
+            self.cell(effective_width/4, 6, row[i+1], 0, 0)
+        self.ln()
+    self.ln(5)
+
+    # Projection
+    self.set_font_safe('Inter', 'B', 14)
+    self.cell(effective_width, 10, 'Projection', 0, 1, 'L')
+    self.ln(2)
+
+    # Tableau de projection
+    headers = ["sans sécurisation progressive", "avec sécurisation progressive", "pour des versements totaux de"]
+    self.set_font_safe('Inter', '', 10)
+    for header in headers:
+        self.cell(effective_width/3, 6, header, 0, 0, 'C')
+    self.ln()
+
+    projection_data = [
+        [f"{self.return_without_securization:.2f} %/an", f"{self.return_with_securization:.2f} %/an", ""],
+        [f"{self.capital_without_securization:.0f} €", f"{self.capital_with_securization:.0f} €", f"{self.total_contributions:.0f} €"]
+    ]
+
+    self.set_font_safe('Inter', 'B', 12)
+    self.set_text_color(*orange_color)
+    for row in projection_data:
+        for i, cell in enumerate(row):
+            if i == 2 and cell:  # Pour la dernière colonne (versements totaux)
+                self.set_text_color(*text_color)
+            self.cell(effective_width/3, 8, cell, 0, 0, 'C')
+        self.ln()
+    
+    self.set_text_color(*text_color)
+    self.ln(5)
+
+    # Sécurisation progressive
+    self.set_font_safe('Inter', '', 10)
+    self.cell(effective_width/2, 6, "Sécurisation progressive :", 0, 0)
+    self.set_font_safe('Inter', 'B', 10)
+    self.set_text_color(0, 128, 0)  # Vert pour "Activée"
+    self.cell(effective_width/2, 6, "Activée", 0, 1)
+    self.ln(10)
+
+    # Graphique d'évolution du capital
+    chart_width = effective_width
+    chart_height = 80
+    chart_x = left_margin
+    chart_y = self.get_y()
+
+    # Données du graphique (à adapter selon vos données réelles)
+    years = list(range(2024, 2049, 3))
+    stocks_percentage = [90, 85, 80, 75, 70, 65, 60, 55, 50]
+    capital_values = [15000, 30000, 50000, 75000, 100000, 130000, 170000, 210000, 240349]
+
+    # Dessiner le graphique
+    max_capital = max(capital_values)
+    max_percentage = 100
+
+    # Ligne pour le pourcentage d'actions
+    self.set_draw_color(30, 64, 175)  # Bleu foncé
+    for i in range(len(years) - 1):
+        x1 = chart_x + (i * chart_width / (len(years) - 1))
+        y1 = chart_y + chart_height - (stocks_percentage[i] * chart_height / max_percentage)
+        x2 = chart_x + ((i + 1) * chart_width / (len(years) - 1))
+        y2 = chart_y + chart_height - (stocks_percentage[i + 1] * chart_height / max_percentage)
+        self.line(x1, y1, x2, y2)
+
+    # Barres pour le capital total
+    bar_width = (chart_width / len(years)) * 0.8
+    for i, capital in enumerate(capital_values):
+        x = chart_x + (i * chart_width / (len(years) - 1)) - (bar_width / 2)
+        y = chart_y + chart_height - (capital * chart_height / max_capital)
+        height = chart_height - (chart_y + chart_height - y)
+        self.set_fill_color(249, 115, 22)  # Orange
+        self.rect(x, y, bar_width, height, 'F')
+
+    # Ajouter les années en bas
+    self.set_font_safe('Inter', '', 8)
+    self.set_text_color(*text_color)
+    for i, year in enumerate(years):
+        x = chart_x + (i * chart_width / (len(years) - 1))
+        self.text(x, chart_y + chart_height + 5, str(year))
+
+    # Légende
+    self.set_font_safe('Inter', '', 8)
+    legend_y = chart_y + chart_height + 15
+    self.set_fill_color(30, 64, 175)  # Bleu foncé
+    self.rect(chart_x, legend_y, 5, 5, 'F')
+    self.text(chart_x + 10, legend_y + 5, "Pourcentage d'actions")
+    self.set_fill_color(249, 115, 22)  # Orange
+    self.rect(chart_x + 80, legend_y, 5, 5, 'F')
+    self.text(chart_x + 90, legend_y + 5, "Capital total")
+
+    # Ajouter le logo Nalo
+    logo_width = 30
+    logo_height = 15
+    logo_x = self.w - right_margin - logo_width
+    logo_y = 10
+    self.image('logo_path', logo_x, logo_y, logo_width, logo_height)
+
 
     def add_nalo_page(self):
         self.add_page()
@@ -1711,6 +1854,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_text_color(*apple_gray)
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
+
+    pdf.add_simulation_parameters()
 
     pdf.add_nalo_page()
 
