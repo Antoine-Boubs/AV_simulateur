@@ -1039,8 +1039,11 @@ class PDF(FPDF):
         self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
 
     def add_warning(self):
-        # Revenir à la première page
-        self.set_page(1)
+        # Sauvegarder la page actuelle
+        current_page = self.page_no()
+        
+        # Aller à la première page
+        self.page = 1
         
         # Définir les couleurs
         warning_bg_color = (255, 247, 237)  # Couleur de fond légèrement orangée
@@ -1068,6 +1071,9 @@ class PDF(FPDF):
                         "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
                         "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
                         "sont pas stables dans le temps.", align='J')
+    
+        # Retourner à la page où nous étions
+        self.page = current_page
 
     def add_recap(self, params, objectives):
         self.add_page()
