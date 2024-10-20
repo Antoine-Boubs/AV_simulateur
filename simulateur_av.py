@@ -958,6 +958,7 @@ import io
 import numpy as np
 import tempfile
 class PDF(FPDF):
+import datetime
 
     
     def __init__(self, logo_path=None):
