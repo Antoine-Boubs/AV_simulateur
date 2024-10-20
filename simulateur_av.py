@@ -1224,13 +1224,6 @@ class PDF(FPDF):
             self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
 
 
-def format_value(value):
-    if pd.isna(value):
-        return 'N/A'
-    if isinstance(value, (int, float)):
-        return f"{value:,.2f} €".replace(",", " ").replace(".", ",")
-    return str(value)
-
 
 def fig_to_temp_file(fig):
     # Convertir la figure Plotly en bytes d'image PNG
@@ -1243,10 +1236,6 @@ def fig_to_temp_file(fig):
         return tmpfile.name
 
 def generate_pdf_report(resultats_df, params, objectives):
-    # Debug: Print information about resultats_df
-    print(f"Shape of resultats_df: {resultats_df.shape}")
-    print(f"Columns of resultats_df: {resultats_df.columns.tolist()}")
-    print(f"First few rows of resultats_df:\n{resultats_df.head()}")
 
     # Calculer la durée de simulation
     duree_simulation = calculer_duree_capi_max(objectives)
@@ -1419,17 +1408,6 @@ def create_pdf(data, temp_files, resultats_df, params, objectives):
     if logo_path and os.path.exists(logo_path):
         pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
     return pdf.output(dest='S').encode('latin-1', errors='replace')
-
-
-def safe_access(df, column, index):
-    try:
-        return df.loc[index, column]
-    except KeyError:
-        print(f"Column '{column}' not found in DataFrame")
-        return None
-    except IndexError:
-        print(f"Index {index} is out of bounds for DataFrame with {len(df)} rows")
-        return None
         
 
 def main():
