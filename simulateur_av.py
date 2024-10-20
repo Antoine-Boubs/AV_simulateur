@@ -1465,23 +1465,27 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             
         elif i == 2:  # Deuxième graphique (Composition du capital)
             # Vérifier s'il y a assez d'espace sur la page actuelle
-            if pdf.get_y() + 100 > pdf.h - 20:  # 100 est une estimation de la hauteur nécessaire
+            if pdf.get_y() + 80 > pdf.h - 20:  # Réduire la hauteur estimée
                 pdf.add_page()
             else:
                 pdf.ln(20)  # Espace entre les graphiques
             
             # Ajout du titre
-            pdf.set_font_safe('Inter', 'B', 16)
+            pdf.set_font_safe('Inter', 'B', 14)  # Réduire légèrement la taille du titre
             pdf.cell(0, 10, title, 0, 1, 'C')
             pdf.ln(5)
             
-            # Ajout du graphique
-            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+            # Ajout du graphique (réduit) et de la description à droite
+            start_y = pdf.get_y()
+            add_image_to_pdf(pdf, img_buffer, x=10, y=start_y, w=95)  # Réduire la largeur à 95
             
-            # Ajout de la description
-            pdf.ln(10)
+            # Ajout de la description à droite du graphique
+            pdf.set_xy(110, start_y)  # Positionner le texte à droite du graphique
             pdf.set_font_safe('Inter', '', 10)
-            pdf.multi_cell(0, 5, description, 0, 'L')
+            pdf.multi_cell(90, 5, description, 0, 'L')  # Largeur réduite pour le texte
+            
+            # S'assurer que le curseur est positionné correctement après le graphique et le texte
+            pdf.set_y(max(pdf.get_y(), start_y + 95))  # 95 est une estimation de la hauteur du graphique réduit
             
         else:  # Autres graphiques
             pdf.add_page()
