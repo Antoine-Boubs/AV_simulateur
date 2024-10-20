@@ -1398,17 +1398,21 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_font('Inter', '', 'Inter-Regular.ttf', uni=True)
     pdf.add_font('Inter', 'B', 'Inter-Bold.ttf', uni=True)
     pdf.add_font('Inter', 'I', 'Inter-Italic.ttf', uni=True)
-    pdf.set_auto_page_break(auto=True, margin=20)  # Augmentation de la marge inférieure
+    pdf.set_auto_page_break(auto=True, margin=20)
 
-    # Add a cover page
+    # Couleurs
+    pdf.set_draw_color(200, 200, 200)  # Couleur de bordure gris clair
+    pdf.set_fill_color(255, 255, 255)  # Fond blanc
+    title_color = (185, 151, 91)  # Couleur dorée pour le titre
+
+    # Page de couverture
     pdf.add_page()
     pdf.set_font('Inter', 'B', 24)
-    pdf.cell(0, 80, 'Rapport financier', 0, 1, 'C')  # Augmentation de l'espace avant le titre
-    pdf.set_font('Inter', '', 14)
-    #pdf.cell(0, 10, f"Préparé pour: {params['nom_client']}", 0, 1, 'C')
-    #pdf.cell(0, 10, f"Date: {params['date_rapport']}", 0, 1, 'C')
+    pdf.set_text_color(*title_color)
+    pdf.cell(0, 20, "SIMULATION D'INVESTISSEMENT DANS CORUM LIFE", 0, 1, 'C')
+    pdf.ln(10)
 
-    # Function to add images to PDF
+    # Fonction pour ajouter des images au PDF
     def add_image_to_pdf(pdf, img_buffer, x, y, w):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             img = Image.open(img_buffer)
@@ -1416,48 +1420,48 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             pdf.image(temp_file.name, x=x, y=y, w=w)
         os.unlink(temp_file.name)
 
-    # Add charts
-    chart_titles = [
-        "Évolution du placement financier",
-        "Composition du capital",
-        "Analyse en cascade de l'évolution du capital",
-        "Performances historiques"
+    # Informations du client et graphique en cascade
+    pdf.set_font('Inter', 'B', 14)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, "La simulation présentée est basée sur les informations suivantes :", 0, 1, 'L')
+    pdf.ln(5)
+
+    # Cadre pour les informations du client
+    start_y = pdf.get_y()
+    pdf.rect(10, start_y, 90, 80)
+    
+    # Informations du client
+    pdf.set_font('Inter', '', 10)
+    info_client = [
+        f"MONTANT À INVESTIR\n{params['capital_initial']} €",
+        f"VERSEMENTS PROGRAMMÉS\n{params['versement_mensuel']} €/mois",
+        f"TYPE DE GESTION\n{params.get('type_gestion', 'CORUM Life Rosetta 100%')}",
+        f"HORIZON DE PLACEMENT\n{params['duree']} ANS",
+        f"HYPOTHÈSE PERFORMANCE ANNUELLE\n{params['rendement_annuel']*100:.2f}%",
+        f"GAINS POTENTIELS\n{params['gains_potentiels']:.2f} €"
     ]
+    
+    for info in info_client:
+        pdf.set_xy(15, pdf.get_y() + 5)
+        pdf.multi_cell(80, 5, info, 0, 'L')
+        pdf.ln(2)
 
-    chart_descriptions = [
-        "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
-        "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
-        "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
-        "Il met en évidence la croissance de votre capital au fil du temps.",
-        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
-        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
-        "Ce graphique présente les performances historiques de votre investissement. "
-        "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
-    ]
+    # Ajout du graphique en cascade
+    cascade_graph = img_buffers[2]  # Assurez-vous que c'est le bon index pour le graphique en cascade
+    pdf.image(cascade_graph, x=105, y=start_y, w=95)
 
-    left_margin = pdf.l_margin
-
-    for i, (img_buffer, title, description) in enumerate(zip(img_buffers, chart_titles, chart_descriptions)):
-        pdf.add_page()
-        
-        # Ajout du titre avant le graphique
-        pdf.set_font('Inter', 'B', 18)
-        pdf.cell(0, 20, title, 0, 1, 'C')  # Augmentation de l'espace après le titre
-        pdf.ln(10)  # Espace supplémentaire après le titre
-        
-        # Ajout du graphique
-        chart_width = 180
-        if i == 1:  # Graphique de composition du capital
-            chart_width = 120  # Réduire la largeur pour ce graphique spécifique
-        add_image_to_pdf(pdf, img_buffer, x=(210-chart_width)/2, y=pdf.get_y(), w=chart_width)
-        
-        # Ajout de la description
-        pdf.ln(110)  # Augmentation de l'espace après le graphique
-        pdf.set_font('Inter', '', 11)
-        pdf.set_left_margin(left_margin + 15)  # Augmentation de la marge pour la description
-        pdf.multi_cell(0, 6, description, 0, 'L')
-        pdf.set_left_margin(left_margin)  # Rétablit la marge originale
-        pdf.ln(20)  # Espace supplémentaire après la description
+    # Autres graphiques
+    for i, img_buffer in enumerate(img_buffers):
+        if i != 2:  # Nous avons déjà utilisé le graphique en cascade
+            pdf.add_page()
+            pdf.set_font('Inter', 'B', 16)
+            pdf.cell(0, 10, graph_titles[i], 0, 1, 'C')
+            pdf.ln(5)
+            add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
+            pdf.ln(10)
+            pdf.set_font('Inter', '', 10)
+            pdf.multi_cell(0, 5, graph_descriptions[i], 0, 'L')
+            pdf.ln(10)
 
     # Ajouter la section de récapitulatif du projet
     pdf.add_page()
@@ -1481,7 +1485,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                          "Les valeurs sont arrondies à deux décimales près.")
 
     # Ajouter la dernière page (informations de contact, etc.)
-    pdf.add_page()
     pdf.add_last_page()
 
     # Générer la sortie PDF
