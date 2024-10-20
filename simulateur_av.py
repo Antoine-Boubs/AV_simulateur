@@ -1442,14 +1442,14 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.add_page()
         add_image_to_pdf(pdf, img_buffer, x=10, y=pdf.get_y(), w=190)
         
-        pdf.ln(10)
+        pdf.ln(20)  # Espace après le graphique
         pdf.set_font_safe('Inter', 'B', 14)
         pdf.cell(0, 10, title, 0, 1, 'C')
         
-        pdf.ln(5)
+        pdf.ln(10)  # Espace après le titre
         pdf.set_font_safe('Inter', '', 12)
         pdf.multi_cell(0, 5, description, 0, 'L')
-        pdf.ln(10)
+        pdf.ln(20)  # Espace après la description
 
     # Ajouter la section d'informations du client
     pdf.add_page()
@@ -1522,6 +1522,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Générer la sortie PDF
     try:
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
+    except UnicodeEncodeError:
+        print("Attention : Certains caractères n'ont pas pu être encodés. Ils seront remplacés.")
+        pdf_output = pdf.output(dest='S').encode('latin-1', errors='replace')
+
+    return pdf_output
         pdf_output = pdf.output(dest='S').encode('latin-1', errors='ignore')
     except UnicodeEncodeError:
         print("Attention : Certains caractères n'ont pas pu être encodés. Ils seront remplacés.")
