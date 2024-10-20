@@ -1394,7 +1394,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         elif i == 1:
             pdf.cell(0, 10, 'Évolution annuelle du capital', 0, 1, 'C')
         elif i == 2:
-            pdf.cell(0, 10, f"Composition du capital en année {params['duree_simulation']}", 0, 1, 'C')
+            pdf.cell(0, 10, f"Composition du capital en année", 0, 1, 'C')
         pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
             
             
