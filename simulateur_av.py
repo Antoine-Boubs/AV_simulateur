@@ -1032,20 +1032,25 @@ class PDF(FPDF):
         self.line(10, 35, self.w - 10, 35)
         # Espace après le header
         self.ln(20)
+
+    
     def footer(self):
         # Couleurs inspirées d'Apple
         apple_gray = (128, 128, 128)
         apple_blue = (0, 122, 255)
         # Position à 1.5 cm du bas
         self.set_y(-15)
+        
         # Ligne de séparation
         self.set_draw_color(*apple_gray)
         self.set_line_width(0.1)
         self.line(10, self.get_y(), self.w - 10, self.get_y())
+        
         # Numéro de page
         self.set_font('Inter', '', 8)
         self.set_text_color(*apple_gray)
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+        
         # Texte légal
         legal_text = "© 2023 Votre Entreprise. Tous droits réservés."
         self.set_font('Inter', '', 8)
@@ -1053,6 +1058,7 @@ class PDF(FPDF):
         text_width = self.get_string_width(legal_text)
         self.set_x((self.w - text_width) / 2)
         self.cell(text_width, 5, legal_text, 0, 0, 'C')
+        
         # Lien vers le site web
         website = "www.votreentreprise.com"
         self.set_font('Inter', '', 8)
@@ -1060,6 +1066,8 @@ class PDF(FPDF):
         website_width = self.get_string_width(website)
         self.set_x((self.w - website_width) / 2)
         self.cell(website_width, 15, website, 0, 0, 'C', link="https://www.votreentreprise.com")
+
+    
     def add_warning(self):
         self.ln(10)
         margin = 20
@@ -1084,12 +1092,15 @@ class PDF(FPDF):
                               "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
                               "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
                               "sont pas stables dans le temps.", align='J')
+
+    
     def add_recap(self, params, objectives):
         self.add_page()
         self.set_font('Inter', 'B', 24)
         self.set_text_color(0, 0, 0)
         self.cell(0, 15, 'Récapitulatif de votre projet', 0, 1, 'C')
         self.ln(5)
+        
         # Informations du client
         self.set_font('Inter', 'B', 18)
         self.set_text_color(0, 122, 255)  # Apple blue
@@ -1100,6 +1111,7 @@ class PDF(FPDF):
         self.cell(0, 8, f"Versement mensuel : {params['versement_mensuel']} €", 0, 1)
         self.cell(0, 8, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
         self.ln(10)
+        
         # Versements
         self.set_font('Inter', 'B', 18)
         self.set_text_color(0, 122, 255)  # Apple blue
@@ -1125,6 +1137,7 @@ class PDF(FPDF):
            (not 'modifications_versements' in st.session_state or not st.session_state.modifications_versements):
             self.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
         self.ln(10)
+        
         # Objectifs
         self.set_font('Inter', 'B', 18)
         self.set_text_color(0, 122, 255)  # Apple blue
@@ -1140,6 +1153,8 @@ class PDF(FPDF):
             self.cell(0, 8, f"Année de réalisation : {obj['annee']}", 0, 1)
             self.ln(5)
         self.add_page()
+
+    
     def colored_table(self, headers, data, col_widths):
         header_color = (247, 247, 247)  # Apple light gray
         row_colors = [(255, 255, 255), (250, 250, 250)]  # White and very light gray
@@ -1178,6 +1193,8 @@ class PDF(FPDF):
             self.ln()
             fill_index += 1
             page_rows += 1
+
+    
     def add_last_page(self):
         self.add_page()
         margin = 20
@@ -1230,267 +1247,8 @@ class PDF(FPDF):
         self.cell(effective_width / 2, 10, 'Contact: 0183812655 | service.clients@nalo.fr', 0, 0, 'L')
         if self.logo_path and os.path.exists(self.logo_path):
             self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
-def generate_chart1(resultats_df):
-    fig1 = go.Figure()
-    years = resultats_df['Année'].tolist()
-    capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
-    epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
-    rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
-    # Couleurs inspirées d'Apple
-    apple_blue = '#007AFF'
-    apple_green = '#34C759'
-    apple_red = '#FF3B30'
-    fig1.add_trace(go.Scatter(
-        x=years, y=capital_fin_annee,
-        mode='lines+markers',
-        name='Capital fin d\'année',
-        line=dict(color=apple_blue, width=3),
-        marker=dict(size=8, symbol='circle')
-    ))
-    fig1.add_trace(go.Scatter(
-        x=years, y=epargne_investie,
-        mode='lines+markers',
-        name='Épargne investie',
-        line=dict(color=apple_green, width=3),
-        marker=dict(size=8, symbol='circle')
-    ))
-    fig1.add_trace(go.Bar(
-        x=years, y=rachats,
-        name='Rachats',
-        marker_color=apple_red,
-        opacity=0.7
-    ))
-    fig1.update_layout(
-        title={
-            'text': 'Évolution du placement financier',
-            'y':0.95,
-            'x':0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': dict(size=24, family='Inter, sans-serif')
-        },
-        xaxis_title='Année',
-        yaxis_title='Montant (€)',
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="center",
-            x=0.5,
-            font=dict(family='Inter, sans-serif')
-        ),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        yaxis=dict(
-            gridcolor='#E0E0E0',
-            zerolinecolor='#E0E0E0',
-            tickformat=',.0f',
-            ticksuffix=' €',
-            separatethousands=True,
-            title_font=dict(family='Inter, sans-serif'),
-            tickfont=dict(family='Inter, sans-serif')
-        ),
-        xaxis=dict(
-            gridcolor='#E0E0E0',
-            zerolinecolor='#E0E0E0',
-            title_font=dict(family='Inter, sans-serif'),
-            tickfont=dict(family='Inter, sans-serif')
-        ),
-        hovermode="x unified",
-        barmode='relative',
-        font=dict(family='Inter, sans-serif'),
-        margin=dict(l=50, r=50, t=100, b=50),
-        width=800,
-        height=500
-    )
-    fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
-    fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#E0E0E0')
-    fig1.add_annotation(
-        x=0.5, y=-0.15,
-        xref='paper', yref='paper',
-        text='Les barres rouges représentent les rachats effectués',
-        showarrow=False,
-        font=dict(size=12, color='#666', family='Inter, sans-serif'),
-        align='center',
-        bgcolor='rgba(255,255,255,0.8)',
-        bordercolor='#E0E0E0',
-        borderwidth=1,
-        borderpad=4
-    )
-    img_bytes1 = fig1.to_image(format="png", scale=2)
-    return io.BytesIO(img_bytes1)
-def generate_chart2(resultats_df):
-    fig2 = go.Figure(go.Waterfall(
-        name="Evolution du capital",
-        orientation="v",
-        measure=["relative"] * len(resultats_df),
-        x=resultats_df['Année'],
-        y=resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).diff(),
-        connector={"line": {"color": "rgb(63, 63, 63)"}},
-        decreasing={"marker": {"color": "#CBA325"}},
-        increasing={"marker": {"color": "#A33432"}},
-        totals={"marker": {"color": "#F0D97A"}}
-    ))
-    fig2.update_layout(
-        title='Évolution annuelle du capital',
-        xaxis_title='Année',
-        yaxis_title='Variation du capital (€)',
-        plot_bgcolor='white',
-        yaxis=dict(gridcolor='#8DB3C5')
-    )
-    img_bytes2 = fig2.to_image(format="png", width=700, height=400)
-    return io.BytesIO(img_bytes2)
-def generate_pdf_report(resultats_df, params, objectives):
-    print("Entering generate_pdf_report")
-    print(f"resultats_df shape: {resultats_df.shape}")
-    print(f"params: {params}")
-    print(f"objectives: {objectives}")
-    data = [
-        ["Paramètre", "Valeur"],
-        ["Capital initial", f"{params['capital_initial']} €"],
-        ["Versement mensuel", f"{params['versement_mensuel']} €"],
-        ["Rendement annuel", f"{params['rendement_annuel']*100:.2f}%"],
-    ]
-    # Ajouter les informations des objectifs à data
-    for i, obj in enumerate(objectives, start=1):
-        data.extend([
-            [f"Objectif {i} - Nom", obj['nom']],
-            [f"Objectif {i} - Montant annuel", f"{obj['montant_annuel']} €"],
-            [f"Objectif {i} - Année de réalisation", str(obj['annee'])],
-            [f"Objectif {i} - Durée", f"{obj['duree_retrait']} ans"]
-        ])
-    # Générer les graphiques
-    img_buffer1 = generate_chart1(resultats_df)
-    img_buffer2 = generate_chart2(resultats_df)
-    # Create the financial investment evolution chart
-    fig1 = go.Figure()
-    years = resultats_df['Année'].tolist()
-    capital_fin_annee = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).tolist()
-    epargne_investie = resultats_df['Épargne investie'].str.replace(' €', '').astype(float).tolist()
-    rachats = resultats_df['Rachat'].replace('[^\d.]', '', regex=True).astype(float).fillna(0).tolist()
-    fig1.add_trace(go.Scatter(
-        x=years, y=capital_fin_annee,
-        mode='lines+markers',
-        name='Capital fin d\'année',
-        line=dict(color='#1f77b4', width=2)
-    ))
-    fig1.add_trace(go.Scatter(
-        x=years, y=epargne_investie,
-        mode='lines+markers',
-        name='Épargne investie',
-        line=dict(color='#2ca02c', width=2)
-    ))
-    fig1.add_trace(go.Bar(
-        x=years, y=rachats,
-        name='Rachats',
-        marker_color='#d62728'
-    ))
-    fig1.update_layout(
-        title='Évolution du placement financier',
-        xaxis_title='Année',
-        yaxis_title='Montant (€)',
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="center",
-            x=0.5
-        ),
-        plot_bgcolor='white',
-        yaxis=dict(
-            gridcolor='lightgrey',
-            zerolinecolor='lightgrey',
-            tickformat='.0f',
-            ticksuffix=' €'
-        ),
-        xaxis=dict(
-            gridcolor='lightgrey',
-            zerolinecolor='lightgrey'
-        ),
-        hovermode="x unified",
-        barmode='relative'
-    )
-    img_bytes1 = fig1.to_image(format="png", width=800, height=500, scale=2)
-    img_buffer1 = io.BytesIO(img_bytes1)
-    img_buffer1.seek(0)  # Rembobiner le buffer
-    # Create the second chart (waterfall)
-    fig2 = go.Figure(go.Waterfall(
-        name="Evolution du capital",
-        orientation="v",
-        measure=["relative"] * len(resultats_df),
-        x=resultats_df['Année'],
-        y=resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).diff(),
-        connector={"line": {"color": "rgb(63, 63, 63)"}},
-        decreasing={"marker": {"color": "#CBA325"}},
-        increasing={"marker": {"color": "#A33432"}},
-        totals={"marker": {"color": "#F0D97A"}}
-    ))
-    fig2.update_layout(
-        title='Évolution annuelle du capital',
-        xaxis_title='Année',
-        yaxis_title='Variation du capital (€)',
-        plot_bgcolor='white',
-        yaxis=dict(gridcolor='#8DB3C5')
-    )
-    img_bytes2 = fig2.to_image(format="png", width=700, height=400)
-    img_buffer2 = io.BytesIO(img_bytes2)
-    img_buffer2.seek(0)  # Rembobiner le buffer
-    # Create the third chart (historical performance)
-    fig3 = go.Figure()
-    years = [2019, 2020, 2021, 2022, 2023]
-    performances = [22.69, -0.80, 25.33, -12.17, 11.91]
-    fig3.add_trace(go.Bar(
-        x=years,
-        y=performances,
-        text=[f"{p:+.2f}%" for p in performances],
-        textposition='outside',
-        marker_color=['#4CAF50' if p >= 0 else '#F44336' for p in performances],
-        marker_line_color='rgba(0,0,0,0.5)',
-        marker_line_width=1.5,
-        opacity=0.8,
-        name='Performance annuelle'
-    ))
-    fig3.update_layout(
-        title={
-            'text': 'Performances historiques',
-            'y':0.95,
-            'x':0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': dict(size=24, color='#1E3A8A')
-        },
-        xaxis_title='Année',
-        yaxis_title='Performance annuelle (%)',
-        yaxis2=dict(
-            title='Performance cumulée (%)',
-            overlaying='y',
-            side='right',
-            showgrid=False
-        ),
-        plot_bgcolor='rgba(240,240,240,0.5)',
-        paper_bgcolor='white',
-        yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='black', zerolinewidth=1.5),
-        xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        ),
-        margin=dict(l=50, r=50, t=80, b=50),
-        hovermode="x unified"
-    )
-    fig3.update_traces(
-        hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
-        selector=dict(type='bar')
-    )
-    img_bytes3 = fig3.to_image(format="png", width=800, height=600, scale=2)
-    img_buffer3 = io.BytesIO(img_bytes3)
-    img_buffer3.seek(0)  # Rembobiner le buffer
-    # Créer le PDF
-    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3], resultats_df, params, objectives)
-    return pdf_bytes
+
+
 def format_value(value):
     if isinstance(value, (int, float)):
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
@@ -1502,6 +1260,8 @@ def format_value(value):
         except ValueError:
             return value
     return str(value)
+
+
 def create_detailed_table(pdf, resultats_df):
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
@@ -1522,43 +1282,8 @@ def create_detailed_table(pdf, resultats_df):
         for _, row in resultats_df.iterrows()
     ]
     pdf.colored_table(headers, data, col_widths)
-import tempfile
-from PIL import Image
-def create_pie_chart(capital_final, versements, plus_values, annee):
-    fig = go.Figure(data=[go.Pie(
-        labels=['Versements', 'Plus-values'],
-        values=[versements, plus_values],
-        hole=.3,
-        marker_colors=['#007AFF', '#34C759']  # Couleurs Apple (bleu et vert)
-    )])
-    fig.update_layout(
-        title=f"Composition du capital en année {annee}",
-        annotations=[
-            dict(text=f'{capital_final:,.0f} €', x=0.5, y=0.5, font_size=20, showarrow=False),
-            dict(text='Capital final', x=0.5, y=0.35, font_size=12, showarrow=False)
-        ],
-        width=400,
-        height=300,
-        margin=dict(l=0, r=0, t=40, b=0)
-    )
-    img_bytes = fig.to_image(format="png")
-    return io.BytesIO(img_bytes)
-def create_waterfall_chart(resultats_df):
-    fig = go.Figure(go.Waterfall(
-        name = "Evolution du capital", orientation = "v",
-        measure = ["relative"] * len(resultats_df),
-        x = resultats_df['Année'],
-        textposition = "outside",
-        text = resultats_df['Capital fin d\'année (NET)'],
-        y = resultats_df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float),
-        connector = {"line":{"color":"rgb(63, 63, 63)"}},
-    ))
-    fig.update_layout(
-        title = "Évolution du capital année par année",
-        showlegend = False
-    )
-    img_bytes = fig.to_image(format="png")
-    return io.BytesIO(img_bytes)
+
+
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
@@ -1568,6 +1293,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     left_margin = 20
     pdf.set_left_margin(left_margin)
     pdf.alias_nb_pages()
+
+    
     # Page de couverture
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 28)
@@ -1575,15 +1302,21 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_font_safe('Inter', '', 16)
     pdf.cell(0, 10, f"Préparé pour : {params.get('nom_client', 'Client')}", 0, 1, 'C')
     pdf.cell(0, 10, f"Date : {params.get('date_rapport', datetime.now().strftime('%d/%m/%Y'))}", 0, 1, 'C')
+
+    
     # Avertissement
     pdf.ln(20)
     pdf.add_warning()
+
+    
     # Paramètres de la simulation
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 24)
     pdf.set_text_color(0, 0, 0)
     pdf.cell(0, 20, 'Paramètres de la simulation', 0, 1, 'C')
     pdf.ln(10)
+
+    
     # Définition des couleurs
     light_gray = 245
     dark_gray = 80
@@ -1616,6 +1349,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Bordure autour du tableau
     pdf.rect(pdf.get_x(), pdf.get_y() - row_height * len(parameters), pdf.w - 40, row_height * len(parameters))
     pdf.ln(20)
+
+    
     # Détail des versements
     pdf.ln(10)
     pdf.set_font_safe('Inter', 'B', 16)
@@ -1643,6 +1378,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.ln(5)
     if not versements_libres and not modifications_versements:
         pdf.cell(0, 8, "Aucun versement libre ou modification de versement défini", 0, 1)
+
+    
     # Graphiques
     for i, img_buffer in enumerate(img_buffers):
         pdf.add_page()
@@ -1657,6 +1394,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
             img = Image.open(img_buffer)
             img.save(tmpfile.name, format="PNG")
             pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+            
+            
     # Objectifs de l'investisseur
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
@@ -1679,6 +1418,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     else:
         pdf.set_font_safe('Inter', 'I', 12)
         pdf.cell(0, 10, "Aucun objectif spécifié", 0, 1)
+
+    
     # Dernière page
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 18)
@@ -1711,6 +1452,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     if logo_path and os.path.exists(logo_path):
         pdf.image(logo_path, x=pdf.w - 30, y=pdf.h - 30, w=20)
     return pdf.output(dest='S').encode('latin-1', errors='replace')
+
+
+
 def main():
     global resultats_df, params
     # Exemple de bouton pour générer le PDF
