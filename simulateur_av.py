@@ -1273,7 +1273,7 @@ def generate_pdf_report(resultats_df, params, objectives):
     # Create the graph figures
     financial_chart = create_financial_chart(resultats_df)
     waterfall_chart = create_waterfall_chart(resultats_df)
-    donut_chart = create_donut_chart(resultats_df, params['duree_simulation'])
+    donut_chart = create_donut_chart(resultats_df)
 
     # Convert figures to image buffers
     img_buffers = [
