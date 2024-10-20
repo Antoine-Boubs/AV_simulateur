@@ -957,8 +957,8 @@ from PIL import Image
 import io
 import numpy as np
 import tempfile
-class PDF(FPDF):
 import datetime
+class PDF(FPDF):
 
     
     def __init__(self, logo_path=None):
