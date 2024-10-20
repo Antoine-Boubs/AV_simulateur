@@ -898,24 +898,9 @@ duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi
 st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def fig_to_img_buffer(fig):
+    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
+    return io.BytesIO(img_bytes)
 
 
 
@@ -1284,6 +1269,24 @@ def create_detailed_table(pdf, resultats_df):
     pdf.colored_table(headers, data, col_widths)
 
 
+def generate_pdf_report(resultats_df, params, objectives):
+    # Create the graph figures
+    financial_chart = create_financial_chart(resultats_df)
+    waterfall_chart = create_waterfall_chart(resultats_df)
+    donut_chart = create_donut_chart(resultats_df, params['duree_simulation'])
+
+    # Convert figures to image buffers
+    img_buffers = [
+        fig_to_img_buffer(financial_chart),
+        fig_to_img_buffer(waterfall_chart),
+        fig_to_img_buffer(donut_chart)
+    ]
+
+    # Create the PDF
+    pdf_bytes = create_pdf(params, img_buffers, resultats_df, params, objectives)
+    return pdf_bytes
+
+
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     logo_path = os.path.join(os.path.dirname(__file__), "Logo1.png")
     if not os.path.exists(logo_path):
@@ -1321,6 +1324,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     light_gray = 245
     dark_gray = 80
     blue = (0, 122, 255)  # Bleu Apple
+
+    
     # Création d'un tableau stylisé
     parameters = [
         ("Capital initial", f"{params.get('capital_initial', 'Non spécifié')} €"),
@@ -1381,19 +1386,16 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     
     # Graphiques
-    for i, img_buffer in enumerate(img_buffers):
+   for i, img_buffer in enumerate(img_buffers):
         pdf.add_page()
-        pdf.set_font_safe('Inter', 'B', 18)
+        pdf.set_font('Inter', 'B', 16)
         if i == 0:
-            pdf.cell(0, 10, 'Évolution de votre investissement', 0, 1)
+            pdf.cell(0, 10, 'Évolution du placement financier', 0, 1, 'C')
         elif i == 1:
-            pdf.cell(0, 10, 'Composition du capital', 0, 1)
+            pdf.cell(0, 10, 'Évolution annuelle du capital', 0, 1, 'C')
         elif i == 2:
-            pdf.cell(0, 10, 'Performance historique', 0, 1)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-            img = Image.open(img_buffer)
-            img.save(tmpfile.name, format="PNG")
-            pdf.image(tmpfile.name, x=10, y=pdf.get_y()+10, w=190)
+            pdf.cell(0, 10, f"Composition du capital en année {params['duree_simulation']}", 0, 1, 'C')
+        pdf.image(img_buffer, x=10, y=pdf.get_y()+10, w=190)
             
             
     # Objectifs de l'investisseur
