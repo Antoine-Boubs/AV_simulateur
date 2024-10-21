@@ -1344,6 +1344,10 @@ class PDF(FPDF):
             self.set_fill_color(*apple_light_gray)
             self.rect(self.get_x(), start_y, effective_width, 12, 'F')
             
+            # Icône
+            self.set_font_safe('Inter', 'B', 10)
+            self.set_text_color(*apple_blue)
+            self.cell(20, 12, icon, 0, 0, 'C')
             
             # Type de paiement
             self.set_font_safe('Inter', 'B', 10)
@@ -1366,14 +1370,14 @@ class PDF(FPDF):
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
             for mv in st.session_state.modifications_versements:
                 if mv['montant'] == 0:
-                    add_payment_item('Versements arrêtés', '', f"de l'année {mv['debut']} à {mv['fin']}")
+                    add_payment_item('❌', 'Versements arrêtés', '', f"de l'année {mv['debut']} à {mv['fin']}")
                 else:
-                    add_payment_item('Versements ajustés', f"{format_value(mv['montant'])} €", f"de l'année {mv['debut']} à {mv['fin']}")
+                    add_payment_item('📈', 'Versements ajustés', f"{format_value(mv['montant'])} €", f"de l'année {mv['debut']} à {mv['fin']}")
         
         # Affichage des versements libres
         if 'versements_libres' in st.session_state and st.session_state.versements_libres:
             for vl in st.session_state.versements_libres:
-                add_payment_item('Versement libre', f"{format_value(vl['montant'])} €", f"l'année {vl['annee']}")
+                add_payment_item('💰','Versement libre', f"{format_value(vl['montant'])} €", f"l'année {vl['annee']}")
         
         # Message si aucune modification ni versement libre
         if (not st.session_state.get('modifications_versements') and 
