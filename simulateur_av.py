@@ -1285,7 +1285,7 @@ class PDF(FPDF):
 
     def add_simulation_parameters(self, params, resultats_df):
         self.add_page()
-    
+        
         # Marges et largeur effective
         left_margin = 20
         right_margin = 15
@@ -1365,13 +1365,14 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
-            chart_buffer = fig_to_img_buffer(create_waterfall_chart(resultats_df))
+            waterfall_chart = create_waterfall_chart(resultats_df)
+            chart_buffer = fig_to_img_buffer(waterfall_chart)
             self.image(chart_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
         except Exception as e:
             print(f"Erreur lors de la création du graphique en cascade : {e}")
             self.set_font_safe('Inter', '', 10)
             self.set_text_color(*text_color)
-            self.cell(effective_width, 10, "Erreur lors de la création du graphique", 0, 1, 'C')
+            self.cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 1, 'C')
     
         self.ln(chart_height + 20)  # Espace après le graphique
     
