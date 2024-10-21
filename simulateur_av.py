@@ -1338,6 +1338,30 @@ class PDF(FPDF):
         self.set_font_safe('Inter', 'B', 14)
         self.cell(effective_width, 10, 'Projection', 0, 1, 'L')
         self.ln(2)
+
+        # Informations de projection sur 3 colonnes
+        self.set_font_safe('Inter', '', 10)
+        col_width = effective_width / 3
+        # En-têtes
+        self.cell(col_width, 6, "Capital fin d'année à durée capi max", 0, 0, 'L')
+        self.cell(col_width, 6, "Capital fin d'année (dernière ligne)", 0, 0, 'L')
+        self.cell(col_width, 6, "Épargne investie", 0, 1, 'L')
+        
+        # Calcul des valeurs
+        duree_capi_max = self.calculer_duree_capi_max(objectifs)
+        capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
+        capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
+        epargne_investie = resultats_df['Épargne investie'].iloc[-1]  # Supposons que c'est la dernière valeur
+        
+        # Affichage des valeurs
+        self.set_font_safe('Inter', 'B', 10)
+        self.set_text_color(*orange_color)
+        self.cell(col_width, 6, f"{self.format_value(capital_fin_annee_duree_capi_max)} €", 0, 0, 'L')
+        self.cell(col_width, 6, f"{self.format_value(capital_fin_annee_derniere_ligne)} €", 0, 0, 'L')
+        self.set_text_color(*text_color)
+        self.cell(col_width, 6, f"{self.format_value(epargne_investie)} €", 0, 1, 'L')
+        
+        self.ln(10)
     
         # Tableau de projection
         duree_capi_max = self.calculer_duree_capi_max(objectifs)
@@ -1877,6 +1901,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_text_color(*apple_gray)
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
+
+    pdf.add_recap(params, objectives)
 
     # Génération des résultats
     resultats_df = optimiser_objectifs(params, objectifs)
