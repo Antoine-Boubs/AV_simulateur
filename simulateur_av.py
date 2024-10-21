@@ -1406,10 +1406,23 @@ class PDF(FPDF):
         self.ln(2)
         self.ln(3)  # Reduced space before values
         
-        # Calcul des valeurs
-        duree_capi_max = self.calculer_duree_capi_max(objectifs)
-        capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
-        epargne_investie = resultats_df[resultats_df['Année'] == duree_capi_max]['Épargne investie'].iloc[0]  # Supposons que c'est la dernière valeur
+        def get_value_safely(df, year, column):
+            try:
+                value = df[df['Année'] == year][column].iloc[0]
+                return value if pd.notna(value) else 0
+            except IndexError:
+                print(f"Attention : Aucune donnée trouvée pour l'année {year} dans la colonne {column}")
+                return df[column].iloc[-1] if not df.empty and column in df.columns else 0
+        
+        duree_capi_max = self.calculer_duree_capi_max(objectifs, resultats_df)
+        capital_fin_annee_duree_capi_max = get_value_safely(resultats_df, duree_capi_max, 'Capital fin d\'année (NET)')
+        capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1] if not resultats_df.empty else 0
+        epargne_investie = get_value_safely(resultats_df, duree_capi_max, 'Épargne investie')
+        
+        # Assurez-vous que toutes les valeurs sont des nombres
+        capital_fin_annee_duree_capi_max = float(capital_fin_annee_duree_capi_max) if capital_fin_annee_duree_capi_max is not None else 0
+        capital_fin_annee_derniere_ligne = float(capital_fin_annee_derniere_ligne) if capital_fin_annee_derniere_ligne is not None else 0
+        epargne_investie = float(epargne_investie) if epargne_investie is not None else 0
         
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
