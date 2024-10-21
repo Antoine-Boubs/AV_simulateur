@@ -1865,7 +1865,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     resultats_df = optimiser_objectifs(params, objectifs)
     
     # Appel de la méthode avec les arguments requis
-    pdf.add_simulation_parameters(params, resultats_df, objectifs)
+    pdf.add_simulation_parameters(params, resultats_df)
 
     pdf.add_nalo_page()
 
