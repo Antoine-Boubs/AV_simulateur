@@ -1409,7 +1409,6 @@ class PDF(FPDF):
         # Calcul des valeurs
         duree_capi_max = self.calculer_duree_capi_max(objectifs)
         capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
-        capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
         epargne_investie = resultats_df[resultats_df['Année'] == duree_capi_max]['Épargne investie'].iloc[0]  # Supposons que c'est la dernière valeur
         
         # Affichage des valeurs
