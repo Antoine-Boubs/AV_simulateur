@@ -1338,8 +1338,8 @@ class PDF(FPDF):
         capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
         
         projection_data = [
-            [f"Capital fin d'année à durée capi max : {capital_fin_annee_duree_capi_max:.0f} €"],
-            [f"Capital fin d'année à la dernière ligne du dataframe : {capital_fin_annee_derniere_ligne:.0f} €"]
+            [f"Capital fin d'année à durée capi max : {capital_fin_annee_duree_capi_max:,.2f} €"],
+            [f"Capital fin d'année à la dernière ligne du dataframe : {capital_fin_annee_derniere_ligne:,.2f} €"]
         ]
     
         self.set_font_safe('Inter', 'B', 12)
@@ -1347,17 +1347,6 @@ class PDF(FPDF):
         for row in projection_data:
             self.cell(effective_width, 8, row[0], 0, 1, 'L')
         self.ln(5)
-    
-        self.set_text_color(*text_color)
-        self.ln(5)
-    
-        # Sécurisation progressive
-        self.set_font_safe('Inter', '', 10)
-        self.cell(effective_width/2, 6, "Sécurisation progressive :", 0, 0)
-        self.set_font_safe('Inter', 'B', 10)
-        self.set_text_color(0, 128, 0)  # Vert pour "Activée"
-        self.cell(effective_width/2, 6, "Activée", 0, 1)
-        self.ln(10)
     
         # Ajout du graphique en cascade
         chart_width = effective_width
