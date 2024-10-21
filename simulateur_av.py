@@ -1337,34 +1337,27 @@ class PDF(FPDF):
         apple_gray = (142, 142, 147)
         apple_light_gray = (245, 245, 247)
         
-        def add_payment_item(icon, type_text, amount_text, period_text):
-            start_y = self.get_y()
-            
-            # Fond gris clair
-            self.set_fill_color(*apple_light_gray)
-            self.rect(self.get_x(), start_y, effective_width, 20, 'F')
-            
-            # Icône
-            self.set_font_safe('Inter', 'B', 12)
-            self.set_text_color(*apple_blue)
-            self.cell(20, 20, icon, 0, 0, 'C')
-            
-            # Type de paiement
-            self.set_font_safe('Inter', 'B', 10)
-            self.set_text_color(0, 0, 0)
-            self.cell(50, 10, type_text, 0, 0)
-            
-            # Montant
-            self.set_font_safe('Inter', 'B', 12)
-            self.set_text_color(*apple_blue)
-            self.cell(50, 10, amount_text, 0, 0)
-            
-            # Période
-            self.set_font_safe('Inter', '', 9)
-            self.set_text_color(*apple_gray)
-            self.cell(50, 10, period_text, 0, 1)
-            
-            self.set_y(start_y + 22)  # Espace entre les éléments
+        def add_payment_modifications_section(self, effective_width):
+            # Couleurs
+            title_color = (0, 0, 0)  # Noir pour le titre
+            text_color = (29, 29, 31)  # Presque noir pour le texte
+            value_color = (0, 0, 0)  # Noir pour les valeurs
+        
+            # Titre de la section
+            self.set_font_safe('Inter', 'B', 24)
+            self.set_text_color(*title_color)
+            self.cell(effective_width, 15, 'Modifications de versements et versements libres', 0, 1, 'L')
+            self.ln(10)
+    
+        # Fonction pour ajouter une ligne d'information
+        def add_info_line(label, value):
+            self.set_font_safe('Inter', '', 12)
+            self.set_text_color(*text_color)
+            self.cell(effective_width / 2, 8, label, 0, 0, 'L')
+            self.set_font_safe('Inter', 'B', 14)
+            self.set_text_color(*value_color)
+            self.cell(effective_width / 2, 8, value, 0, 1, 'L')
+            self.ln(5)
         
         # Affichage des modifications de versements
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
