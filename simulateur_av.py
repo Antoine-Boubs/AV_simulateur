@@ -1118,15 +1118,7 @@ class PDF(FPDF):
         self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
 
     def add_warning(self):
-        # Vérifier si une page est déjà ouverte
-        if self.page_no() == 0:
-            self.add_page()  # Ajouter une nouvelle page si aucune n'est ouverte
-    
-        # Sauvegarder la page actuelle
-        current_page = self.page_no()
-        
-        # Aller à la première page
-        self.page = 0
+        self.add_page()
         
         warning_image_path = 'assets/Avertissement.png'  
         
@@ -1233,39 +1225,7 @@ class PDF(FPDF):
             self.ln()
             fill_index += 1
 
-    def rounded_rect(self, x, y, w, h, r, style=''):
-        '''Draw a rounded rectangle'''
-        k = self.k
-        hp = self.h
-        if style == 'F':
-            op = 'f'
-        elif style == 'FD' or style == 'DF':
-            op = 'B'
-        else:
-            op = 'S'
-        
-        # Approximate the curve with 8 line segments per corner
-        nCorners = 8
-        
-        self._out('%.2F %.2F m' % ((x+r)*k, (hp-y)*k))
-        
-        for i in range(4):
-            if i == 0:
-                xc, yc = x+w-r, y+r
-            elif i == 1:
-                xc, yc = x+w-r, y+h-r
-            elif i == 2:
-                xc, yc = x+r, y+h-r
-            else:
-                xc, yc = x+r, y+r
-            
-            self._out('%.2F %.2F l' % ((xc + r)*k, (hp-yc)*k))
-            
-            for j in range(nCorners):
-                angle = (j+1) * (pi/2) / nCorners
-                self._out('%.2F %.2F l' % ((xc + r*cos(angle))*k, (hp-(yc + r*sin(angle)))*k))
-        
-        self._out(op)
+    
 
 
     import pandas as pd
