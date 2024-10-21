@@ -1415,14 +1415,14 @@ class PDF(FPDF):
                 return df[column].iloc[-1] if not df.empty and column in df.columns else 0
         
         duree_capi_max = self.calculer_duree_capi_max(objectifs, resultats_df)
-        capital_fin_annee_duree_capi_max = get_value_safely(resultats_df, duree_capi_max, 'Capital fin d\'année (NET)')
-        capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1] if not resultats_df.empty else 0
-        epargne_investie = get_value_safely(resultats_df, duree_capi_max, 'Épargne investie')
+        capital_fin_annee_duree_capi_max = parse_value(get_value_safely(resultats_df, duree_capi_max, 'Capital fin d\'année (NET)'))
+        capital_fin_annee_derniere_ligne = parse_value(resultats_df['Capital fin d\'année (NET)'].iloc[-1] if not resultats_df.empty else 0)
+        epargne_investie = parse_value(get_value_safely(resultats_df, duree_capi_max, 'Épargne investie'))
         
         # Assurez-vous que toutes les valeurs sont des nombres
-        capital_fin_annee_duree_capi_max = float(capital_fin_annee_duree_capi_max) if capital_fin_annee_duree_capi_max is not None else 0
-        capital_fin_annee_derniere_ligne = float(capital_fin_annee_derniere_ligne) if capital_fin_annee_derniere_ligne is not None else 0
-        epargne_investie = float(epargne_investie) if epargne_investie is not None else 0
+        capital_fin_annee_duree_capi_max = float(capital_fin_annee_duree_capi_max)
+        capital_fin_annee_derniere_ligne = float(capital_fin_annee_derniere_ligne)
+        epargne_investie = float(epargne_investie)
         
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
@@ -1762,16 +1762,26 @@ class PDF(FPDF):
         self.ln(10)
 
 
-def format_value(value):
+import re
+
+def parse_value(value):
     if isinstance(value, (int, float)):
-        formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
-        return f"{formatted}"  # Removed the euro symbol here
-    elif isinstance(value, str):
-        try:
-            num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
-            return format_value(num_value)
-        except ValueError:
-            return value.replace("€", "").strip()  # Removed the euro symbol here as well
+        return value
+    if isinstance(value, str):
+        # Supprimer le symbole € et les espaces
+        value = value.replace('€', '').replace(' ', '').strip()
+        # Remplacer la virgule par un point pour la décimale
+        value = value.replace(',', '.')
+        # Utiliser une expression régulière pour extraire le nombre
+        match = re.search(r'-?\d+\.?\d*', value)
+        if match:
+            return float(match.group())
+    return 0
+
+def format_value(value):
+    value = parse_value(value)
+    if isinstance(value, (int, float)):
+        return f"{value:,.2f}".replace(",", " ").replace(".", ",")
     return str(value)
 
 
