@@ -1186,6 +1186,7 @@ class PDF(FPDF):
         apple_blue = (0, 122, 255)
         apple_gray = (142, 142, 147)
         apple_light_gray = (245, 245, 247)
+        apple_border = (229, 229, 234)  # Couleur de bordure légère
         
         # Marges et largeur effective
         left_margin = 20
@@ -1204,14 +1205,15 @@ class PDF(FPDF):
         def add_objective(obj):
             start_y = self.get_y()
             
-            # Fond gris clair
+            # Fond gris clair avec bordure
             self.set_fill_color(*apple_light_gray)
-            self.rect(left_margin, start_y, effective_width, 50, 'F')
+            self.set_draw_color(*apple_border)
+            self.rect(left_margin, start_y, effective_width, 60, 'FD')  # 'FD' pour remplir et dessiner la bordure
             
             # Nom de l'objectif
             self.set_font('Inter', 'B', 14)
             self.set_text_color(0, 0, 0)
-            self.set_xy(left_margin + 10, start_y + 5)
+            self.set_xy(left_margin + 10, start_y + 10)
             self.cell(effective_width - 20, 10, obj['nom'], 0, 1)
             
             # Détails de l'objectif
@@ -1226,7 +1228,7 @@ class PDF(FPDF):
                 self.set_x(left_margin + 10)
                 self.cell(effective_width - 20, 8, detail, 0, 1)
             
-            self.ln(10)
+            self.ln(15)  # Espace entre les objectifs
         
         # Ajout de chaque objectif
         for obj in objectives:
