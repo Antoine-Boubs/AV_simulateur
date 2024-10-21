@@ -1857,7 +1857,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
 
-    pdf.add_simulation_parameters()
+    pdf.add_simulation_parameters(params, df_resultat, objectifs)
 
     pdf.add_nalo_page()
 
