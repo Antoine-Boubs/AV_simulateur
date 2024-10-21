@@ -1193,13 +1193,14 @@ class PDF(FPDF):
         right_margin = 20
         self.set_left_margin(left_margin)
         self.set_right_margin(right_margin)
-        effective_width = self.w - left_margin - right_margin
+        effective_width = (self.w - left_margin - right_margin) * 0.9  # Réduire à 90% de la largeur originale
         
         # Titre de la section
         self.set_font('Inter', 'B', 24)
         self.set_text_color(*apple_blue)
-        self.cell(effective_width, 15, 'Vos objectifs', 0, 1, 'L')
+        self.cell(self.w - left_margin - right_margin, 15, 'Vos objectifs', 0, 1, 'L')
         self.ln(10)
+        self.ln(10)  # Espace supplémentaire en haut
         
         # Fonction pour ajouter un objectif
         def add_objective(obj):
@@ -1208,33 +1209,34 @@ class PDF(FPDF):
             # Fond gris clair avec bordure
             self.set_fill_color(*apple_light_gray)
             self.set_draw_color(*apple_border)
-            self.rect(left_margin, start_y, effective_width, 60, 'FD')  # 'FD' pour remplir et dessiner la bordure
+            x_offset = (self.w - left_margin - right_margin - effective_width) / 2
+            self.rect(left_margin + x_offset, start_y, effective_width, 50, 'FD')  # 'FD' pour remplir et dessiner la bordure
             
             # Nom de l'objectif
             self.set_font('Inter', 'B', 14)
             self.set_text_color(0, 0, 0)
-            self.set_xy(left_margin + 10, start_y + 10)
+            self.set_xy(left_margin + x_offset + 10, start_y + 5)
             self.cell(effective_width - 20, 10, obj['nom'], 0, 1)
             
             # Détails de l'objectif
             self.set_font('Inter', '', 10)
             self.set_text_color(*apple_gray)
             details = [
-                f"Horizon d'investissement : {obj['annee']} ans",
-                f"Durée de rachat : {obj['duree_retrait']} ans",
-                f"Montant annuel de rachat : {format_value(obj['montant_annuel'])}",
+                f"Montant annuel : {format_value(obj['montant_annuel'])} €",
+                f"Durée : {obj['duree_retrait']} ans",
+                f"Année de réalisation : {obj['annee']}"
             ]
             for detail in details:
-                self.set_x(left_margin + 10)
+                self.set_x(left_margin + x_offset + 10)
                 self.cell(effective_width - 20, 8, detail, 0, 1)
             
-            self.ln(15)  # Espace entre les objectifs
+            self.ln(25)  # Augmenter l'espace entre les objectifs
         
         # Ajout de chaque objectif
         for obj in objectives:
             add_objective(obj)
             
-        self.ln(10)
+        self.ln(20)  # Espace supplémentaire en bas
         
 
     def add_info_section(self, title, content):
