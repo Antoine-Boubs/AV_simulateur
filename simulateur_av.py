@@ -1179,18 +1179,20 @@ class PDF(FPDF):
             for obj in objectives
         ])
 
-    def add_info_section(self, title, content, effective_width):
+    def add_info_section(self, title, content):
+        effective_width = self.w - self.l_margin - self.r_margin
+        
         apple_blue = (0, 122, 255)
         apple_dark_gray = (60, 60, 67)
         
         self.set_font_safe('Inter', 'B', 18)
         self.set_text_color(*apple_blue)
-        self.cell(0, 12, title, 0, 1, 'L')
+        self.cell(effective_width, 12, title, 0, 1, 'L')
         
         self.set_font_safe('Inter', '', 12)
         self.set_text_color(*apple_dark_gray)
         for item in content:
-            self.multi_cell(0, 8, item, 0, 'L')
+            self.multi_cell(effective_width, 8, item, 0, 'L')
         self.ln(10)
 
     def colored_table(self, headers, data, col_widths):
