@@ -1265,6 +1265,63 @@ class PDF(FPDF):
         
         self._out(op)
 
+
+    import pandas as pd
+
+    
+    def add_av_succession(self):
+        self.add_page()
+        
+        # Marges et largeur effective
+        left_margin, right_margin = 20, 15
+        self.set_left_margin(left_margin)
+        self.set_right_margin(right_margin)
+        effective_width = self.w - left_margin - right_margin
+    
+        # Couleurs
+        text_color = (29, 29, 31)
+        title_color = (0, 0, 0)
+        header_color = (249, 115, 22)  # Orange pour l'en-tête
+    
+        # Titre principal
+        self.set_font_safe('Inter', 'B', 18)
+        self.set_text_color(*title_color)
+        self.cell(effective_width, 10, 'Succession en assurance-vie', 0, 1, 'L')
+        self.ln(5)
+    
+        # Chargement des données
+        df = pd.read_csv('assets/AV_succession.pdf')
+    
+        # En-tête du tableau
+        self.set_font_safe('Inter', 'B', 10)
+        self.set_fill_color(*header_color)
+        self.set_text_color(255, 255, 255)  # Texte blanc pour l'en-tête
+        col_width = effective_width / 3
+        self.cell(col_width, 8, 'Bénéficiaire', 1, 0, 'C', 1)
+        self.cell(col_width, 8, 'Abattement', 1, 0, 'C', 1)
+        self.cell(col_width, 8, 'Imposition après abattement', 1, 1, 'C', 1)
+    
+        # Contenu du tableau
+        self.set_font_safe('Inter', '', 9)
+        self.set_text_color(*text_color)
+        for _, row in df.iterrows():
+            self.cell(col_width, 6, str(row['Bénéficiaire']), 1, 0, 'L')
+            self.cell(col_width, 6, str(row['Abattement']), 1, 0, 'C')
+            self.cell(col_width, 6, str(row['Imposition']), 1, 1, 'C')
+    
+        self.ln(5)
+    
+        # Note explicative
+        self.set_font_safe('Inter', 'I', 8)
+        self.multi_cell(effective_width, 4, "* Pour les enfants et autres bénéficiaires (sauf époux/partenaire de pacs), "
+                                            "l'imposition est de 20% pour les premiers 700 000€ après l'abattement de 152 500€, "
+                                            "puis 31,25% au-delà.")
+    
+        # Ajouter le logo Nalo
+        self.add_nalo_logo(right_margin)
+
+    
+
     def add_simulation_parameters(self, params, resultats_df, objectifs):
         self.add_page()
         
@@ -1819,6 +1876,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     ]
     for item in sommaire_items:
         pdf.cell(0, 10, item, 0, 1, 'L')
+
+    pdf.add_av_succession()
 
     # Graphiques
 
