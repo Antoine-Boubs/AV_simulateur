@@ -1342,12 +1342,8 @@ class PDF(FPDF):
             
             # Fond gris clair
             self.set_fill_color(*apple_light_gray)
-            self.rect(self.get_x(), start_y, effective_width, 20, 'F')
+            self.rect(self.get_x(), start_y, effective_width, 12, 'F')
             
-            # Icône
-            self.set_font_safe('Inter', 'B', 12)
-            self.set_text_color(*apple_blue)
-            self.cell(20, 20, icon, 0, 0, 'C')
             
             # Type de paiement
             self.set_font_safe('Inter', 'B', 10)
@@ -1364,20 +1360,20 @@ class PDF(FPDF):
             self.set_text_color(*apple_gray)
             self.cell(50, 10, period_text, 0, 1)
             
-            self.set_y(start_y + 22)  # Espace entre les éléments
+            self.set_y(start_y + 14)  # Espace entre les éléments
         
         # Affichage des modifications de versements
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
             for mv in st.session_state.modifications_versements:
                 if mv['montant'] == 0:
-                    add_payment_item('S', 'Versements arrêtés', '', f"de l'année {mv['debut']} à {mv['fin']}")
+                    add_payment_item('Versements arrêtés', '', f"de l'année {mv['debut']} à {mv['fin']}")
                 else:
-                    add_payment_item('A', 'Versements ajustés', f"{format_value(mv['montant'])} €", f"de l'année {mv['debut']} à {mv['fin']}")
+                    add_payment_item('Versements ajustés', f"{format_value(mv['montant'])} €", f"de l'année {mv['debut']} à {mv['fin']}")
         
         # Affichage des versements libres
         if 'versements_libres' in st.session_state and st.session_state.versements_libres:
             for vl in st.session_state.versements_libres:
-                add_payment_item('L', 'Versement libre', f"{format_value(vl['montant'])} €", f"l'année {vl['annee']}")
+                add_payment_item('Versement libre', f"{format_value(vl['montant'])} €", f"l'année {vl['annee']}")
         
         # Message si aucune modification ni versement libre
         if (not st.session_state.get('modifications_versements') and 
@@ -1397,11 +1393,11 @@ class PDF(FPDF):
         self.set_font_safe('Inter', '', 9)
         col_width = effective_width / 3
         # En-têtes
-        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L')
-        self.cell(col_width, 5, "Capital restant", 0, 0, 'L')
+        self.cell(col_width, 5, "Capital à la fin de votre", 0, 0, 'L')
+        self.cell(col_width, 5, "Capital restant après", 0, 0, 'L')
         self.cell(col_width, 5, "Pour des versements totaux", 0, 1, 'L')
-        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L')
-        self.cell(col_width, 5, "après vos projets", 0, 0, 'L')
+        self.cell(col_width, 5, "phase d'épargne", 0, 0, 'L')
+        self.cell(col_width, 5, "vos projets", 0, 0, 'L')
         self.cell(col_width, 5, "de", 0, 1, 'L')
         self.ln(2)
         self.ln(3)  # Reduced space before values
