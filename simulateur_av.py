@@ -1120,13 +1120,13 @@ class PDF(FPDF):
     def add_warning(self):
         # Vérifier si une page est déjà ouverte
         if self.page_no() == 0:
-            self.add_page()
-            
+            self.add_page()  # Ajouter une nouvelle page si aucune n'est ouverte
+    
         # Sauvegarder la page actuelle
-        current_page = self.page_no()  # Utiliser page_no() au lieu de page
+        current_page = self.page_no()
         
         # Aller à la première page
-        self.page = 0  # Dans FPDF, la première page est 0, pas 1
+        self.page = 0
         
         warning_image_path = 'assets/Avertissement.png'  
         
