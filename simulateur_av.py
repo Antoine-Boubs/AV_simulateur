@@ -1283,7 +1283,7 @@ class PDF(FPDF):
 
     
 
-    def add_simulation_parameters(self, params):
+    def add_simulation_parameters(self, params, resultats_df):
         self.add_page()
         
         # Marges et largeur effective
@@ -1296,7 +1296,7 @@ class PDF(FPDF):
         # Couleurs
         text_color = (29, 29, 31)
         title_color = (0, 0, 0)
-        orange_color = (249, 115, 22)  # Couleur orange pour certains textes
+        orange_color = (249, 115, 22)
     
         # Titre principal
         self.set_font_safe('Inter', 'B', 18)
@@ -1334,9 +1334,12 @@ class PDF(FPDF):
         self.ln(2)
     
         # Tableau de projection
+        capital_fin_annee_duree_capi_max = resultats_df['Capital fin d\'année (NET)'].max()
+        capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
+        
         projection_data = [
-            [f"Capital fin d'année à durée capi max : {self.capital_fin_annee_duree_capi_max:.0f} €"],
-            [f"Capital fin d'année à la dernière ligne du dataframe : {self.capital_fin_annee_derniere_ligne:.0f} €"]
+            [f"Capital fin d'année à durée capi max : {capital_fin_annee_duree_capi_max:.0f} €"],
+            [f"Capital fin d'année à la dernière ligne du dataframe : {capital_fin_annee_derniere_ligne:.0f} €"]
         ]
     
         self.set_font_safe('Inter', 'B', 12)
@@ -1347,7 +1350,6 @@ class PDF(FPDF):
     
         self.set_text_color(*text_color)
         self.ln(5)
-    
     
         # Sécurisation progressive
         self.set_font_safe('Inter', '', 10)
@@ -1363,17 +1365,14 @@ class PDF(FPDF):
         chart_x = left_margin
         chart_y = self.get_y()
     
-        # Assurez-vous que cette méthode existe et qu'elle dessine votre graphique en cascade
-        self.fig_to_img_buffer(create_waterfall_chart(resultats_df))
+        # Création et ajout du graphique en cascade
+        chart_buffer = fig_to_img_buffer(create_waterfall_chart(resultats_df))
+        self.image(chart_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
     
         self.ln(chart_height + 20)  # Espace après le graphique
     
         # Ajouter le logo Nalo
-        logo_width = 30
-        logo_height = 15
-        logo_x = self.w - right_margin - logo_width
-        logo_y = 10
-        self.image('logo_path', logo_x, logo_y, logo_width, logo_height)
+        self.add_nalo_logo(right_margin)
     
     def add_nalo_logo(self, right_margin):
         logo_width, logo_height = 30, 15
