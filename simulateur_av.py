@@ -1365,14 +1365,25 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
+            # Assurez-vous que ces fonctions sont importées correctement
+            from your_chart_module import create_waterfall_chart, fig_to_img_buffer
+            
             waterfall_chart = create_waterfall_chart(resultats_df)
             chart_buffer = fig_to_img_buffer(waterfall_chart)
-            self.image(chart_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            
+            # Utilisez BytesIO pour gérer le buffer d'image
+            from io import BytesIO
+            
+            # Convertissez le buffer en BytesIO
+            img_buffer = BytesIO(chart_buffer.getvalue())
+            
+            # Ajoutez l'image au PDF
+            self.image(img_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
         except Exception as e:
-            print(f"Erreur lors de la création du graphique en cascade : {e}")
+            print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
             self.set_font_safe('Inter', '', 10)
             self.set_text_color(*text_color)
-            self.cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 1, 'C')
+            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         self.ln(chart_height + 20)  # Espace après le graphique
     
