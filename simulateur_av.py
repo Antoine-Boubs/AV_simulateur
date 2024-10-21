@@ -1118,6 +1118,10 @@ class PDF(FPDF):
         self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
 
     def add_warning(self):
+        # Vérifier si une page est déjà ouverte
+        if self.page_no() == 0:
+            self.add_page()
+            
         # Sauvegarder la page actuelle
         current_page = self.page_no()  # Utiliser page_no() au lieu de page
         
