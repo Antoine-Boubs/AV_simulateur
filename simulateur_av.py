@@ -1363,24 +1363,7 @@ class PDF(FPDF):
         
         self.ln(10)
     
-        # Tableau de projection
-        duree_capi_max = self.calculer_duree_capi_max(objectifs)
-        capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
-        capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
-        
-        projection_data = [
-            [f"Capital fin d'année à durée capi max : {self.format_value(capital_fin_annee_duree_capi_max)} €"],
-            [f"Capital fin d'année à la dernière ligne du dataframe : {self.format_value(capital_fin_annee_derniere_ligne)} €"]
-        ]
-    
-        self.set_font_safe('Inter', 'B', 12)
-        self.set_text_color(*orange_color)
-        for row in projection_data:
-            self.cell(effective_width, 8, row[0], 0, 1, 'L')
-        self.ln(5)
-    
-        self.set_text_color(*text_color)
-        self.ln(5)
+       
     
         # Ajout du graphique en cascade
         chart_width = effective_width
