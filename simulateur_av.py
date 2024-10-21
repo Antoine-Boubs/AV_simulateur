@@ -1377,7 +1377,7 @@ class PDF(FPDF):
         
         elif 'versements_libres' in params and params['versements_libres']:
             for vl in params['versements_libres']:
-                self.multi_cell(effective_width, 6, f"Versement libre de {f'{vl['montant']:.2f'} } € l'année {vl['annee']}", 0, 'L')
+                self.multi_cell(effective_width, 6, f"Versement libre de {vl['montant']:.2f} l'année {vl['annee']}", 0, 'L')        
         else:
             self.multi_cell(effective_width, 6, "Aucune modification de versement", 0, 'L')
             
