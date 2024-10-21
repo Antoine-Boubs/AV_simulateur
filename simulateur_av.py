@@ -1307,19 +1307,23 @@ class PDF(FPDF):
         self.set_font_safe('Inter', 'B', 14)
         self.cell(effective_width, 10, 'Paramètres & détails du projet', 0, 1, 'L')
         self.ln(2)
-    
-        # Informations du client sur 3 colonnes
-        self.set_font_safe('Inter', '', 10)
-        col_width = effective_width / 3
-        self.cell(col_width, 6, f"Capital initial : {params['capital_initial']} €", 0, 0)
-        self.cell(col_width, 6, f"Versement mensuel : {params['versement_mensuel']} €", 0, 0)
-        self.cell(col_width, 6, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
-        self.ln(10)
         
-        # Projection
-        self.set_font_safe('Inter', 'B', 14)
-        self.cell(effective_width, 10, 'Projection', 0, 1, 'L')
-        self.ln(2)
+        # Informations du client sur 3 colonnes
+        col_width = effective_width / 3
+        
+        # Ligne pour les étiquettes
+        self.set_font_safe('Inter', '', 10)
+        self.cell(col_width, 6, "Capital initial :", 0, 0)
+        self.cell(col_width, 6, "Versement mensuel :", 0, 0)
+        self.cell(col_width, 6, "Rendement annuel :", 0, 1)
+        
+        # Ligne pour les valeurs
+        self.set_font_safe('Inter', 'B', 10)
+        self.cell(col_width, 6, f"{params['capital_initial']} €", 0, 0)
+        self.cell(col_width, 6, f"{params['versement_mensuel']} €", 0, 0)
+        self.cell(col_width, 6, f"{params['rendement_annuel']*100:.2f}%", 0, 1)
+        
+        self.ln(10)
     
         # Calcul de duree_capi_max
         duree_capi_max = calculer_duree_capi_max(objectifs)
