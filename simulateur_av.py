@@ -1119,40 +1119,38 @@ class PDF(FPDF):
 
     def add_warning(self):
         # Sauvegarder la page actuelle
-        current_page = self.page
+        current_page = self.page_no()  # Utiliser page_no() au lieu de page
         
         # Aller à la première page
-        self.page = 1
+        self.page = 0  # Dans FPDF, la première page est 0, pas 1
         
-        # Définir les couleurs
-        warning_bg_color = (255, 247, 237)  # Couleur de fond légèrement orangée
-        warning_border_color = (255, 149, 0)  # Couleur de bordure orange
-        warning_text_color = (0, 0, 0)  # Texte en noir
-    
-        # Positionner l'avertissement en bas de la page
-        self.set_y(-80)
-    
-        # Dessiner le rectangle arrondi
-        self.set_fill_color(*warning_bg_color)
-        self.set_draw_color(*warning_border_color)
-        self.rounded_rect(10, self.get_y(), self.w - 20, 60, 5, 'FD')
-    
-        # Ajouter le texte d'avertissement
-        self.set_xy(15, self.get_y() + 5)
-        self.set_font('Inter', 'B', 12)
-        self.set_text_color(*warning_text_color)
-        self.cell(0, 10, 'AVERTISSEMENT', 0, 1)
+        warning_image_path = 'assets/Avertissement.png'  
         
-        self.set_font('Inter', '', 9)
-        self.multi_cell(self.w - 30, 4, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports "
-                        "en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à "
-                        "fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés "
-                        "financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il "
-                        "ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne "
-                        "sont pas stables dans le temps.", align='J')
+        # Vérifier si le fichier existe
+        if not os.path.exists(warning_image_path):
+            print(f"Erreur : L'image '{warning_image_path}' n'a pas été trouvée.")
+            return
+        
+        # Définir la position et la taille de l'image
+        x = 20  # position x de l'image
+        y = 50  # position y de l'image
+        w = 170  # largeur de l'image
+        
+        # Obtenir les dimensions de l'image
+        img_width, img_height = self.get_image_dimensions(warning_image_path)
+        
+        # Calculer la hauteur proportionnelle
+        h = (w / img_width) * img_height
+        
+        # Insérer l'image
+        self.image(warning_image_path, x, y, w, h)
         
         # Retourner à la page où nous étions
         self.page = current_page
+    
+    def get_image_dimensions(self, image_path):
+        with Image.open(image_path) as img:
+            return img.size
 
     def add_recap(self, params, objectives):
         self.add_page()
