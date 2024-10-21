@@ -1511,10 +1511,11 @@ class PDF(FPDF):
                 return value
         return value
     
-    def calculer_duree_capi_max(self, objectifs):
+    def calculer_duree_capi_max(self, objectifs, resultats_df):
         if not objectifs:
-            return 0  # or some default value
-        return max(obj['annee'] for obj in objectifs)
+            return resultats_df['Année'].max() if not resultats_df.empty else 0
+        max_annee_objectif = max(obj['annee'] for obj in objectifs)
+        return min(max_annee_objectif, resultats_df['Année'].max()) if not resultats_df.empty else max_annee_objectif
 
 
     def add_nalo_page(self):
