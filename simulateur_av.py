@@ -1384,8 +1384,9 @@ class PDF(FPDF):
         separator_y1 = self.get_y() - 27  # Reduced divider height
         separator_y2 = self.get_y()
         self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
-        self.line(left_margin + col_width, separator_y1, left_margin + col_width, separator_y2)
-        self.line(left_margin + 2 * col_width, separator_y1, left_margin + 2 * col_width, separator_y2)
+        self.line(left_margin + col_width - 5, separator_y1, left_margin + col_width - 5, separator_y2)
+        self.line(left_margin + 2 * col_width - 5, separator_y1, left_margin + 2 * col_width - 5, separator_y2)
+        
 
         # Vérifier s'il reste suffisamment d'espace pour le graphique
         if self.get_y() + 100 > self.h - 20:  # 100 est une estimation de la hauteur du graphique
