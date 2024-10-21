@@ -1343,12 +1343,11 @@ class PDF(FPDF):
         
         # En-têtes sur deux lignes
         self.set_font_safe('Inter', '', 9)  # Réduire légèrement la taille de la police pour s'adapter à deux lignes
-        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L')
-        self.cell(col_width, 5, "Capital restant", 0, 0, 'L')
-        self.cell(col_width, 5, "Épargne", 0, 1, 'L')
-        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L')
-        self.cell(col_width, 5, "après vos projets", 0, 0, 'L')
-        self.cell(col_width, 5, "investie", 0, 1, 'L')
+        self.cell(col_width, 5, "Capital à la fin de votre", 0, 0, 'L')
+        self.cell(col_width, 5, "Capital restant après l'ensemble", 0, 0, 'L')
+        self.cell(col_width, 5, "Épargne investie", 0, 1, 'L')
+        self.cell(col_width, 5, "phase d'épargne", 0, 0, 'L')
+        self.cell(col_width, 5, "de vos projets", 0, 0, 'L')
         self.ln(2)  # Ajouter un petit espace après les en-têtes
         
         # Calcul des valeurs
