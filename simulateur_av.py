@@ -1340,12 +1340,13 @@ class PDF(FPDF):
         self.ln(2)
     
         # Tableau de projection
-        capital_fin_annee_duree_capi_max = resultats_df['Capital fin d\'année (NET)'].max()
+        duree_capi_max = self.calculer_duree_capi_max(objectifs)
+        capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
         capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
         
         projection_data = [
-            [f"Capital fin d'année à durée capi max : {format_value(capital_fin_annee_duree_capi_max)} €"],
-            [f"Capital fin d'année à la dernière ligne du dataframe : {format_value(capital_fin_annee_derniere_ligne)} €"]
+            [f"Capital fin d'année à durée capi max : {self.format_value(capital_fin_annee_duree_capi_max)} €"],
+            [f"Capital fin d'année à la dernière ligne du dataframe : {self.format_value(capital_fin_annee_derniere_ligne)} €"]
         ]
     
         self.set_font_safe('Inter', 'B', 12)
