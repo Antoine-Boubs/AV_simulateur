@@ -1289,7 +1289,7 @@ class PDF(FPDF):
 
         # Obtenez le chemin du répertoire du script en cours
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(current_dir, 'assets', 'av_succession.png')
+        image_path = os.path.join(current_dir, 'assets', 'AV_succession.png')
     
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
