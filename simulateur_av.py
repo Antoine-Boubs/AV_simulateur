@@ -1433,7 +1433,9 @@ class PDF(FPDF):
         return value
     
     def calculer_duree_capi_max(self, objectifs):
-        return max(objectifs.keys())
+        if not objectifs:
+            return 0  # or some default value
+        return max(obj['annee'] + obj['duree_retrait'] for obj in objectifs)
 
 
     def add_nalo_page(self):
