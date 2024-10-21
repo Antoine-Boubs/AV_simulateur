@@ -1398,15 +1398,22 @@ class PDF(FPDF):
         logo_y = 10
         self.image('logo_path', logo_x, logo_y, logo_width, logo_height)
     
-    def add_info_section(self, title, info_list):
+    def add_info_section(self, title, info_list, effective_width):
         self.set_font_safe('Inter', 'B', 14)
-        self.cell(self.effective_width, 10, title, 0, 1, 'L')
+        self.cell(effective_width, 10, title, 0, 1, 'L')
         self.ln(2)
         self.set_font_safe('Inter', '', 10)
         for item in info_list:
-            self.multi_cell(self.effective_width, 5, item)
+            self.multi_cell(effective_width, 5, item)
             self.ln(2)
-    
+
+    def set_font_safe(self, family, style='', size=0):
+        try:
+            self.set_font(family, style, size)
+        except RuntimeError:
+            # Si la police n'est pas trouvée, utilisez une police par défaut
+            self.set_font('Arial', style, size)
+
     def calculer_duree_capi_max(objectifs):
         return max(objectifs.keys())
 
