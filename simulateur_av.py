@@ -1326,67 +1326,6 @@ class PDF(FPDF):
         self.cell(col_width, 6, f"{params['rendement_annuel']*100:.2f}%", 0, 1)
         self.ln(10)
 
-        # Ajout des modifications de versements et des versements libres
-        self.set_font_safe('Inter', 'B', 16)
-        self.set_text_color(0, 0, 0)  # Noir pour le titre principal
-        self.cell(effective_width, 10, 'Modifications de versements et versements libres', 0, 1, 'L')
-        self.ln(5)
-        
-        # Couleurs inspirées d'Apple
-        apple_blue = (0, 122, 255)
-        apple_gray = (142, 142, 147)
-        apple_light_gray = (245, 245, 247)
-        
-        def add_payment_item(icon, type_text, amount_text, period_text):
-            start_y = self.get_y()
-            
-            # Fond gris clair
-            self.set_fill_color(*apple_light_gray)
-            self.rect(self.get_x(), start_y, effective_width, 20, 'F')
-            
-            # Icône
-            self.set_font_safe('Inter', 'B', 12)
-            self.set_text_color(*apple_blue)
-            self.cell(20, 20, icon, 0, 0, 'C')
-            
-            # Type de paiement
-            self.set_font_safe('Inter', 'B', 10)
-            self.set_text_color(0, 0, 0)
-            self.cell(50, 10, type_text, 0, 0)
-            
-            # Montant
-            self.set_font_safe('Inter', 'B', 12)
-            self.set_text_color(*apple_blue)
-            self.cell(50, 10, amount_text, 0, 0)
-            
-            # Période
-            self.set_font_safe('Inter', '', 9)
-            self.set_text_color(*apple_gray)
-            self.cell(50, 10, period_text, 0, 1)
-            
-            self.set_y(start_y + 22)  # Espace entre les éléments
-        
-        # Affichage des modifications de versements
-        if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
-            for mv in st.session_state.modifications_versements:
-                if mv['montant'] == 0:
-                    add_payment_item('S', 'Versements arrêtés', '', f"de l'année {mv['debut']} à {mv['fin']}")
-                else:
-                    add_payment_item('A', 'Versements ajustés', f"{format_value(mv['montant'])} €", f"de l'année {mv['debut']} à {mv['fin']}")
-        
-        # Affichage des versements libres
-        if 'versements_libres' in st.session_state and st.session_state.versements_libres:
-            for vl in st.session_state.versements_libres:
-                add_payment_item('L', 'Versement libre', f"{format_value(vl['montant'])} €", f"l'année {vl['annee']}")
-        
-        # Message si aucune modification ni versement libre
-        if (not st.session_state.get('modifications_versements') and 
-            not st.session_state.get('versements_libres')):
-            self.set_font_safe('Inter', 'I', 10)
-            self.set_text_color(*apple_gray)
-            self.multi_cell(effective_width, 6, "Aucune modification de versement ni versement libre", 0, 'L')
-        
-        self.ln(10)
         
         # Projection
         self.set_font_safe('Inter', 'B', 14)
