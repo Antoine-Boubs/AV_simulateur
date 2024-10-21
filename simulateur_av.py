@@ -1332,26 +1332,34 @@ class PDF(FPDF):
         self.cell(effective_width, 10, 'Modifications de versements et versements libres', 0, 1, 'L')
         self.ln(5)
         
+        def add_payment_modifications_section(self, modifications, versements_libres):
         # Couleurs inspirées d'Apple
-        apple_blue = (0, 122, 255)
+        apple_blue = (0, 113, 227)
         apple_gray = (142, 142, 147)
         apple_light_gray = (245, 245, 247)
-        
+    
+        # Configuration de la page
+        self.add_page()
+        self.set_font('Inter', 'B', 24)
+        self.set_text_color(29, 29, 31)  # Presque noir, comme Apple
+        self.cell(0, 10, 'Modifications de versements et versements libres', 0, 1, 'L')
+        self.ln(10)
+    
         # Fonction pour ajouter un élément de paiement
         def add_payment_item(icon, type_text, amount_text, period_text):
             # Fond gris clair
             self.set_fill_color(*apple_light_gray)
-            self.rect(self.get_x(), self.get_y(), effective_width, 10, 'F')
+            self.rect(self.get_x(), self.get_y(), 170, 20, 'F')
             
             # Icône
-            self.set_font('Inter', 'B', 12)
+            self.set_font('Inter', 'B', 14)
             self.set_text_color(*apple_blue)
-            self.cell(20, 10, icon, 0, 0, 'C')
+            self.cell(20, 20, icon, 0, 0, 'C')
             
             # Type de paiement
             self.set_font('Inter', 'B', 12)
             self.set_text_color(29, 29, 31)
-            self.cell(60, 10, type_text, 0, 0)
+            self.cell(50, 10, type_text, 0, 0)
             
             # Montant
             self.set_font('Inter', 'B', 14)
@@ -1361,31 +1369,22 @@ class PDF(FPDF):
             # Période
             self.set_font('Inter', '', 10)
             self.set_text_color(*apple_gray)
-            self.cell(effective_width - 130, 10, period_text, 0, 1)
+            self.cell(50, 10, period_text, 0, 1)
             
-            self.ln(2)  # Espace entre les éléments
-        
+            self.ln(5)  # Espace entre les éléments
+    
         # Ajout des modifications de versements
-        if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
-            for mod in st.session_state.modifications_versements:
-                if mod['montant'] == 0:
-                    add_payment_item('S', 'Versements arrêtés', '', f"de l'année {mod['debut']} à {mod['fin']}")
-                else:
-                    add_payment_item('A', 'Versements ajustés', f"{mod['montant']:.2f} €", f"de l'année {mod['debut']} à {mod['fin']}")
-        
+        for mod in modifications:
+            if mod['montant'] == 0:
+                add_payment_item('S', 'Versements arrêtés', '', f"de l'année {mod['debut']} à {mod['fin']}")
+            else:
+                add_payment_item('A', 'Versements ajustés', f"{mod['montant']:.2f} €", f"de l'année {mod['debut']} à {mod['fin']}")
+    
         # Ajout des versements libres
-        if 'versements_libres' in st.session_state and st.session_state.versements_libres:
-            for vl in st.session_state.versements_libres:
-                add_payment_item('L', 'Versement libre', f"{vl['montant']:.2f} €", f"l'année {vl['annee']}")
-        
-        # Message si aucune modification ni versement libre
-        if (not st.session_state.get('modifications_versements') and 
-            not st.session_state.get('versements_libres')):
-            self.set_font_safe('Inter', 'I', 10)
-            self.set_text_color(*apple_gray)
-            self.multi_cell(effective_width, 6, "Aucune modification de versement ni versement libre", 0, 'L')
-        
-        self.ln(10)
+        for vl in versements_libres:
+            add_payment_item('L', 'Versement libre', f"{vl['montant']:.2f} €", f"l'année {vl['annee']}")
+    
+        self.ln(10)  # Espace après la section
         
         # Projection
         self.set_font_safe('Inter', 'B', 14)
