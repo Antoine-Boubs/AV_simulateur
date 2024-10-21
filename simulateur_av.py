@@ -1813,6 +1813,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Page de couverture
     pdf.add_page()
+    pdf.add_warning()
     pdf.set_font('Inter', 'B', 32)
     pdf.set_text_color(*apple_blue)
     pdf.cell(0, 60, 'Rapport Financier', 0, 1, 'C')
@@ -1820,7 +1821,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_text_color(*apple_gray)
     pdf.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'C')
 
-    pdf.add_warning()
+    
 
     # Sommaire
     pdf.add_page()
