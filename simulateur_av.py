@@ -1432,7 +1432,7 @@ class PDF(FPDF):
                 return value
         return value
     
-    def calculer_duree_capi_max(objectifs):
+    def calculer_duree_capi_max(self, objectifs):
         return max(objectifs.keys())
 
 
