@@ -1365,18 +1365,20 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
-            
             waterfall_chart = create_waterfall_chart(resultats_df)
             chart_buffer = fig_to_img_buffer(waterfall_chart)
             
-            # Utilisez BytesIO pour gérer le buffer d'image
-            from io import BytesIO
+            # Créer un fichier temporaire pour stocker l'image
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                temp_filename = temp_file.name
+                temp_file.write(chart_buffer.getvalue())
             
-            # Convertissez le buffer en BytesIO
-            img_buffer = BytesIO(chart_buffer.getvalue())
+            # Ajoutez l'image au PDF en utilisant le fichier temporaire
+            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
             
-            # Ajoutez l'image au PDF
-            self.image(img_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            # Supprimez le fichier temporaire après utilisation
+            os.unlink(temp_filename)
+    
         except Exception as e:
             print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
             self.set_font_safe('Inter', '', 10)
