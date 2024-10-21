@@ -1179,6 +1179,62 @@ class PDF(FPDF):
             for obj in objectives
         ])
 
+    def add_objectives_section(self, objectives):
+        self.add_page()
+        
+        # Couleurs inspirées d'Apple
+        apple_blue = (0, 122, 255)
+        apple_gray = (142, 142, 147)
+        apple_light_gray = (245, 245, 247)
+        
+        # Marges et largeur effective
+        left_margin = 20
+        right_margin = 20
+        self.set_left_margin(left_margin)
+        self.set_right_margin(right_margin)
+        effective_width = self.w - left_margin - right_margin
+        
+        # Titre de la section
+        self.set_font('Inter', 'B', 24)
+        self.set_text_color(*apple_blue)
+        self.cell(effective_width, 15, 'Vos objectifs', 0, 1, 'L')
+        self.ln(10)
+        
+        # Fonction pour ajouter un objectif
+        def add_objective(obj):
+            start_y = self.get_y()
+            
+            # Fond gris clair
+            self.set_fill_color(*apple_light_gray)
+            self.rect(left_margin, start_y, effective_width, 50, 'F')
+            
+            # Nom de l'objectif
+            self.set_font('Inter', 'B', 14)
+            self.set_text_color(0, 0, 0)
+            self.set_xy(left_margin + 10, start_y + 5)
+            self.cell(effective_width - 20, 10, obj['nom'], 0, 1)
+            
+            # Détails de l'objectif
+            self.set_font('Inter', '', 10)
+            self.set_text_color(*apple_gray)
+            details = [
+                f"Montant annuel : {format_value(obj['montant_annuel'])} €",
+                f"Durée : {obj['duree_retrait']} ans",
+                f"Année de réalisation : {obj['annee']}"
+            ]
+            for detail in details:
+                self.set_x(left_margin + 10)
+                self.cell(effective_width - 20, 8, detail, 0, 1)
+            
+            self.ln(10)
+        
+        # Ajout de chaque objectif
+        for obj in objectives:
+            add_objective(obj)
+            
+        self.ln(10)
+        
+
     def add_info_section(self, title, content):
         effective_width = self.w - self.l_margin - self.r_margin
         
@@ -1920,6 +1976,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
 
     pdf.add_recap(params, objectives)
+
+
+    pdf.add_objectives_section(objectives)
+
 
     # Génération des résultats
     resultats_df = optimiser_objectifs(params, objectifs)
