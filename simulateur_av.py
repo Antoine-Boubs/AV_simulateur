@@ -1169,7 +1169,7 @@ class PDF(FPDF):
                 if mv['montant'] == 0:
                     versements.append(f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}")
                 else:
-                    versements.append(f"Versements modifiés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}")
+                    versements.append(f"Versements ajustés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}")
         if not versements:
             versements = ["Aucun versement libre ou modification de versement défini"]
         self.add_info_section("Versements", versements)
@@ -1339,12 +1339,12 @@ class PDF(FPDF):
                 if mv['montant'] == 0:
                     self.multi_cell(effective_width, 6, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
                 else:
-                    self.multi_cell(effective_width, 6, f"Versements modifiés à {format_value(mv['montant'])} € de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
+                    self.multi_cell(effective_width, 6, f"Versements ajustés à {format_value(mv['montant'])} € de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
         
         # Affichage des versements libres
         if 'versements_libres' in st.session_state and st.session_state.versements_libres:
             for vl in st.session_state.versements_libres:
-                self.multi_cell(effective_width, 6, f"Versement libre de {format_value(vl['montant'])} € à l'année {vl['annee']}", 0, 'L')
+                self.multi_cell(effective_width, 6, f"Versement libre de {format_value(vl['montant'])} € l'année {vl['annee']}", 0, 'L')
         
         # Message si aucune modification ni versement libre
         if (not st.session_state.get('modifications_versements') and 
@@ -1717,13 +1717,13 @@ class PDF(FPDF):
 def format_value(value):
     if isinstance(value, (int, float)):
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
-        return f"{formatted}"
+        return f"{formatted} €"
     elif isinstance(value, str):
         try:
             num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
             return format_value(num_value)
         except ValueError:
-            return value
+            return value.replace("€", "").strip() + " €"
     return str(value)
 
 
