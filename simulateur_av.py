@@ -1286,9 +1286,10 @@ class PDF(FPDF):
         self.set_text_color(*title_color)
         self.cell(effective_width, 10, 'Succession en assurance-vie', 0, 1, 'L')
         self.ln(5)
-    
-        # Chemin de l'image PNG
-        image_path = 'assets/av_succession.png'
+
+        # Obtenez le chemin du répertoire du script en cours
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(current_dir, 'assets', 'av_succession.png')
     
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
