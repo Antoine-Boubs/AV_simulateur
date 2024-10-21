@@ -1352,32 +1352,49 @@ class PDF(FPDF):
             # Type de paiement
             self.set_font_safe('Inter', 'B', 10)
             self.set_text_color(0, 0, 0)
-            self.cell(50, 10, type_text, 0, 0)
+            self.cell(50, 12, type_text, 0, 0)
             
             # Montant
             self.set_font_safe('Inter', 'B', 12)
             self.set_text_color(*apple_blue)
-            self.cell(50, 10, amount_text, 0, 0)
+            self.cell(50, 12, amount_text, 0, 0)
             
             # Période
             self.set_font_safe('Inter', '', 9)
             self.set_text_color(*apple_gray)
-            self.cell(50, 10, period_text, 0, 1)
+            self.cell(effective_width - 120, 12, period_text, 0, 1)
             
             self.set_y(start_y + 14)  # Espace entre les éléments
         
         # Affichage des modifications de versements
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
             for mv in st.session_state.modifications_versements:
-                if mv['montant'] == 0:
-                    add_payment_item('❌', 'Versements arrêtés', '', f"de l'année {mv['debut']} à {mv['fin']}")
+                if isinstance(mv, dict):  # Vérifier si mv est un dictionnaire
+                    montant = mv.get('montant')
+                    debut = mv.get('debut', 'N/A')
+                    fin = mv.get('fin', 'N/A')
+                    if montant is not None:
+                        if montant == 0:
+                            add_payment_item('❌', 'Versements arrêtés', '', f"de l'année {debut} à {fin}")
+                        else:
+                            add_payment_item('📈', 'Versements ajustés', f"{format_value(montant)} €", f"de l'année {debut} à {fin}")
+                    else:
+                        print(f"Avertissement : 'montant' manquant dans {mv}")
                 else:
-                    add_payment_item('📈', 'Versements ajustés', f"{format_value(mv['montant'])} €", f"de l'année {mv['debut']} à {mv['fin']}")
+                    print(f"Avertissement : élément non valide dans modifications_versements : {mv}")
         
         # Affichage des versements libres
         if 'versements_libres' in st.session_state and st.session_state.versements_libres:
             for vl in st.session_state.versements_libres:
-                add_payment_item('💰','Versement libre', f"{format_value(vl['montant'])} €", f"l'année {vl['annee']}")
+                if isinstance(vl, dict):  # Vérifier si vl est un dictionnaire
+                    montant = vl.get('montant')
+                    annee = vl.get('annee', 'N/A')
+                    if montant is not None:
+                        add_payment_item('💰', 'Versement libre', f"{format_value(montant)} €", f"l'année {annee}")
+                    else:
+                        print(f"Avertissement : 'montant' manquant dans {vl}")
+                else:
+                    print(f"Avertissement : élément non valide dans versements_libres : {vl}")
         
         # Message si aucune modification ni versement libre
         if (not st.session_state.get('modifications_versements') and 
@@ -1385,8 +1402,6 @@ class PDF(FPDF):
             self.set_font_safe('Inter', 'I', 10)
             self.set_text_color(*apple_gray)
             self.multi_cell(effective_width, 6, "Aucune modification de versement ni versement libre", 0, 'L')
-        
-        self.ln(10)
         
         # Projection
         self.set_font_safe('Inter', 'B', 14)
