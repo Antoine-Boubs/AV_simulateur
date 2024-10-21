@@ -1341,33 +1341,37 @@ class PDF(FPDF):
         self.set_font_safe('Inter', '', 10)
         col_width = effective_width / 3
         
-        # En-têtes sur deux lignes
-        self.set_font_safe('Inter', '', 9)  # Réduire légèrement la taille de la police pour s'adapter à deux lignes
-        self.cell(col_width, 5, "Capital à la fin de votre", 0, 0, 'L')
-        self.cell(col_width, 5, "Capital restant après l'ensemble", 0, 0, 'L')
-        self.cell(col_width, 5, "Épargne investie", 0, 1, 'L')
-        self.cell(col_width, 5, "phase d'épargne", 0, 0, 'L')
-        self.cell(col_width, 5, "de vos projets", 0, 0, 'L')
-        self.ln(2)  # Ajouter un petit espace après les en-têtes
-        
         # Calcul des valeurs
         duree_capi_max = self.calculer_duree_capi_max(objectifs)
         capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
         capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
-        epargne_investie = resultats_df[resultats_df['Année'] == duree_capi_max]['Épargne investie'].iloc[0]  # Supposons que c'est la dernière valeur
+        epargne_investie = resultats_df['Épargne investie'].iloc[-1]  # Supposons que c'est la dernière valeur
         
+        # En-têtes sur deux lignes
+        self.set_font_safe('Inter', '', 9)  # Réduire légèrement la taille de la police pour s'adapter à deux lignes
+        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L')
+        self.cell(col_width, 5, "Capital restant", 0, 0, 'L')
+        self.cell(col_width, 5, "Pour des versements totaux", 0, 1, 'L')
+        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L')
+        self.cell(col_width, 5, "après vos projets", 0, 0, 'L')
+        self.cell(col_width, 5, "de", 0, 1, 'L')
+        self.ln(2)  # Ajouter un petit espace après les en-têtes
+        self.ln(5)  # Augmente l'espace après le titre
+
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
         self.set_text_color(*orange_color)
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)} €", 0, 0, 'L')
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)} €", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'L')
         self.set_text_color(*text_color)
-        self.cell(col_width, 6, f"{format_value(epargne_investie)} €", 0, 1, 'L')
-        
-        self.ln(10)
+        self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'L')
 
-        # Dessiner les séparateurs verticaux
-        separator_y1 = self.get_y() - 27  # Ajustez cette valeur si nécessaire
+        # Après l'affichage des valeurs
+        self.ln(10)
+        self.ln(10)  # Ajoute plus d'espace avant le graphique
+
+        # Ajuster la position des séparateurs verticaux
+        separator_y1 = self.get_y() - 37  # Augmenter cette valeur pour tenir compte des deux lignes
         separator_y2 = self.get_y()
         self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
         self.line(left_margin + col_width, separator_y1, left_margin + col_width, separator_y2)
