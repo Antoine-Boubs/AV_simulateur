@@ -1265,7 +1265,7 @@ class PDF(FPDF):
         
         self._out(op)
 
-    def add_simulation_parameters(self, params, df_resultat, objectifs):
+    def add_simulation_parameters(self, params, resultats_df, objectifs):
         self.add_page()
         
         # Marges et largeur effective
@@ -1314,8 +1314,8 @@ class PDF(FPDF):
         duree_capi_max = objectif_annee_max
     
         # Récupération des données de projection
-        capital_duree_capi_max = df_resultat.loc[df_resultat['duree'] == duree_capi_max, 'capital'].iloc[0]
-        capital_derniere_ligne = df_resultat['capital'].iloc[-1]
+        capital_duree_capi_max = resultats_df.loc[resultats_df['duree'] == duree_capi_max, 'capital'].iloc[0]
+        capital_derniere_ligne = resultats_df['capital'].iloc[-1]
     
         # Tableau de projection
         projection_data = [
@@ -1347,9 +1347,9 @@ class PDF(FPDF):
         chart_y = self.get_y()
     
         # Préparation des données pour le graphique
-        years = df_resultat['annee'].tolist()
-        capital_values = df_resultat['capital'].tolist()
-        stocks_percentage = df_resultat['pourcentage_actions'].tolist()
+        years = resultats_df['annee'].tolist()
+        capital_values = resultats_df['capital'].tolist()
+        stocks_percentage = resultats_df['pourcentage_actions'].tolist()
     
         # Dessiner le graphique
         max_capital = max(capital_values)
@@ -1857,7 +1857,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
                          "Veuillez consulter un professionnel pour des conseils personnalisés.")
 
-    pdf.add_simulation_parameters(params, df_resultat, objectifs)
+    # Génération des résultats
+    resultats_df = optimiser_objectifs(params, objectifs)
+    
+    # Appel de la méthode avec les arguments requis
+    pdf.add_simulation_parameters(params, resultats_df, objectifs)
 
     pdf.add_nalo_page()
 
