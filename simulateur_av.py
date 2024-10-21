@@ -1388,7 +1388,39 @@ class PDF(FPDF):
         
         self.ln(10)
         
+        # Projection
+        self.set_font_safe('Inter', 'B', 14)
+        self.cell(effective_width, 10, 'Projection', 0, 1, 'L')
+        self.ln(2)
+
+        # Informations de projection sur 3 colonnes
+        self.set_font_safe('Inter', '', 9)
+        col_width = effective_width / 3
+        # En-têtes
+        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L')
+        self.cell(col_width, 5, "Capital restant", 0, 0, 'L')
+        self.cell(col_width, 5, "Pour des versements totaux", 0, 1, 'L')
+        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L')
+        self.cell(col_width, 5, "après vos projets", 0, 0, 'L')
+        self.cell(col_width, 5, "de", 0, 1, 'L')
+        self.ln(2)
+        self.ln(3)  # Reduced space before values
         
+        # Calcul des valeurs
+        duree_capi_max = self.calculer_duree_capi_max(objectifs)
+        capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
+        capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
+        epargne_investie = resultats_df[resultats_df['Année'] == duree_capi_max]['Épargne investie'].iloc[0]  # Supposons que c'est la dernière valeur
+        
+        # Affichage des valeurs
+        self.set_font_safe('Inter', 'B', 10)
+        self.set_text_color(*orange_color)
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'L')
+        self.set_text_color(*text_color)
+        self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'L')
+        
+        self.ln(10)
 
         # Dessiner les séparateurs verticaux
         separator_y1 = self.get_y() - 27  # Reduced divider height
