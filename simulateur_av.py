@@ -1188,7 +1188,7 @@ class PDF(FPDF):
             for obj in objectives
         ])
 
-    def add_info_section(self, title, content):
+    def add_info_section(self, title, content, effective_width):
         apple_blue = (0, 122, 255)
         apple_dark_gray = (60, 60, 67)
         
