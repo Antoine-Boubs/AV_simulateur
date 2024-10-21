@@ -1275,10 +1275,6 @@ class PDF(FPDF):
         self.add_nalo_logo(right_margin)
     
     def get_image_dimensions(self, image_path):
-        """
-        Obtient les dimensions d'une image.
-        Vous devrez peut-être installer Pillow: pip install Pillow
-        """
         from PIL import Image
         with Image.open(image_path) as img:
             return img.size
@@ -1344,10 +1340,16 @@ class PDF(FPDF):
         # Informations de projection sur 3 colonnes
         self.set_font_safe('Inter', '', 10)
         col_width = effective_width / 3
-        # En-têtes
-        self.cell(col_width, 6, "Capital fin d'année à durée capi max", 0, 0, 'L')
-        self.cell(col_width, 6, "Capital fin d'année (dernière ligne)", 0, 0, 'L')
-        self.cell(col_width, 6, "Épargne investie", 0, 1, 'L')
+        
+        # En-têtes sur deux lignes
+        self.set_font_safe('Inter', '', 9)  # Réduire légèrement la taille de la police pour s'adapter à deux lignes
+        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L')
+        self.cell(col_width, 5, "Capital restant", 0, 0, 'L')
+        self.cell(col_width, 5, "Épargne", 0, 1, 'L')
+        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L')
+        self.cell(col_width, 5, "après vos projets", 0, 0, 'L')
+        self.cell(col_width, 5, "investie", 0, 1, 'L')
+        self.ln(2)  # Ajouter un petit espace après les en-têtes
         
         # Calcul des valeurs
         duree_capi_max = self.calculer_duree_capi_max(objectifs)
@@ -1364,6 +1366,13 @@ class PDF(FPDF):
         self.cell(col_width, 6, f"{format_value(epargne_investie)} €", 0, 1, 'L')
         
         self.ln(10)
+
+        # Dessiner les séparateurs verticaux
+        separator_y1 = self.get_y() - 22  # Ajustez cette valeur si nécessaire
+        separator_y2 = self.get_y()
+        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
+        self.line(left_margin + col_width, separator_y1, left_margin + col_width, separator_y2)
+        self.line(left_margin + 2 * col_width, separator_y1, left_margin + 2 * col_width, separator_y2)
     
        
     
@@ -1435,7 +1444,7 @@ class PDF(FPDF):
     def calculer_duree_capi_max(self, objectifs):
         if not objectifs:
             return 0  # or some default value
-        return max(obj['annee'] + obj['duree_retrait'] for obj in objectifs)
+        return max(obj['annee'] for obj in objectifs)
 
 
     def add_nalo_page(self):
