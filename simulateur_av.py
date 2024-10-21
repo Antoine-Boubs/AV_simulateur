@@ -1265,7 +1265,7 @@ class PDF(FPDF):
         
         self._out(op)
 
-    def add_simulation_parameters(self):
+    def add_simulation_parameters(self, params, df_resultat, objectifs):
         self.add_page()
         
         # Marges et largeur effective
@@ -1297,49 +1297,38 @@ class PDF(FPDF):
         self.cell(effective_width, 10, 'Paramètres & détails du projet', 0, 1, 'L')
         self.ln(2)
     
-        # Tableau des paramètres
-        self.set_font_safe('Inter', '', 10)
-        param_data = [
-            ["Horizon de votre projet", self.horizon, "Premier versement", f"{self.initial_investment} €"],
-            ["Versements programmés", f"{self.monthly_savings} € par mois", "Type de projet", self.project_type],
-            ["Portefeuille", self.portfolio_type, "", ""]
-        ]
+        # Informations du client
+        self.add_info_section("Informations du client", [
+            f"Capital initial : {params['capital_initial']} €",
+            f"Versement mensuel : {params['versement_mensuel']} €",
+            f"Rendement annuel : {params['rendement_annuel']*100:.2f}%"
+        ])
         
-        for row in param_data:
-            for i in range(0, len(row), 2):
-                self.set_font_safe('Inter', 'B', 10)
-                self.cell(effective_width/4, 6, row[i], 0, 0)
-                self.set_font_safe('Inter', '', 10)
-                self.cell(effective_width/4, 6, row[i+1], 0, 0)
-            self.ln()
-        self.ln(5)
-    
         # Projection
         self.set_font_safe('Inter', 'B', 14)
         self.cell(effective_width, 10, 'Projection', 0, 1, 'L')
         self.ln(2)
     
-        # Tableau de projection
-        headers = ["sans sécurisation progressive", "avec sécurisation progressive", "pour des versements totaux de"]
-        self.set_font_safe('Inter', '', 10)
-        for header in headers:
-            self.cell(effective_width/3, 6, header, 0, 0, 'C')
-        self.ln()
+        # Calcul de duree_capi_max
+        objectif_annee_max = calculer_duree_capi_max(objectifs)
+        duree_capi_max = objectif_annee_max
     
+        # Récupération des données de projection
+        capital_duree_capi_max = df_resultat.loc[df_resultat['duree'] == duree_capi_max, 'capital'].iloc[0]
+        capital_derniere_ligne = df_resultat['capital'].iloc[-1]
+    
+        # Tableau de projection
         projection_data = [
-            [f"{self.return_without_securization:.2f} %/an", f"{self.return_with_securization:.2f} %/an", ""],
-            [f"{self.capital_without_securization:.0f} €", f"{self.capital_with_securization:.0f} €", f"{self.total_contributions:.0f} €"]
+            [f"Capital fin d'année à durée capi max : {capital_duree_capi_max:.0f} €"],
+            [f"Capital fin d'année à la dernière ligne du dataframe : {capital_derniere_ligne:.0f} €"]
         ]
     
         self.set_font_safe('Inter', 'B', 12)
         self.set_text_color(*orange_color)
         for row in projection_data:
-            for i, cell in enumerate(row):
-                if i == 2 and cell:  # Pour la dernière colonne (versements totaux)
-                    self.set_text_color(*text_color)
-                self.cell(effective_width/3, 8, cell, 0, 0, 'C')
-            self.ln()
-        
+            self.cell(effective_width, 8, row[0], 0, 1, 'L')
+        self.ln(5)
+    
         self.set_text_color(*text_color)
         self.ln(5)
     
@@ -1357,10 +1346,10 @@ class PDF(FPDF):
         chart_x = left_margin
         chart_y = self.get_y()
     
-        # Données du graphique (à adapter selon vos données réelles)
-        years = list(range(2024, 2049, 3))
-        stocks_percentage = [90, 85, 80, 75, 70, 65, 60, 55, 50]
-        capital_values = [15000, 30000, 50000, 75000, 100000, 130000, 170000, 210000, 240349]
+        # Préparation des données pour le graphique
+        years = df_resultat['annee'].tolist()
+        capital_values = df_resultat['capital'].tolist()
+        stocks_percentage = df_resultat['pourcentage_actions'].tolist()
     
         # Dessiner le graphique
         max_capital = max(capital_values)
@@ -1388,8 +1377,9 @@ class PDF(FPDF):
         self.set_font_safe('Inter', '', 8)
         self.set_text_color(*text_color)
         for i, year in enumerate(years):
-            x = chart_x + (i * chart_width / (len(years) - 1))
-            self.text(x, chart_y + chart_height + 5, str(year))
+            if i % 3 == 0:  # Afficher une année sur trois pour éviter l'encombrement
+                x = chart_x + (i * chart_width / (len(years) - 1))
+                self.text(x, chart_y + chart_height + 5, str(year))
     
         # Légende
         self.set_font_safe('Inter', '', 8)
@@ -1407,6 +1397,18 @@ class PDF(FPDF):
         logo_x = self.w - right_margin - logo_width
         logo_y = 10
         self.image('logo_path', logo_x, logo_y, logo_width, logo_height)
+    
+    def add_info_section(self, title, info_list):
+        self.set_font_safe('Inter', 'B', 14)
+        self.cell(self.effective_width, 10, title, 0, 1, 'L')
+        self.ln(2)
+        self.set_font_safe('Inter', '', 10)
+        for item in info_list:
+            self.multi_cell(self.effective_width, 5, item)
+            self.ln(2)
+    
+    def calculer_duree_capi_max(objectifs):
+        return max(objectifs.keys())
 
 
     def add_nalo_page(self):
