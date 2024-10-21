@@ -1220,7 +1220,7 @@ class PDF(FPDF):
             details = [
                 f"Montant annuel : {format_value(obj['montant_annuel'])} €",
                 f"Durée : {obj['duree_retrait']} ans",
-                f"Année de réalisation : {obj['annee']}"
+                f"Horizon d'investissement : {obj['annee']}"
             ]
             for detail in details:
                 self.set_x(left_margin + 10)
