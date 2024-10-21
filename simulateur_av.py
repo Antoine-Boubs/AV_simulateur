@@ -1292,24 +1292,7 @@ class PDF(FPDF):
         # Chargement des données
         df = pd.read_csv('assets/AV_succession.pdf')
     
-        # En-tête du tableau
-        self.set_font_safe('Inter', 'B', 10)
-        self.set_fill_color(*header_color)
-        self.set_text_color(255, 255, 255)  # Texte blanc pour l'en-tête
-        col_width = effective_width / 3
-        self.cell(col_width, 8, 'Bénéficiaire', 1, 0, 'C', 1)
-        self.cell(col_width, 8, 'Abattement', 1, 0, 'C', 1)
-        self.cell(col_width, 8, 'Imposition après abattement', 1, 1, 'C', 1)
-    
-        # Contenu du tableau
-        self.set_font_safe('Inter', '', 9)
-        self.set_text_color(*text_color)
-        for _, row in df.iterrows():
-            self.cell(col_width, 6, str(row['Bénéficiaire']), 1, 0, 'L')
-            self.cell(col_width, 6, str(row['Abattement']), 1, 0, 'C')
-            self.cell(col_width, 6, str(row['Imposition']), 1, 1, 'C')
-    
-        self.ln(5)
+        
     
         # Note explicative
         self.set_font_safe('Inter', 'I', 8)
