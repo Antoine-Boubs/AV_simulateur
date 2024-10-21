@@ -1308,12 +1308,13 @@ class PDF(FPDF):
         self.cell(effective_width, 10, 'Paramètres & détails du projet', 0, 1, 'L')
         self.ln(2)
     
-        # Informations du client
-        self.add_simulation_info_section("Informations du client", [
-            f"Capital initial : {params['capital_initial']} €",
-            f"Versement mensuel : {params['versement_mensuel']} €",
-            f"Rendement annuel : {params['rendement_annuel']*100:.2f}%"
-        ], effective_width)
+        # Informations du client sur 3 colonnes
+        self.set_font_safe('Inter', '', 10)
+        col_width = effective_width / 3
+        self.cell(col_width, 6, f"Capital initial : {params['capital_initial']} €", 0, 0)
+        self.cell(col_width, 6, f"Versement mensuel : {params['versement_mensuel']} €", 0, 0)
+        self.cell(col_width, 6, f"Rendement annuel : {params['rendement_annuel']*100:.2f}%", 0, 1)
+        self.ln(10)
         
         # Projection
         self.set_font_safe('Inter', 'B', 14)
@@ -1348,21 +1349,21 @@ class PDF(FPDF):
         self.cell(effective_width/2, 6, "Activée", 0, 1)
         self.ln(10)
     
-        # Graphique d'évolution du capital
-        self.draw_capital_evolution_chart(resultats_df, effective_width, left_margin)
+        # Graphique d'évolution du capital (taille réduite)
+        self.draw_capital_evolution_chart(resultats_df, effective_width, left_margin, clean_and_convert)
     
         # Ajouter le logo Nalo
         self.add_nalo_logo(right_margin)
 
-    def draw_capital_evolution_chart(self, resultats_df, effective_width, left_margin):
+    def draw_capital_evolution_chart(self, resultats_df, effective_width, left_margin, clean_and_convert):
         chart_width = effective_width
-        chart_height = 80
+        chart_height = 60  # Réduire la hauteur du graphique
         chart_x = left_margin
         chart_y = self.get_y()
     
         years = resultats_df['Année'].tolist()
-        capital_values = [self.clean_and_convert(val) for val in resultats_df['Capital fin d\'année (NET)'].tolist()]
-        stocks_percentage = [self.clean_and_convert(val) for val in resultats_df['Épargne investie'].tolist()]
+        capital_values = [clean_and_convert(val) for val in resultats_df['Capital fin d\'année (NET)'].tolist()]
+        stocks_percentage = [clean_and_convert(val) for val in resultats_df['Épargne investie'].tolist()]
     
         max_capital = max(capital_values)
         max_percentage = 100
