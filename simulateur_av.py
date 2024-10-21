@@ -1218,9 +1218,9 @@ class PDF(FPDF):
             self.set_font('Inter', '', 10)
             self.set_text_color(*apple_gray)
             details = [
-                f"Montant annuel : {format_value(obj['montant_annuel'])} €",
-                f"Durée : {obj['duree_retrait']} ans",
-                f"Horizon d'investissement : {obj['annee']}"
+                f"Horizon d'investissement : {obj['annee']} ans",
+                f"Durée de rachat : {obj['duree_retrait']} ans",
+                f"Montant annuel de rachat : {format_value(obj['montant_annuel'])}",
             ]
             for detail in details:
                 self.set_x(left_margin + 10)
