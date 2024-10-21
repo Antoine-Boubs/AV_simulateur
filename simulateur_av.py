@@ -1314,8 +1314,8 @@ class PDF(FPDF):
         duree_capi_max = objectif_annee_max
 
         # Récupération des données de projection
-        capital_duree_capi_max = resultats_df.loc[resultats_df['duree'] == duree_capi_max, 'capital'].iloc[0]
-        capital_derniere_ligne = resultats_df['capital'].iloc[-1]
+        capital_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['capital_fin_annee'].iloc[0]
+        capital_derniere_ligne = resultats_df['capital_fin_annee'].iloc[-1]
 
         # Tableau de projection
         projection_data = [
