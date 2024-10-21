@@ -1371,11 +1371,11 @@ class PDF(FPDF):
         self.ln(10)  # Ajoute plus d'espace avant le graphique
 
         # Ajuster la position des séparateurs verticaux
-        separator_y1 = self.get_y() - 37  # Augmenter cette valeur pour tenir compte des deux lignes
+        separator_y1 = self.get_y() - 24  # Augmenter cette valeur pour tenir compte des deux lignes
         separator_y2 = self.get_y()
         self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
         self.line(left_margin + col_width, separator_y1, left_margin + col_width, separator_y2)
-        self.line(left_margin + 2 * col_width, separator_y1, left_margin + 2 * col_width, separator_y2)
+        self.line(left_margin + 5 * col_width, separator_y1, left_margin + 5 * col_width, separator_y2)
     
        
     
