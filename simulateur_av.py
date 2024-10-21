@@ -1360,18 +1360,18 @@ class PDF(FPDF):
             
             self.ln(5)  # Espace entre les éléments
 
-            # Ajout des modifications de versements
-            for mod in modifications:
-                if mod['montant'] == 0:
-                    add_payment_item('Versements arrêtés', '', f"de l'année {mod['debut']} à {mod['fin']}")
-                else:
-                    add_payment_item('Versements ajustés', f"{mod['montant']:.2f}", f"de l'année {mod['debut']} à {mod['fin']}")
-        
-            # Ajout des versements libres
-            for vl in versements_libres:
-                add_payment_item('Versement libre', f"{vl['montant']:.2f}", f"l'année {vl['annee']}")
-        
-            self.ln(10)  # Espace après la section
+        # Ajout des modifications de versements
+        for mod in modifications:
+            if mod['montant'] == 0:
+                add_payment_item('Versements arrêtés', '', f"de l'année {mod['debut']} à {mod['fin']}")
+            else:
+                add_payment_item('Versements ajustés', f"{mod['montant']:.2f}", f"de l'année {mod['debut']} à {mod['fin']}")
+    
+        # Ajout des versements libres
+        for vl in versements_libres:
+            add_payment_item('Versement libre', f"{vl['montant']:.2f}", f"l'année {vl['annee']}")
+    
+        self.ln(10)  # Espace après la section
         
         # Affichage des versements libres
         if 'versements_libres' in st.session_state and st.session_state.versements_libres:
