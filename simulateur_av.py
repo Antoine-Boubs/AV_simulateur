@@ -1381,12 +1381,7 @@ class PDF(FPDF):
         else:
             self.multi_cell(effective_width, 6, "Aucune modification de versement", 0, 'L')
             
-                self.ln(10)  # Espace après la section
-                
-                # Affichage des versements libres
-                if 'versements_libres' in st.session_state and st.session_state.versements_libres:
-                    for vl in st.session_state.versements_libres:
-                        add_payment_item('Versement libre', f"{format_value(vl['montant'])}", f"l'année {vl['annee']}")
+            
         
         # Message si aucune modification ni versement libre
         if (not st.session_state.get('modifications_versements') and 
