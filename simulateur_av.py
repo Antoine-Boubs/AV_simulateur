@@ -1279,9 +1279,7 @@ class PDF(FPDF):
         effective_width = self.w - left_margin - right_margin
     
         # Couleurs
-        text_color = (29, 29, 31)
         title_color = (0, 0, 0)
-        header_color = (249, 115, 22)  # Orange pour l'en-tête
     
         # Titre principal
         self.set_font_safe('Inter', 'B', 18)
@@ -1289,19 +1287,39 @@ class PDF(FPDF):
         self.cell(effective_width, 10, 'Succession en assurance-vie', 0, 1, 'L')
         self.ln(5)
     
-        # Chargement des données
-        df = pd.read_csv('assets/AV_succession.png')
+        # Chemin de l'image PNG
+        image_path = 'assets/av_succession.png'
     
-        
+        # Obtenir les dimensions de l'image
+        img_width, img_height = self.get_image_dimensions(image_path)
+    
+        # Calculer le ratio pour ajuster l'image à la largeur effective
+        ratio = effective_width / img_width
+        new_width = effective_width
+        new_height = img_height * ratio
+    
+        # Insérer l'image
+        self.image(image_path, x=left_margin, y=self.get_y(), w=new_width, h=new_height)
+    
+        # Déplacer le curseur après l'image
+        self.set_y(self.get_y() + new_height + 10)
     
         # Note explicative
         self.set_font_safe('Inter', 'I', 8)
-        self.multi_cell(effective_width, 4, "* Pour les enfants et autres bénéficiaires (sauf époux/partenaire de pacs), "
-                                            "l'imposition est de 20% pour les premiers 700 000€ après l'abattement de 152 500€, "
-                                            "puis 31,25% au-delà.")
+        self.multi_cell(effective_width, 4, "* Les informations ci-dessus sont extraites du fichier image. "
+                                            "Veuillez vous référer au document original pour plus de détails.")
     
         # Ajouter le logo Nalo
         self.add_nalo_logo(right_margin)
+    
+    def get_image_dimensions(self, image_path):
+        """
+        Obtient les dimensions d'une image.
+        Vous devrez peut-être installer Pillow: pip install Pillow
+        """
+        from PIL import Image
+        with Image.open(image_path) as img:
+            return img.size
 
     
 
