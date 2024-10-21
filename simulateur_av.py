@@ -1285,7 +1285,7 @@ class PDF(FPDF):
 
     
 
-    def add_simulation_parameters(self, params, resultats_df):
+    def add_simulation_parameters(self, params, resultats_df, objectifs):
         self.add_page()
         
         # Marges et largeur effective
@@ -1353,15 +1353,15 @@ class PDF(FPDF):
         duree_capi_max = self.calculer_duree_capi_max(objectifs)
         capital_fin_annee_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
         capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
-        epargne_investie = resultats_df['Épargne investie'].iloc[-1]  # Supposons que c'est la dernière valeur
+        epargne_investie = resultats_df[resultats_df['Année'] == duree_capi_max]['Épargne investie'].iloc[0]  # Supposons que c'est la dernière valeur
         
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
         self.set_text_color(*orange_color)
-        self.cell(col_width, 6, f"{self.format_value(capital_fin_annee_duree_capi_max)} €", 0, 0, 'L')
-        self.cell(col_width, 6, f"{self.format_value(capital_fin_annee_derniere_ligne)} €", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)} €", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)} €", 0, 0, 'L')
         self.set_text_color(*text_color)
-        self.cell(col_width, 6, f"{self.format_value(epargne_investie)} €", 0, 1, 'L')
+        self.cell(col_width, 6, f"{format_value(epargne_investie)} €", 0, 1, 'L')
         
         self.ln(10)
     
@@ -1682,17 +1682,18 @@ class PDF(FPDF):
         self.ln(10)
 
 
-def format_value(value):
+def format_value(self, value):
     if isinstance(value, (int, float)):
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
         return f"{formatted} €"
     elif isinstance(value, str):
         try:
             num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
-            return format_value(num_value)
+            return self.format_value(num_value)
         except ValueError:
             return value
     return str(value)
+
 
 def generate_pdf_report(resultats_df, params, objectives):
     data = [
@@ -1895,7 +1896,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     resultats_df = optimiser_objectifs(params, objectifs)
     
     # Appel de la méthode avec les arguments requis
-    pdf.add_simulation_parameters(params, resultats_df)
+    pdf.add_simulation_parameters(params, resultats_df, objectives)
 
     pdf.add_nalo_page()
 
