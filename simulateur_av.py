@@ -1285,7 +1285,7 @@ class PDF(FPDF):
 
     def add_simulation_parameters(self, params, resultats_df):
         self.add_page()
-        
+    
         # Marges et largeur effective
         left_margin = 20
         right_margin = 15
@@ -1297,6 +1297,12 @@ class PDF(FPDF):
         text_color = (29, 29, 31)
         title_color = (0, 0, 0)
         orange_color = (249, 115, 22)
+    
+        # Fonction helper pour formater les valeurs
+        def format_value(value):
+            if isinstance(value, (int, float)):
+                return f"{value:,.2f}"
+            return str(value)
     
         # Titre principal
         self.set_font_safe('Inter', 'B', 18)
@@ -1318,13 +1324,13 @@ class PDF(FPDF):
         # Informations du client sur 3 colonnes
         self.set_font_safe('Inter', '', 10)
         col_width = effective_width / 3
-        self.cell(col_width, 6, f"Capital initial :", 0, 0)
-        self.cell(col_width, 6, f"Versement mensuel :", 0, 0)
-        self.cell(col_width, 6, f"Rendement annuel :", 0, 1)
+        self.cell(col_width, 6, "Capital initial :", 0, 0)
+        self.cell(col_width, 6, "Versement mensuel :", 0, 0)
+        self.cell(col_width, 6, "Rendement annuel :", 0, 1)
     
         self.set_font_safe('Inter', 'B', 10)
-        self.cell(col_width, 6, f"{params['capital_initial']} €", 0, 0)
-        self.cell(col_width, 6, f"{params['versement_mensuel']} €", 0, 0)
+        self.cell(col_width, 6, f"{format_value(params['capital_initial'])} €", 0, 0)
+        self.cell(col_width, 6, f"{format_value(params['versement_mensuel'])} €", 0, 0)
         self.cell(col_width, 6, f"{params['rendement_annuel']*100:.2f}%", 0, 1)
         self.ln(10)
         
@@ -1338,14 +1344,17 @@ class PDF(FPDF):
         capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
         
         projection_data = [
-            [f"Capital fin d'année à durée capi max : {capital_fin_annee_duree_capi_max:,.2f} €"],
-            [f"Capital fin d'année à la dernière ligne du dataframe : {capital_fin_annee_derniere_ligne:,.2f} €"]
+            [f"Capital fin d'année à durée capi max : {format_value(capital_fin_annee_duree_capi_max)} €"],
+            [f"Capital fin d'année à la dernière ligne du dataframe : {format_value(capital_fin_annee_derniere_ligne)} €"]
         ]
     
         self.set_font_safe('Inter', 'B', 12)
         self.set_text_color(*orange_color)
         for row in projection_data:
             self.cell(effective_width, 8, row[0], 0, 1, 'L')
+        self.ln(5)
+    
+        self.set_text_color(*text_color)
         self.ln(5)
     
         # Ajout du graphique en cascade
@@ -1355,8 +1364,14 @@ class PDF(FPDF):
         chart_y = self.get_y()
     
         # Création et ajout du graphique en cascade
-        chart_buffer = fig_to_img_buffer(create_waterfall_chart(resultats_df))
-        self.image(chart_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+        try:
+            chart_buffer = fig_to_img_buffer(create_waterfall_chart(resultats_df))
+            self.image(chart_buffer, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+        except Exception as e:
+            print(f"Erreur lors de la création du graphique en cascade : {e}")
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(*text_color)
+            self.cell(effective_width, 10, "Erreur lors de la création du graphique", 0, 1, 'C')
     
         self.ln(chart_height + 20)  # Espace après le graphique
     
