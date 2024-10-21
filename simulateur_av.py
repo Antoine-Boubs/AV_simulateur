@@ -1326,30 +1326,30 @@ class PDF(FPDF):
         self.cell(col_width, 6, f"{params['rendement_annuel']*100:.2f}%", 0, 1)
         self.ln(10)
 
-        # Ajout des modifications de versements et des versements libres
+        # Ajout des modifications de versements
         self.set_font_safe('Inter', 'B', 12)
-        self.cell(effective_width, 8, 'Modifications de versements et versements libres', 0, 1, 'L')
+        self.cell(effective_width, 8, 'Modifications de versements', 0, 1, 'L')
         self.ln(2)
         
         self.set_font_safe('Inter', '', 10)
-        
-        # Affichage des modifications de versements
-        if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
-            for mv in st.session_state.modifications_versements:
+        if 'modifications_versements' in params and params['modifications_versements']:
+            for mv in params['modifications_versements']:
                 if mv['montant'] == 0:
                     self.multi_cell(effective_width, 6, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
                 else:
-                    self.multi_cell(effective_width, 6, f"Versements ajustés à {format_value(mv['montant'])} € de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
-        
-        # Affichage des versements libres
-        if 'versements_libres' in st.session_state and st.session_state.versements_libres:
-            for vl in st.session_state.versements_libres:
+                    self.multi_cell(effective_width, 6, f"Versements modifiés à {format_value(mv['montant'])} € de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
+        elif 'versements_libres' in params and params['versements_libres']:
+            for vl in params['versements_libres']:
                 self.multi_cell(effective_width, 6, f"Versement libre de {format_value(vl['montant'])} € l'année {vl['annee']}", 0, 'L')
+        else:
+            self.multi_cell(effective_width, 6, "Aucune modification de versement", 0, 'L')
         
-        # Message si aucune modification ni versement libre
-        if (not st.session_state.get('modifications_versements') and 
-            not st.session_state.get('versements_libres')):
-            self.multi_cell(effective_width, 6, "Aucune modification de versement ni versement libre", 0, 'L')
+        # Dessiner les séparateurs verticaux
+        separator_y1 = self.get_y() - 27  # Reduced divider height
+        separator_y2 = self.get_y()
+        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
+        self.line(left_margin + col_width - 5, separator_y1, left_margin + col_width - 5, separator_y2)
+        self.line(left_margin + 2 * col_width - 5, separator_y1, left_margin + 2 * col_width - 5, separator_y2)
         
         self.ln(10)
         
@@ -1717,13 +1717,13 @@ class PDF(FPDF):
 def format_value(value):
     if isinstance(value, (int, float)):
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
-        return f"{formatted} €"
+        return f"{formatted}"  # Removed the euro symbol here
     elif isinstance(value, str):
         try:
             num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
             return format_value(num_value)
         except ValueError:
-            return value.replace("€", "").strip() + " €"
+            return value.replace("€", "").strip()  # Removed the euro symbol here as well
     return str(value)
 
 
