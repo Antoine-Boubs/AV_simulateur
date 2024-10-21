@@ -1317,11 +1317,28 @@ class PDF(FPDF):
         capital_duree_capi_max = resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0]
         capital_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
 
+        # Vérification et conversion des types
+        try:
+            capital_duree_capi_max = float(capital_duree_capi_max)
+            capital_derniere_ligne = float(capital_derniere_ligne)
+        except ValueError:
+            print("Erreur de conversion : capital_duree_capi_max =", capital_duree_capi_max)
+            print("Erreur de conversion : capital_derniere_ligne =", capital_derniere_ligne)
+            # Si la conversion échoue, utilisez les valeurs comme des chaînes
+            capital_duree_capi_max = str(capital_duree_capi_max)
+            capital_derniere_ligne = str(capital_derniere_ligne)
+    
         # Tableau de projection
-        projection_data = [
-            [f"Capital fin d'année à durée capi max : {capital_duree_capi_max:.0f} €"],
-            [f"Capital fin d'année à la dernière ligne du dataframe : {capital_derniere_ligne:.0f} €"]
-        ]
+        if isinstance(capital_duree_capi_max, float) and isinstance(capital_derniere_ligne, float):
+            projection_data = [
+                [f"Capital fin d'année à durée capi max : {capital_duree_capi_max:.0f} €"],
+                [f"Capital fin d'année à la dernière ligne du dataframe : {capital_derniere_ligne:.0f} €"]
+            ]
+        else:
+            projection_data = [
+                [f"Capital fin d'année à durée capi max : {capital_duree_capi_max} €"],
+                [f"Capital fin d'année à la dernière ligne du dataframe : {capital_derniere_ligne} €"]
+            ]
 
         self.set_font_safe('Inter', 'B', 12)
         self.set_text_color(*orange_color)
@@ -1347,9 +1364,13 @@ class PDF(FPDF):
         chart_y = self.get_y()
 
         # Préparation des données pour le graphique
-        years = resultats_df['annee'].tolist()
-        capital_values = resultats_df['capital'].tolist()
-        stocks_percentage = resultats_df['pourcentage_actions'].tolist()
+        years = resultats_df['Année'].tolist()
+        capital_values = resultats_df['Capital fin d\'année (NET)'].tolist()
+        stocks_percentage = resultats_df['Épargne investie'].tolist()
+    
+        # Conversion des valeurs en nombres si possible
+        capital_values = [float(val) if isinstance(val, str) else val for val in capital_values]
+        stocks_percentage = [float(val) if isinstance(val, str) else val for val in stocks_percentage]
 
         # Dessiner le graphique
         max_capital = max(capital_values)
