@@ -1290,7 +1290,7 @@ class PDF(FPDF):
         self.ln(5)
     
         # Chargement des données
-        df = pd.read_csv('assets/AV_succession.pdf')
+        df = pd.read_csv('assets/AV_succession.png')
     
         
     
