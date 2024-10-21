@@ -1365,8 +1365,6 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
-            # Assurez-vous que ces fonctions sont importées correctement
-            from your_chart_module import create_waterfall_chart, fig_to_img_buffer
             
             waterfall_chart = create_waterfall_chart(resultats_df)
             chart_buffer = fig_to_img_buffer(waterfall_chart)
