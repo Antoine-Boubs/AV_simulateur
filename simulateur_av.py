@@ -1296,12 +1296,6 @@ class PDF(FPDF):
         title_color = (0, 0, 0)
         orange_color = (249, 115, 22)
     
-        # Fonction helper pour formater les valeurs
-        def format_value(value):
-            if isinstance(value, (int, float)):
-                return f"{value:,.2f}"
-            return str(value)
-    
         # Titre principal
         self.set_font_safe('Inter', 'B', 18)
         self.set_text_color(*title_color)
@@ -1331,6 +1325,23 @@ class PDF(FPDF):
         self.cell(col_width, 6, f"{format_value(params['versement_mensuel'])} €", 0, 0)
         self.cell(col_width, 6, f"{params['rendement_annuel']*100:.2f}%", 0, 1)
         self.ln(10)
+
+        # Ajout des modifications de versements
+        self.set_font_safe('Inter', 'B', 12)
+        self.cell(effective_width, 8, 'Modifications de versements', 0, 1, 'L')
+        self.ln(2)
+
+        self.set_font_safe('Inter', '', 10)
+        if 'modifications_versements' in params and params['modifications_versements']:
+            for mv in params['modifications_versements']:
+                if mv['montant'] == 0:
+                    self.cell(effective_width, 6, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 1)
+                else:
+                    self.cell(effective_width, 6, f"Versements modifiés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}", 0, 1)
+        else:
+            self.cell(effective_width, 6, "Aucune modification de versement", 0, 1)
+        
+        self.ln(10)
         
         # Projection
         self.set_font_safe('Inter', 'B', 14)
@@ -1338,8 +1349,17 @@ class PDF(FPDF):
         self.ln(2)
 
         # Informations de projection sur 3 colonnes
-        self.set_font_safe('Inter', '', 10)
+        self.set_font_safe('Inter', '', 9)
         col_width = effective_width / 3
+        # En-têtes
+        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L')
+        self.cell(col_width, 5, "Capital restant", 0, 0, 'L')
+        self.cell(col_width, 5, "Pour des versements totaux", 0, 1, 'L')
+        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L')
+        self.cell(col_width, 5, "après vos projets", 0, 0, 'L')
+        self.cell(col_width, 5, "de", 0, 1, 'L')
+        self.ln(2)
+        self.ln(3)  # Reduced space before values
         
         # Calcul des valeurs
         duree_capi_max = self.calculer_duree_capi_max(objectifs)
@@ -1347,38 +1367,27 @@ class PDF(FPDF):
         capital_fin_annee_derniere_ligne = resultats_df['Capital fin d\'année (NET)'].iloc[-1]
         epargne_investie = resultats_df['Épargne investie'].iloc[-1]  # Supposons que c'est la dernière valeur
         
-        # En-têtes sur deux lignes
-        self.set_font_safe('Inter', '', 9)
-        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L', 0, '', 1, 0, 'L', 5)
-        self.cell(col_width, 5, "Capital restant", 0, 0, 'L', 0, '', 1, 0, 'L', 5)
-        self.cell(col_width, 5, "Pour des versements totaux", 0, 1, 'L', 0, '', 1, 0, 'L', 5)
-        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L', 0, '', 1, 0, 'L', 5)
-        self.cell(col_width, 5, "après vos projets", 0, 0, 'L', 0, '', 1, 0, 'L', 5)
-        self.cell(col_width, 5, "de", 0, 1, 'L', 0, '', 1, 0, 'L', 5)
-        self.ln(2)
-        self.ln(3)  # Reduced space before values
-
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
         self.set_text_color(*orange_color)
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'L', 0, '', 1, 0, 'L', 5)
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'L', 0, '', 1, 0, 'L', 5)
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'L')
         self.set_text_color(*text_color)
-        self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'L', 0, '', 1, 0, 'L', 5)
-
-        # Après l'affichage des valeurs
+        self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'L')
+        
         self.ln(10)
-        self.ln(10)  # Ajoute plus d'espace avant le graphique
 
-        # Ajuster la position des séparateurs verticaux
+        # Dessiner les séparateurs verticaux
         separator_y1 = self.get_y() - 27  # Reduced divider height
         separator_y2 = self.get_y()
         self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
         self.line(left_margin + col_width, separator_y1, left_margin + col_width, separator_y2)
         self.line(left_margin + 2 * col_width, separator_y1, left_margin + 2 * col_width, separator_y2)
-    
-       
-    
+
+        # Vérifier s'il reste suffisamment d'espace pour le graphique
+        if self.get_y() + 100 > self.h - 20:  # 100 est une estimation de la hauteur du graphique
+            self.add_page()
+
         # Ajout du graphique en cascade
         chart_width = effective_width
         chart_height = 100  # Ajustez cette valeur selon vos besoins
@@ -1694,14 +1703,14 @@ class PDF(FPDF):
         self.ln(10)
 
 
-def format_value(self, value):
+def format_value(value):
     if isinstance(value, (int, float)):
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
-        return f"{formatted} €"
+        return f"{formatted}"
     elif isinstance(value, str):
         try:
             num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
-            return self.format_value(num_value)
+            return format_value(num_value)
         except ValueError:
             return value
     return str(value)
