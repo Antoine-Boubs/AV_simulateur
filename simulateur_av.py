@@ -1348,34 +1348,34 @@ class PDF(FPDF):
         epargne_investie = resultats_df['Épargne investie'].iloc[-1]  # Supposons que c'est la dernière valeur
         
         # En-têtes sur deux lignes
-        self.set_font_safe('Inter', '', 9)  # Réduire légèrement la taille de la police pour s'adapter à deux lignes
-        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'L')
-        self.cell(col_width, 5, "Capital restant", 0, 0, 'L')
-        self.cell(col_width, 5, "Pour des versements totaux", 0, 1, 'L')
-        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'L')
-        self.cell(col_width, 5, "après vos projets", 0, 0, 'L')
-        self.cell(col_width, 5, "de", 0, 1, 'L')
-        self.ln(2)  # Ajouter un petit espace après les en-têtes
-        self.ln(5)  # Augmente l'espace après le titre
+        self.set_font_safe('Inter', '', 9)
+        self.cell(col_width, 5, "Capital à la fin de", 0, 0, 'C')
+        self.cell(col_width, 5, "Capital restant", 0, 0, 'C')
+        self.cell(col_width, 5, "Pour des versements totaux", 0, 1, 'C')
+        self.cell(col_width, 5, "votre phase d'épargne", 0, 0, 'C')
+        self.cell(col_width, 5, "après vos projets", 0, 0, 'C')
+        self.cell(col_width, 5, "de", 0, 1, 'C')
+        self.ln(2)
+        self.ln(5)
 
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
         self.set_text_color(*orange_color)
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'L')
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'C')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'C')
         self.set_text_color(*text_color)
-        self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'L')
+        self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'C')
 
         # Après l'affichage des valeurs
         self.ln(10)
         self.ln(10)  # Ajoute plus d'espace avant le graphique
 
         # Ajuster la position des séparateurs verticaux
-        separator_y1 = self.get_y() - 24  # Augmenter cette valeur pour tenir compte des deux lignes
+        separator_y1 = self.get_y() - 37  # Augmenter cette valeur pour tenir compte des deux lignes
         separator_y2 = self.get_y()
         self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
         self.line(left_margin + col_width, separator_y1, left_margin + col_width, separator_y2)
-        self.line(left_margin + 5 * col_width, separator_y1, left_margin + 5 * col_width, separator_y2)
+        self.line(left_margin + 2 * col_width, separator_y1, left_margin + 2 * col_width, separator_y2)
     
        
     
