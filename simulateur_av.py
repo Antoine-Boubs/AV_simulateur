@@ -1140,10 +1140,7 @@ class PDF(FPDF):
         
         # Insérer l'image
         self.image(warning_image_path, x, y, w, h)
-        
-        # Retourner à la page où nous étions
-        self.page = current_page
-    
+            
     def get_image_dimensions(self, image_path):
         with Image.open(image_path) as img:
             return img.size
