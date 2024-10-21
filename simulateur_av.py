@@ -1283,11 +1283,12 @@ class PDF(FPDF):
 
     
 
-    def add_simulation_parameters(self, params, resultats_df, objectifs):
+    def add_simulation_parameters(self, params):
         self.add_page()
         
         # Marges et largeur effective
-        left_margin, right_margin = 20, 15
+        left_margin = 20
+        right_margin = 15
         self.set_left_margin(left_margin)
         self.set_right_margin(right_margin)
         effective_width = self.w - left_margin - right_margin
@@ -1295,19 +1296,7 @@ class PDF(FPDF):
         # Couleurs
         text_color = (29, 29, 31)
         title_color = (0, 0, 0)
-        orange_color = (249, 115, 22)
-        green_color = (0, 128, 0)
-    
-        # Fonction helper pour nettoyer et convertir les valeurs monétaires
-        def clean_and_convert(value):
-            if isinstance(value, str):
-                cleaned = value.replace('€', '').replace(' ', '').replace(',', '.')
-                try:
-                    return float(cleaned)
-                except ValueError:
-                    print(f"Impossible de convertir la valeur: {value}")
-                    return value
-            return value
+        orange_color = (249, 115, 22)  # Couleur orange pour certains textes
     
         # Titre principal
         self.set_font_safe('Inter', 'B', 18)
@@ -1325,109 +1314,66 @@ class PDF(FPDF):
         self.set_font_safe('Inter', 'B', 14)
         self.cell(effective_width, 10, 'Paramètres & détails du projet', 0, 1, 'L')
         self.ln(2)
-        
+    
         # Informations du client sur 3 colonnes
-        col_width = effective_width / 3
-        
-        # Ligne pour les étiquettes
         self.set_font_safe('Inter', '', 10)
-        self.cell(col_width, 6, "Capital initial :", 0, 0)
-        self.cell(col_width, 6, "Versement mensuel :", 0, 0)
-        self.cell(col_width, 6, "Rendement annuel :", 0, 1)
-        
-        # Ligne pour les valeurs
+        col_width = effective_width / 3
+        self.cell(col_width, 6, f"Capital initial :", 0, 0)
+        self.cell(col_width, 6, f"Versement mensuel :", 0, 0)
+        self.cell(col_width, 6, f"Rendement annuel :", 0, 1)
+    
         self.set_font_safe('Inter', 'B', 10)
         self.cell(col_width, 6, f"{params['capital_initial']} €", 0, 0)
         self.cell(col_width, 6, f"{params['versement_mensuel']} €", 0, 0)
         self.cell(col_width, 6, f"{params['rendement_annuel']*100:.2f}%", 0, 1)
-        
         self.ln(10)
-    
-        # Calcul de duree_capi_max
-        duree_capi_max = calculer_duree_capi_max(objectifs)
-    
-        # Récupération et nettoyage des données de projection
-        capital_duree_capi_max = clean_and_convert(resultats_df[resultats_df['Année'] == duree_capi_max]['Capital fin d\'année (NET)'].iloc[0])
-        capital_derniere_ligne = clean_and_convert(resultats_df['Capital fin d\'année (NET)'].iloc[-1])
+        
+        # Projection
+        self.set_font_safe('Inter', 'B', 14)
+        self.cell(effective_width, 10, 'Projection', 0, 1, 'L')
+        self.ln(2)
     
         # Tableau de projection
         projection_data = [
-            [f"Capital fin d'année à durée capi max : {capital_duree_capi_max:.2f} €"],
-            [f"Capital fin d'année à la dernière ligne du dataframe : {capital_derniere_ligne:.2f} €"]
+            [f"Capital fin d'année à durée capi max : {self.capital_fin_annee_duree_capi_max:.0f} €"],
+            [f"Capital fin d'année à la dernière ligne du dataframe : {self.capital_fin_annee_derniere_ligne:.0f} €"]
         ]
     
         self.set_font_safe('Inter', 'B', 12)
         self.set_text_color(*orange_color)
         for row in projection_data:
             self.cell(effective_width, 8, row[0], 0, 1, 'L')
-        self.ln(10)
+        self.ln(5)
+    
+        self.set_text_color(*text_color)
+        self.ln(5)
+    
     
         # Sécurisation progressive
         self.set_font_safe('Inter', '', 10)
-        self.set_text_color(*text_color)
         self.cell(effective_width/2, 6, "Sécurisation progressive :", 0, 0)
         self.set_font_safe('Inter', 'B', 10)
-        self.set_text_color(*green_color)
+        self.set_text_color(0, 128, 0)  # Vert pour "Activée"
         self.cell(effective_width/2, 6, "Activée", 0, 1)
         self.ln(10)
     
-        # Graphique d'évolution du capital (taille réduite)
-        self.draw_capital_evolution_chart(resultats_df, effective_width, left_margin, clean_and_convert)
-    
-        # Ajouter le logo Nalo
-        self.add_nalo_logo(right_margin)
-
-    def draw_capital_evolution_chart(self, resultats_df, effective_width, left_margin, clean_and_convert):
+        # Ajout du graphique en cascade
         chart_width = effective_width
-        chart_height = 60  # Réduire la hauteur du graphique
+        chart_height = 100  # Ajustez cette valeur selon vos besoins
         chart_x = left_margin
         chart_y = self.get_y()
     
-        years = resultats_df['Année'].tolist()
-        capital_values = [clean_and_convert(val) for val in resultats_df['Capital fin d\'année (NET)'].tolist()]
-        stocks_percentage = [clean_and_convert(val) for val in resultats_df['Épargne investie'].tolist()]
+        # Assurez-vous que cette méthode existe et qu'elle dessine votre graphique en cascade
+        self.fig_to_img_buffer(create_waterfall_chart(resultats_df))
     
-        max_capital = max(capital_values)
-        max_percentage = 100
+        self.ln(chart_height + 20)  # Espace après le graphique
     
-        # Ligne pour le pourcentage d'actions
-        self.set_draw_color(30, 64, 175)  # Bleu foncé
-        for i in range(len(years) - 1):
-            x1 = chart_x + (i * chart_width / (len(years) - 1))
-            y1 = chart_y + chart_height - (stocks_percentage[i] * chart_height / max_percentage)
-            x2 = chart_x + ((i + 1) * chart_width / (len(years) - 1))
-            y2 = chart_y + chart_height - (stocks_percentage[i + 1] * chart_height / max_percentage)
-            self.line(x1, y1, x2, y2)
-    
-        # Barres pour le capital total
-        bar_width = (chart_width / len(years)) * 0.8
-        for i, capital in enumerate(capital_values):
-            x = chart_x + (i * chart_width / (len(years) - 1)) - (bar_width / 2)
-            y = chart_y + chart_height - (capital * chart_height / max_capital)
-            height = chart_height - (chart_y + chart_height - y)
-            self.set_fill_color(249, 115, 22)  # Orange
-            self.rect(x, y, bar_width, height, 'F')
-    
-        # Ajouter les années en bas
-        self.set_font_safe('Inter', '', 8)
-        self.set_text_color(29, 29, 31)  # text_color
-        for i, year in enumerate(years):
-            if i % 3 == 0:  # Afficher une année sur trois pour éviter l'encombrement
-                x = chart_x + (i * chart_width / (len(years) - 1))
-                self.text(x, chart_y + chart_height + 5, str(year))
-    
-        # Légende
-        self.add_chart_legend(chart_x, chart_y, chart_height)
-    
-    def add_chart_legend(self, chart_x, chart_y, chart_height):
-        self.set_font_safe('Inter', '', 8)
-        legend_y = chart_y + chart_height + 15
-        self.set_fill_color(30, 64, 175)  # Bleu foncé
-        self.rect(chart_x, legend_y, 5, 5, 'F')
-        self.text(chart_x + 10, legend_y + 5, "Pourcentage d'actions")
-        self.set_fill_color(249, 115, 22)  # Orange
-        self.rect(chart_x + 80, legend_y, 5, 5, 'F')
-        self.text(chart_x + 90, legend_y + 5, "Capital total")
+        # Ajouter le logo Nalo
+        logo_width = 30
+        logo_height = 15
+        logo_x = self.w - right_margin - logo_width
+        logo_y = 10
+        self.image('logo_path', logo_x, logo_y, logo_width, logo_height)
     
     def add_nalo_logo(self, right_margin):
         logo_width, logo_height = 30, 15
