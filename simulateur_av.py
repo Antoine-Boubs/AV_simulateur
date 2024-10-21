@@ -1410,7 +1410,7 @@ class PDF(FPDF):
         logo_width, logo_height = 30, 15
         logo_x = self.w - right_margin - logo_width
         logo_y = 10
-        self.image('path_to_nalo_logo.png', logo_x, logo_y, logo_width, logo_height)
+        self.image('logo_path', logo_x, logo_y, logo_width, logo_height)
     
     def add_simulation_info_section(self, title, info_list, effective_width):
         self.set_font_safe('Inter', 'B', 14)
