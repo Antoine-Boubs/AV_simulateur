@@ -1341,12 +1341,17 @@ class PDF(FPDF):
         def add_payment_item(icon, type_text, amount_text, period_text):
             # Fond gris clair
             self.set_fill_color(*apple_light_gray)
-            self.rect(self.get_x(), self.get_y(), 100, 10, 'F')
+            self.rect(self.get_x(), self.get_y(), effective_width, 10, 'F')
+            
+            # Icône
+            self.set_font('Inter', 'B', 12)
+            self.set_text_color(*apple_blue)
+            self.cell(20, 10, icon, 0, 0, 'C')
             
             # Type de paiement
             self.set_font('Inter', 'B', 12)
             self.set_text_color(29, 29, 31)
-            self.cell(50, 10, type_text, 0, 0)
+            self.cell(60, 10, type_text, 0, 0)
             
             # Montant
             self.set_font('Inter', 'B', 14)
@@ -1356,32 +1361,22 @@ class PDF(FPDF):
             # Période
             self.set_font('Inter', '', 10)
             self.set_text_color(*apple_gray)
-            self.cell(50, 10, period_text, 0, 1)
+            self.cell(effective_width - 130, 10, period_text, 0, 1)
             
-            self.ln(5)  # Espace entre les éléments
-
-        # Ajout des modifications de versements
-        self.set_font_safe('Inter', 'B', 12)
-        self.cell(effective_width, 8, 'Modifications de versements', 0, 1, 'L')
-        self.ln(2)
+            self.ln(2)  # Espace entre les éléments
         
-        self.set_font_safe('Inter', '', 10)
+        # Ajout des modifications de versements
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
             for mod in st.session_state.modifications_versements:
                 if mod['montant'] == 0:
-                    add_payment_item('Versements arrêtés', '', f"de l'année {mod['debut']} à {mod['fin']}")
+                    add_payment_item('S', 'Versements arrêtés', '', f"de l'année {mod['debut']} à {mod['fin']}")
                 else:
-                    add_payment_item('Versements ajustés', f"{mod['montant']:.2f}", f"de l'année {mod['debut']} à {mod['fin']}")
-
-        #Removed the loop for versements_libres as per update instruction 2
+                    add_payment_item('A', 'Versements ajustés', f"{mod['montant']:.2f} €", f"de l'année {mod['debut']} à {mod['fin']}")
         
-        elif 'versements_libres' in params and params['versements_libres']:
-            for vl in params['versements_libres']:
-                self.multi_cell(effective_width, 6, f"Versement libre de {vl['montant']:.2f} l'année {vl['annee']}", 0, 'L')        
-        else:
-            self.multi_cell(effective_width, 6, "Aucune modification de versement", 0, 'L')
-            
-            
+        # Ajout des versements libres
+        if 'versements_libres' in st.session_state and st.session_state.versements_libres:
+            for vl in st.session_state.versements_libres:
+                add_payment_item('L', 'Versement libre', f"{vl['montant']:.2f} €", f"l'année {vl['annee']}")
         
         # Message si aucune modification ni versement libre
         if (not st.session_state.get('modifications_versements') and 
