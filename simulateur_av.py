@@ -1337,27 +1337,41 @@ class PDF(FPDF):
         apple_gray = (142, 142, 147)
         apple_light_gray = (245, 245, 247)
         
-        def add_payment_modifications_section(self, effective_width):
-            # Couleurs
-            title_color = (0, 0, 0)  # Noir pour le titre
-            text_color = (29, 29, 31)  # Presque noir pour le texte
-            value_color = (0, 0, 0)  # Noir pour les valeurs
-        
-            # Titre de la section
-            self.set_font_safe('Inter', 'B', 24)
-            self.set_text_color(*title_color)
-            self.cell(effective_width, 15, 'Modifications de versements et versements libres', 0, 1, 'L')
-            self.ln(10)
-    
-        # Fonction pour ajouter une ligne d'information
-        def add_info_line(label, value):
-            self.set_font_safe('Inter', '', 12)
-            self.set_text_color(*text_color)
-            self.cell(effective_width / 2, 8, label, 0, 0, 'L')
-            self.set_font_safe('Inter', 'B', 14)
-            self.set_text_color(*value_color)
-            self.cell(effective_width / 2, 8, value, 0, 1, 'L')
-            self.ln(5)
+        # Fonction pour ajouter un élément de paiement
+        def add_payment_item(icon, type_text, amount_text, period_text):
+            # Fond gris clair
+            self.set_fill_color(*apple_light_gray)
+            self.rect(self.get_x(), self.get_y(), 100, 10, 'F')
+            
+            # Type de paiement
+            self.set_font('Inter', 'B', 12)
+            self.set_text_color(29, 29, 31)
+            self.cell(50, 10, type_text, 0, 0)
+            
+            # Montant
+            self.set_font('Inter', 'B', 14)
+            self.set_text_color(*apple_blue)
+            self.cell(50, 10, amount_text, 0, 0)
+            
+            # Période
+            self.set_font('Inter', '', 10)
+            self.set_text_color(*apple_gray)
+            self.cell(50, 10, period_text, 0, 1)
+            
+            self.ln(5)  # Espace entre les éléments
+
+    # Ajout des modifications de versements
+    for mod in modifications:
+        if mod['montant'] == 0:
+            add_payment_item('S', 'Versements arrêtés', '', f"de l'année {mod['debut']} à {mod['fin']}")
+        else:
+            add_payment_item('A', 'Versements ajustés', f"{mod['montant']:.2f} €", f"de l'année {mod['debut']} à {mod['fin']}")
+
+    # Ajout des versements libres
+    for vl in versements_libres:
+        add_payment_item('L', 'Versement libre', f"{vl['montant']:.2f} €", f"l'année {vl['annee']}")
+
+    self.ln(10)  # Espace après la section
         
         # Affichage des modifications de versements
         if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
