@@ -1332,14 +1332,14 @@ class PDF(FPDF):
         self.ln(2)
         
         self.set_font_safe('Inter', '', 10)
-        if 'modifications_versements' in params and params['modifications_versements']:
-            for mv in params['modifications_versements']:
+        if 'modifications_versements' in st.session_state and st.session_state.modifications_versements:
+            for mv in st.session_state.modifications_versements:
                 if mv['montant'] == 0:
                     self.multi_cell(effective_width, 6, f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
                 else:
                     self.multi_cell(effective_width, 6, f"Versements modifiés à {format_value(mv['montant'])} € de l'année {mv['debut']} à {mv['fin']}", 0, 'L')
-        elif 'versements_libres' in params and params['versements_libres']:
-            for vl in params['versements_libres']:
+        elif 'versements_libres' in st.session_state and st.session_state.versements_libres:
+            for vl in st.session_state.versements_libres:
                 self.multi_cell(effective_width, 6, f"Versement libre de {format_value(vl['montant'])} € à l'année {vl['annee']}", 0, 'L')
         else:
             self.multi_cell(effective_width, 6, "Aucune modification de versement", 0, 'L')
