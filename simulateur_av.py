@@ -1333,17 +1333,17 @@ class PDF(FPDF):
         self.ln(5)
         
         def add_payment_modifications_section(self, modifications, versements_libres):
-        # Couleurs inspirées d'Apple
-        apple_blue = (0, 113, 227)
-        apple_gray = (142, 142, 147)
-        apple_light_gray = (245, 245, 247)
-    
-        # Configuration de la page
-        self.add_page()
-        self.set_font('Inter', 'B', 24)
-        self.set_text_color(29, 29, 31)  # Presque noir, comme Apple
-        self.cell(0, 10, 'Modifications de versements et versements libres', 0, 1, 'L')
-        self.ln(10)
+            # Couleurs inspirées d'Apple
+            apple_blue = (0, 113, 227)
+            apple_gray = (142, 142, 147)
+            apple_light_gray = (245, 245, 247)
+        
+            # Configuration de la page
+            self.add_page()
+            self.set_font('Inter', 'B', 24)
+            self.set_text_color(29, 29, 31)  # Presque noir, comme Apple
+            self.cell(0, 10, 'Modifications de versements et versements libres', 0, 1, 'L')
+            self.ln(10)
     
         # Fonction pour ajouter un élément de paiement
         def add_payment_item(icon, type_text, amount_text, period_text):
