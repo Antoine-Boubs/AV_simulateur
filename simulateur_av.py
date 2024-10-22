@@ -1226,10 +1226,10 @@ class PDF(FPDF):
     def add_objectives_section(self, objectives):
         self.add_page()
         
-        # Apple-inspired colors
-        apple_blue = (0, 122, 255)
-        apple_gray = (142, 142, 147)
-        apple_light_blue = (242, 247, 255)
+        # Colors
+        blue = (0, 122, 255)
+        light_gray = (245, 245, 247)
+        dark_gray = (60, 60, 60)
         
         # Margins and effective width
         left_margin = 20
@@ -1239,63 +1239,46 @@ class PDF(FPDF):
         effective_width = self.w - left_margin - right_margin
         
         # Section title
-        self.set_font('Inter', 'B', 32)
-        self.set_text_color(*apple_blue)
-        self.cell(effective_width, 20, 'Vos objectifs', 0, 1, 'L')
-        self.ln(10)
+        self.set_font('Inter', 'B', 24)
+        self.set_text_color(*blue)
+        self.cell(effective_width, 15, 'Vos objectifs', 0, 1, 'L')
+        self.ln(5)
         
         def add_objective(obj):
-            start_y = self.get_y()
+            # Background
+            self.set_fill_color(*light_gray)
+            self.rect(left_margin, self.get_y(), effective_width, 40, 'F')
             
-            # Light blue background
-            self.set_fill_color(*apple_light_blue)
-            self.rect(left_margin, start_y, effective_width, 80, 'F')
-            
-            # Add a border to simulate rounded corners
-            self.set_draw_color(*apple_blue)
-            self.rect(left_margin, start_y, effective_width, 80, 'D')
+            # Add a colored top border to simulate the gradient
+            self.set_draw_color(*blue)
+            self.set_line_width(2)
+            self.line(left_margin, self.get_y(), left_margin + effective_width, self.get_y())
             
             # Objective name
-            self.set_font('Inter', 'B', 18)
-            self.set_text_color(0, 0, 0)
-            self.set_xy(left_margin + 15, start_y + 15)
-            self.cell(effective_width - 30, 10, obj['nom'], 0, 1)
+            self.set_font('Inter', 'B', 14)
+            self.set_text_color(*dark_gray)
+            self.set_xy(left_margin + 10, self.get_y() + 5)
+            self.cell(effective_width - 20, 10, obj['nom'], 0, 1)
             
             # Objective details
-            self.set_font('Inter', '', 12)
-            self.set_text_color(*apple_gray)
+            self.set_font('Inter', '', 10)
             details = [
-                f"Période de retrait : {obj['duree_retrait']} ans",
-                f"Horizon d'investissement : {obj['annee']}",
-                f"Montant souhaité (année) : {format_value(obj['montant_annuel'])} €"
+                f"Période : {obj['duree_retrait']} ans",
+                f"Horizon : {obj['annee']}",
+                f"Montant : {format_value(obj['montant_annuel'])} €/an"
             ]
             
             for i, detail in enumerate(details):
-                self.set_xy(left_margin + 15, start_y + 35 + (i * 15))
-                self.cell(effective_width - 30, 8, detail, 0, 1)
+                self.set_xy(left_margin + 10, self.get_y() + 2)
+                self.cell(effective_width - 20, 6, detail, 0, 1)
             
-            self.ln(90)  # Space between objectives
+            self.ln(10)  # Space between objectives
         
         # Add each objective
         for obj in objectives:
             add_objective(obj)
         
-        self.ln(20)  # Extra space at the bottom
-    
-    def rounded_rect(self, x, y, w, h, r, style=''):
-        '''
-        Draw a rounded rectangle using standard FPDF methods
-        '''
-        self.set_line_width(0.5)
-        
-        # Draw the rectangle
-        self.rect(x, y, w, h, style)
-        
-        # Draw the rounded corners
-        self.circle(x + r, y + r, r, style)
-        self.circle(x + w - r, y + r, r, style)
-        self.circle(x + r, y + h - r, r, style)
-        self.circle(x + w - r, y + h - r, r, style)
+        self.ln(10)  # Extra space at the bottom
 
 
     def create_detailed_table(self, resultats_df):
