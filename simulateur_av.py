@@ -1079,10 +1079,10 @@ class PDF(FPDF):
             self.set_font('Arial', '', 12)
 
     def header(self):
-        # Logo Nalo
+        # Bouton RDV
         rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
-        logo_width = 20  # Ajustez selon la taille souhaitée
-        logo_height = 20  # Ajustez selon la taille souhaitée
+        rdv_width = 30  # Ajustez selon la taille souhaitée
+        rdv_height = 15  # Ajustez selon la taille souhaitée
         
         # Titre
         self.set_font('Inter', 'B', 16)
@@ -1092,8 +1092,8 @@ class PDF(FPDF):
         self.set_xy(10, 10)
         self.cell(title_width, 10, 'Votre simulation personnalisée', 0, 0, 'L')
         
-        # Logo (à droite)
-        self.image(logo_path, self.w - logo_width - 10, 10, logo_width, logo_height, link='https://app.lemcal.com/@antoineberjoan')
+        # Bouton RDV (à droite)
+        self.image(rdv_path, self.w - rdv_width - 10, 10, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
         
         # Ligne de séparation
         self.line(10, 25, self.w - 10, 25)
