@@ -1230,7 +1230,6 @@ class PDF(FPDF):
         apple_blue = (0, 122, 255)
         apple_gray = (142, 142, 147)
         apple_light_blue = (242, 247, 255)
-        apple_border = (0, 122, 255)
         
         # Margins and effective width
         left_margin = 20
@@ -1248,10 +1247,13 @@ class PDF(FPDF):
         def add_objective(obj):
             start_y = self.get_y()
             
-            # Light blue background with rounded corners
+            # Light blue background
             self.set_fill_color(*apple_light_blue)
-            self.set_draw_color(*apple_border)
-            self.rounded_rect(left_margin, start_y, effective_width, 80, 10, 'F')
+            self.rect(left_margin, start_y, effective_width, 80, 'F')
+            
+            # Add a border to simulate rounded corners
+            self.set_draw_color(*apple_blue)
+            self.rect(left_margin, start_y, effective_width, 80, 'D')
             
             # Objective name
             self.set_font('Inter', 'B', 18)
