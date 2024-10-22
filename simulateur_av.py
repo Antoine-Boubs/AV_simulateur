@@ -1079,23 +1079,26 @@ class PDF(FPDF):
             self.set_font('Arial', '', 12)
 
     def header(self):
-        apple_blue = (0, 122, 255)
-        apple_gray = (128, 128, 128)
+        # Logo Nalo
+        rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
+        logo_width = 20  # Ajustez selon la taille souhaitée
+        logo_height = 20  # Ajustez selon la taille souhaitée
         
-        if os.path.exists(self.logo_path):
-            self.image(self.logo_path, 10, 8, 25)
+        # Titre
+        self.set_font('Inter', 'B', 16)
+        title_width = self.get_string_width('Votre simulation Nalo') + 6
         
-        self.set_font_safe('Inter', 'B', 24)
-        self.set_text_color(*apple_blue)
-        self.cell(0, 10, 'Rapport Financier', 0, 1, 'R')
+        # Positionnement
+        self.set_xy(10, 10)
+        self.cell(title_width, 10, 'Votre simulation Nalo', 0, 0, 'L')
         
-        self.set_font_safe('Inter', '', 12)
-        self.set_text_color(*apple_gray)
-        self.cell(0, 10, f'Généré le {datetime.now().strftime("%d/%m/%Y")}', 0, 1, 'R')
+        # Logo (à droite)
+        self.image(logo_path, self.w - logo_width - 10, 10, logo_width, logo_height, link='https://www.nalo.fr')
         
-        self.set_draw_color(229, 229, 234)
-        self.line(10, 35, self.w - 10, 35)
+        # Ligne de séparation
+        self.line(10, 25, self.w - 10, 25)
         
+        # Espace après l'en-tête
         self.ln(20)
 
     def footer(self):
