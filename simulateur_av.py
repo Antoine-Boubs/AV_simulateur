@@ -1364,9 +1364,10 @@ class PDF(FPDF):
         effective_width = self.w - left_margin - right_margin
     
         # Couleurs
-        text_color = (29, 29, 31)
-        title_color = (0, 0, 0)
-        orange_color = (249, 115, 22)
+        text_color = (32, 32, 33)
+        title_color = (22, 66, 91)
+        blue_color = (22, 66, 91)
+        gold_color = (203, 163, 37)
     
         # Titre principal
         self.set_font_safe('Inter', 'B', 18)
@@ -1377,7 +1378,7 @@ class PDF(FPDF):
         # Texte d'introduction
         self.set_font_safe('Inter', '', 10)
         self.set_text_color(*text_color)
-        self.multi_cell(effective_width, 5, "La simulation suivante vous permet d'avoir une illustration des évolutions possibles de votre investissement.")
+        self.multi_cell(effective_width, 5, "La simulation suivante vous permet d'avoir une illustration des évolutions possibles de votre investissement. En aucun cas, les informations présentées dans ce document ne constituent une offre ou une sollicitation pour acheter ou vendre des instruments financiers. Elles ne doivent pas être considérées comme un conseil financier personnalisé ni comme un contrat ou une garantie de résultats futurs.")
         self.ln(5)
     
         # Paramètres & détails du projet
@@ -1437,10 +1438,10 @@ class PDF(FPDF):
         
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
-        self.set_text_color(*orange_color)
+        self.set_text_color(*blue_color)
         self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'L')
         self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'L')
-        self.set_text_color(*text_color)
+        self.set_text_color(*gold_color)
         self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'L')
         
         self.ln(10)
@@ -1448,10 +1449,10 @@ class PDF(FPDF):
         # Dessiner les séparateurs verticaux
         separator_y1 = self.get_y() - 27  # Reduced divider height
         separator_y2 = self.get_y()
-        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour les séparateurs
+        self.set_draw_color(32, 32, 33)  # Couleur gris clair pour les séparateurs
+        self.set_line_width(0.5)  # Set the line width to 0.5
         self.line(left_margin + col_width - 5, separator_y1, left_margin + col_width - 5, separator_y2)
-        self.line(left_margin + 2 * col_width - 5, separator_y1, left_margin + 2 * col_width - 5, separator_y2)
-        
+        self.line(left_margin + 2 * col_width - 5, separator_y1, left_margin + 2 * col_width - 5, separator_y2)        
 
         # Vérifier s'il reste suffisamment d'espace pour le graphique
         if self.get_y() + 100 > self.h - 20:  # 100 est une estimation de la hauteur du graphique
