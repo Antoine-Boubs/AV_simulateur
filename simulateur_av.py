@@ -1644,7 +1644,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Tableau détaillé
     pdf.create_detailed_table(resultats_df)
     
-    pdf.add_page()
     pdf.add_track_record_image('assets/Track_record.png')
     pdf.add_objectives_image('assets/Autres_objectifs.png')
     
