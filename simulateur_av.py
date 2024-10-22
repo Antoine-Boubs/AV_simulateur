@@ -1153,27 +1153,43 @@ class PDF(FPDF):
         
 
     def add_track_record_image(self, image_path):
+        # Sauvegarder les marges originales
+        original_top_margin = self.t_margin
+        original_left_margin = self.l_margin
+        original_right_margin = self.r_margin
+    
+        # Réduire les marges
+        new_margin = 10
+        self.set_top_margin(new_margin)
+        self.set_left_margin(new_margin)
+        self.set_right_margin(new_margin)
+    
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
         
         # Calculer la largeur et la hauteur proportionnelles
-        page_width = self.w - 20  # 15 mm de marge de chaque côté
+        page_width = self.w - 2 * new_margin
         img_height = (page_width / img_width) * img_height
         
         # Ajouter l'image
-        self.image(image_path, x=15, y=self.get_y(), w=page_width, h=img_height)
+        self.image(image_path, x=new_margin, y=self.get_y(), w=page_width, h=img_height)
         
         # Déplacer le curseur après l'image
-        self.set_y(self.get_y() + img_height + 0)
-
+        self.set_y(self.get_y() + img_height + 5)  # Réduit l'espace après l'image à 5 mm
+    
+        # Ne pas restaurer les marges ici pour permettre à la deuxième image de suivre
+    
     def add_objectives_image(self, image_path):
-        self.add_page()
-
+        # Vérifier s'il y a assez d'espace sur la page actuelle
+        if self.get_y() + 100 > self.h - 10:  # 100 est une estimation de la hauteur minimale nécessaire
+            self.add_page()
+            self.set_y(10)  # Commencer en haut de la nouvelle page
+    
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
     
         # Calculer la largeur et la hauteur proportionnelles
-        page_width = self.w - 20 # 20 mm de marge de chaque côté
+        page_width = self.w - 2 * self.l_margin
         img_height = (page_width / img_width) * img_height
     
         # Calculer la position x pour centrer l'image
@@ -1181,17 +1197,22 @@ class PDF(FPDF):
     
         # Ajouter l'image
         self.image(image_path, x=x, y=self.get_y(), w=page_width, h=img_height)
-
+    
         # Ajouter un lien cliquable dans la zone en bas à droite
         link_width = 60
         link_height = 20
         link_x = x + page_width - link_width
         link_y = self.get_y() + img_height - link_height
-
+    
         self.link(link_x, link_y, link_width, link_height, 'https://app.lemcal.com/@antoineberjoan')
     
         # Déplacer le curseur après l'image
-        self.set_y(self.get_y() + img_height + 0)
+        self.set_y(self.get_y() + img_height + 5)  # Réduit l'espace après l'image à 5 mm
+    
+        # Restaurer les marges originales
+        self.set_top_margin(original_top_margin)
+        self.set_left_margin(original_left_margin)
+        self.set_right_margin(original_right_margin)
 
     
     def add_warning(self):
