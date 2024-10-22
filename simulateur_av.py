@@ -1086,14 +1086,14 @@ class PDF(FPDF):
         
         # Titre
         self.set_font('Inter', 'B', 16)
-        title_width = self.get_string_width('Votre simulation Nalo') + 6
+        title_width = self.get_string_width('Votre simulation personnalisée') + 6
         
         # Positionnement
         self.set_xy(10, 10)
-        self.cell(title_width, 10, 'Votre simulation Nalo', 0, 0, 'L')
+        self.cell(title_width, 10, 'Votre simulation personnalisée', 0, 0, 'L')
         
         # Logo (à droite)
-        self.image(logo_path, self.w - logo_width - 10, 10, logo_width, logo_height, link='https://www.nalo.fr')
+        self.image(logo_path, self.w - logo_width - 10, 10, logo_width, logo_height, link='https://app.lemcal.com/@antoineberjoan')
         
         # Ligne de séparation
         self.line(10, 25, self.w - 10, 25)
