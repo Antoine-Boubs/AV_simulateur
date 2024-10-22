@@ -1321,7 +1321,7 @@ class PDF(FPDF):
             return img.size
 
 
-    def create_detailed_table(pdf, resultats_df):
+    def create_detailed_table(self, pdf, resultats_df):
         self.add_page()
     
         col_widths = [10, 28, 24, 24, 20, 20, 20, 20, 28]
