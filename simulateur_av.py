@@ -1092,12 +1092,21 @@ class PDF(FPDF):
         
         # Add RDV button
         rdv_path = 'assets/RDV.png'
-        rdv_img = self.get_image_info(rdv_path)
-        if rdv_img:
-            rdv_width, rdv_height = rdv_img['w'], rdv_img['h']
-            rdv_x = self.w - rdv_width - 10
-            rdv_y = 5
-            self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
+        if os.path.exists(rdv_path):
+            try:
+                with Image.open(rdv_path) as img:
+                    rdv_width, rdv_height = img.size
+                    # Scale down the image if it's too large
+                    max_width = 30  # Maximum width in mm
+                    if rdv_width > max_width:
+                        scale = max_width / rdv_width
+                        rdv_width = max_width
+                        rdv_height *= scale
+                    rdv_x = self.w - rdv_width - 10
+                    rdv_y = 5
+                    self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
+            except Exception as e:
+                print(f"Erreur lors du chargement de l'image RDV : {e}")
         
         # Explicitly set the color and width for the divider
         self.set_draw_color(200, 200, 200)  # Light gray color
