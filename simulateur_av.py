@@ -1560,26 +1560,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_warning()
 
 
-    # Sommaire
-    pdf.add_page()
-    pdf.set_font('Inter', 'B', 24)
-    pdf.set_text_color(*apple_blue)
-    pdf.cell(0, 20, 'Sommaire', 0, 1, 'L')
-    pdf.set_font('Inter', '', 14)
-    pdf.set_text_color(*apple_gray)
-    sommaire_items = [
-        "1. Évolution du placement financier",
-        "2. Composition du capital",
-        "3. Analyse en cascade de l'évolution du capital",
-        "4. Performances historiques",
-        "5. Récapitulatif du projet",
-        "6. Détails année par année"
-    ]
-    for item in sommaire_items:
-        pdf.cell(0, 10, item, 0, 1, 'L')
-
-    pdf.add_av_succession()
-
 
     # Définition des titres et descriptions des graphiques
     graph_titles = [
@@ -1591,7 +1571,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
     ]
 
-    graph_width = 180
+    graph_width = 160
     graph_height = 100
     for img_buffer, title in zip(img_buffers, graph_titles):
         pdf.add_page()
