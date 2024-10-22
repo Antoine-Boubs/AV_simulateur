@@ -1238,34 +1238,7 @@ class PDF(FPDF):
         self.ln(20)  # Espace supplémentaire en bas
         
 
-    def colored_table(self, headers, data, col_widths):
-        header_color = (247, 247, 247)
-        row_colors = [(255, 255, 255), (250, 250, 250)]
-        self.set_fill_color(*header_color)
-        self.set_text_color(60, 60, 67)
-        self.set_draw_color(229, 229, 234)
-        self.set_line_width(0.3)
-        self.set_font_safe('Inter', 'B', 10)
-        
-        total_width = sum(col_widths)
-        table_x = (self.w - total_width) / 2
-        self.set_x(table_x)
-        
-        for i, (header, width) in enumerate(zip(headers, col_widths)):
-            self.cell(width, 12, header, 1, 0, 'C', 1)
-        self.ln()
-        
-        self.set_font_safe('Inter', '', 10)
-        row_height = 8
-        fill_index = 0
-        for row in data:
-            self.set_x(table_x)
-            self.set_fill_color(*row_colors[fill_index % 2])
-            for i, (value, width) in enumerate(zip(row, col_widths)):
-                align = 'C' if i == 0 else 'R'
-                self.cell(width, row_height, str(value), 1, 0, align, 1)
-            self.ln()
-            fill_index += 1
+    
 
     
 
