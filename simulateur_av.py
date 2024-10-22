@@ -1158,12 +1158,6 @@ class PDF(FPDF):
 
     def add_track_record_image(self, image_path):
     
-        # Réduire les marges
-        new_margin = 10
-        self.set_top_margin(new_margin)
-        self.set_left_margin(new_margin)
-        self.set_right_margin(new_margin)
-    
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
         
@@ -1207,11 +1201,6 @@ class PDF(FPDF):
     
         # Déplacer le curseur après l'image
         self.set_y(self.get_y() + img_height + 5)  # Réduit l'espace après l'image à 5 mm
-    
-        # Restaurer les marges originales
-        self.set_top_margin(original_top_margin)
-        self.set_left_margin(original_left_margin)
-        self.set_right_margin(original_right_margin)
 
     
     def add_warning(self):
