@@ -1086,6 +1086,7 @@ class PDF(FPDF):
         # Header implementation
         title = 'Votre simulation personnalisée'
         self.set_font('Inter', 'B', 16)
+        self.set_text_color(22, 66, 91)
         title_width = self.get_string_width(title) + 6
         self.set_xy(10, 10)
         self.cell(title_width, 10, title, 0, 0, 'L')
@@ -1096,20 +1097,21 @@ class PDF(FPDF):
             try:
                 with Image.open(rdv_path) as img:
                     rdv_width, rdv_height = img.size
-                    # Scale down the image if it's too large
-                    max_width = 30  # Maximum width in mm
-                    if rdv_width > max_width:
-                        scale = max_width / rdv_width
-                        rdv_width = max_width
-                        rdv_height *= scale
-                    rdv_x = self.w - rdv_width - 10
+                    # Convert pixels to millimeters (assuming 72 DPI)
+                    rdv_width_mm = rdv_width * 25.4 / 72
+                    rdv_height_mm = rdv_height * 25.4 / 72
+                    
+                    # Position the image in the top right corner
+                    rdv_x = self.w - rdv_width_mm - 10
                     rdv_y = 5
-                    self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
+                    
+                    self.image(rdv_path, rdv_x, rdv_y, rdv_width_mm, rdv_height_mm, link='https://app.lemcal.com/@antoineberjoan')
             except Exception as e:
                 print(f"Erreur lors du chargement de l'image RDV : {e}")
         
+        
         # Explicitly set the color and width for the divider
-        self.set_draw_color(200, 200, 200)  # Light gray color
+        self.set_draw_color(203, 163, 37)  # CBA325
         self.set_line_width(0.5)  # Set the line width to 0.5
         
         self.line(10, 25, self.w - 10, 25)
