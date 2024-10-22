@@ -1093,19 +1093,28 @@ class PDF(FPDF):
         
         # Add RDV button
         rdv_path = 'assets/RDV.png'
-            with Image.open(rdv_path) as img:
-                rdv_width, rdv_height = img.size
-                # Convert pixels to millimeters (assuming 72 DPI)
-                rdv_width_mm = rdv_width * 15.4 / 72
-                rdv_height_mm = rdv_height * 15.4 / 72
-                
-                # Position the image in the top right corner
-                rdv_x = self.w - rdv_width_mm - 10
-                rdv_y = 5
-                
-                self.image(rdv_path, rdv_x, rdv_y, rdv_width_mm, rdv_height_mm, link='https://app.lemcal.com/@antoineberjoan')
-        except Exception as e:
-            print(f"Erreur lors du chargement de l'image RDV : {e}")
+        if os.path.exists(rdv_path):
+            try:
+                with Image.open(rdv_path) as img:
+                    rdv_width, rdv_height = img.size
+                    
+                    # Define desired width in mm
+                    desired_width_mm = 30  # Adjust this value as needed
+                    
+                    # Calculate scaling factor
+                    scale_factor = desired_width_mm / (rdv_width * 25.4 / 72)
+                    
+                    # Calculate new dimensions while maintaining aspect ratio
+                    rdv_width_mm = desired_width_mm
+                    rdv_height_mm = (rdv_height * 25.4 / 72) * scale_factor
+                    
+                    # Position the image in the top right corner
+                    rdv_x = self.w - rdv_width_mm - 10
+                    rdv_y = 7  # Adjusted to add some margin above the divider
+                    
+                    self.image(rdv_path, rdv_x, rdv_y, rdv_width_mm, rdv_height_mm, link='https://app.lemcal.com/@antoineberjoan')
+            except Exception as e:
+                print(f"Erreur lors du chargement de l'image RDV : {e}")
         
         
         # Explicitly set the color and width for the divider
