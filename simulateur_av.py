@@ -1202,8 +1202,8 @@ class PDF(FPDF):
         # Couleurs inspirées d'Apple
         apple_blue = (0, 122, 255)
         apple_gray = (142, 142, 147)
-        apple_light_gray = (245, 245, 247)
-        apple_border = (229, 229, 234)  # Couleur de bordure légère
+        apple_light_gray = (209, 225, 232)
+        apple_border = (22, 66, 91)  # Couleur de bordure légère
         
         # Marges et largeur effective
         left_margin = 20
@@ -1239,10 +1239,11 @@ class PDF(FPDF):
             self.set_font('Inter', '', 10)
             self.set_text_color(*apple_gray)
             details = [
-                f"Montant annuel : {format_value(obj['montant_annuel'])} €",
-                f"Durée : {obj['duree_retrait']} ans",
-                f"Année de réalisation : {obj['annee']}"
+                f"Période de retrait : {obj['duree_retrait']} ans",
+                f"Horizon d'investissement : {obj['annee']}",
+                f"Montant souhaité (année) : {format_value(obj['montant_annuel'])} €"
             ]
+            
             for detail in details:
                 self.set_x(left_margin + x_offset + 10)
                 self.cell(effective_width - 20, 8, detail, 0, 1)
