@@ -1019,9 +1019,11 @@ def fig_to_img_buffer(fig):
 
 
 
-
-
-
+import tempfile
+import os
+from PIL import Image
+import io
+from fpdf import FPDF
 import os
 from fpdf import FPDF
 import numpy as np 
@@ -1080,8 +1082,6 @@ class PDF(FPDF):
             print(f"Erreur lors de la définition de la police : {e}")
             self.set_font('Arial', '', 12)
 
-    from PIL import Image
-
     def header(self):
         # Chemin vers l'image du bouton RDV
         rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
@@ -1130,6 +1130,7 @@ class PDF(FPDF):
             width = int(width * (max_height / height))
             height = max_height
         return width, height
+        
 
     def footer(self):
         apple_gray = (128, 128, 128)
@@ -1156,7 +1157,7 @@ class PDF(FPDF):
         img_width, img_height = self.get_image_dimensions(image_path)
         
         # Calculer la largeur et la hauteur proportionnelles
-        page_width = self.w - 30  # 15 mm de marge de chaque côté
+        page_width = self.w - 20  # 15 mm de marge de chaque côté
         img_height = (page_width / img_width) * img_height
         
         # Ajouter l'image
@@ -1253,62 +1254,6 @@ class PDF(FPDF):
             add_objective(obj)
             
         self.ln(20)  # Espace supplémentaire en bas
-        
-
-    
-
-    
-
-
-    import pandas as pd
-
-    
-    def add_av_succession(self):
-        self.add_page()
-        
-        # Marges et largeur effective
-        left_margin, right_margin = 20, 15
-        self.set_left_margin(left_margin)
-        self.set_right_margin(right_margin)
-        effective_width = self.w - left_margin - right_margin
-    
-        # Couleurs
-        title_color = (0, 0, 0)
-    
-        # Titre principal
-        self.set_font_safe('Inter', 'B', 18)
-        self.set_text_color(*title_color)
-        self.cell(effective_width, 10, 'Succession en assurance-vie', 0, 1, 'L')
-        self.ln(5)
-
-        # Obtenez le chemin du répertoire du script en cours
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(current_dir, 'assets', 'AV_succession.png')
-    
-        # Obtenir les dimensions de l'image
-        img_width, img_height = self.get_image_dimensions(image_path)
-    
-        # Calculer le ratio pour ajuster l'image à la largeur effective
-        ratio = effective_width / img_width
-        new_width = effective_width
-        new_height = img_height * ratio
-    
-        # Insérer l'image
-        self.image(image_path, x=left_margin, y=self.get_y(), w=new_width, h=new_height)
-    
-        # Déplacer le curseur après l'image
-        self.set_y(self.get_y() + new_height + 10)
-    
-        # Note explicative
-        self.set_font_safe('Inter', 'I', 8)
-        self.multi_cell(effective_width, 4, "* Les informations ci-dessus sont extraites du fichier image. "
-                                            "Veuillez vous référer au document original pour plus de détails.")
-    
-    
-    def get_image_dimensions(self, image_path):
-        from PIL import Image
-        with Image.open(image_path) as img:
-            return img.size
 
 
     def create_detailed_table(self, resultats_df):
@@ -1331,12 +1276,12 @@ class PDF(FPDF):
         ]
 
         # Nouvelle palette de couleurs
-        header_color = (22, 66, 91)  # Gris clair pour l'en-tête
-        odd_row_color = (209, 225, 232)  # Blanc pour les lignes impaires
-        even_row_color = (251, 251, 251)  # Gris très clair pour les lignes paires
+        header_color = (22, 66, 91)  # 16425b
+        odd_row_color = (209, 225, 232)  # Bleu transparent
+        even_row_color = (251, 251, 251)  # Alabaster
         text_color = (60, 60, 60)  # Gris foncé pour le texte
-        border_color = (22, 66, 91,)  # Gris moyen pour les bordures
-        header_text_color = (251, 251, 251)
+        border_color = (22, 66, 91,)  # 16425b
+        header_text_color = (251, 251, 251) #Alabaster
 
         def add_table_header():
             self.set_font_safe('Inter', 'B', 9)
@@ -1574,35 +1519,16 @@ def generate_pdf_report(resultats_df, params, objectives):
     # Générer les graphiques
     img_buffer1 = fig_to_img_buffer(create_financial_chart(resultats_df))
     img_buffer2 = fig_to_img_buffer(create_waterfall_chart(resultats_df))
-    img_buffer3 = fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
-    img_buffer4 = fig_to_img_buffer(create_historical_performance_chart())
-
-
+    
     # Créer le PDF
-    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3, img_buffer4], resultats_df, params, objectives)
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2], resultats_df, params, objectives)
 
     return pdf_bytes
 
 
-def format_value(value):
-    if isinstance(value, (int, float)):
-        formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
-        return f"{formatted} €"
-    elif isinstance(value, str):
-        try:
-            num_value = float(value.replace(" ", "").replace(",", ".").replace("€", "").strip())
-            return format_value(num_value)
-        except ValueError:
-            return value
-    return str(value)
 
 
 
-import tempfile
-import os
-from PIL import Image
-import io
-from fpdf import FPDF
 
 def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf = PDF()
