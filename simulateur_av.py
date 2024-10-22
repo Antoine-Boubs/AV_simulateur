@@ -1107,7 +1107,7 @@ class PDF(FPDF):
         
         # Positionnement du bouton RDV (à droite)
         rdv_x = self.w - rdv_width - 10
-        rdv_y = 10
+        rdv_y = 5
         self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
         
         # Ligne de séparation
