@@ -1829,12 +1829,9 @@ def format_value(value):
 
 
 def create_detailed_table(pdf, resultats_df):
-    pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
-    pdf.ln(5)
     col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
     headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
+    
     data = [
         [row['Année'], 
          format_value(row['Capital initial (NET)']),
@@ -1847,7 +1844,51 @@ def create_detailed_table(pdf, resultats_df):
          format_value(row['Capital fin d\'année (NET)'])]
         for _, row in resultats_df.iterrows()
     ]
-    pdf.colored_table(headers, data, col_widths)
+
+    def add_table_header():
+        pdf.set_font_safe('Inter', 'B', 10)
+        pdf.set_fill_color(240, 240, 240)
+        for i, (header, width) in enumerate(zip(headers, col_widths)):
+            pdf.cell(width, 10, header, 1, 0, 'C', 1)
+        pdf.ln()
+
+    def add_table_row(row):
+        pdf.set_font_safe('Inter', '', 9)
+        for i, (value, width) in enumerate(zip(row, col_widths)):
+            align = 'C' if i == 0 else 'R'
+            pdf.cell(width, 8, str(value), 1, 0, align)
+        pdf.ln()
+
+    pdf.add_page()
+    pdf.set_font_safe('Inter', 'B', 14)
+    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
+    pdf.ln(5)
+
+    rows_per_page = 25
+    total_width = sum(col_widths)
+
+    for i, row in enumerate(data):
+        if i % rows_per_page == 0:
+            if i != 0:
+                pdf.add_page()
+            pdf.set_x((pdf.w - total_width) / 2)
+            add_table_header()
+
+        pdf.set_x((pdf.w - total_width) / 2)
+        add_table_row(row)
+
+    # Ajouter une ligne de total si nécessaire
+    if len(data) > 0:
+        pdf.set_x((pdf.w - total_width) / 2)
+        pdf.set_font_safe('Inter', 'B', 9)
+        pdf.cell(col_widths[0], 8, 'Total', 1, 0, 'C')
+        for i in range(1, len(col_widths)):
+            if i in [2, 3, 4, 5, 6, 7]:  # Colonnes à additionner
+                total = sum(float(row[i].replace(' ', '').replace(',', '.').replace('€', '')) for row in data)
+                pdf.cell(col_widths[i], 8, format_value(total), 1, 0, 'R')
+            else:
+                pdf.cell(col_widths[i], 8, '', 1, 0, 'R')
+        pdf.ln()
 
 
 
