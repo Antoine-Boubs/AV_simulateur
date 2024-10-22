@@ -1168,9 +1168,9 @@ class PDF(FPDF):
         
         # Déplacer le curseur après l'image
         self.set_y(self.get_y() + img_height + 5)
-    
-    
-   def add_objectives_image(self, image_path):
+
+
+    def add_objectives_image(self, image_path):
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
     
