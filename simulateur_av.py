@@ -1099,16 +1099,6 @@ class PDF(FPDF):
             rdv_x = self.w - rdv_width - 10
             rdv_y = 5
             self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
-
-        def scale_image_size(self, width, height, max_width, max_height):
-            """Redimensionne proportionnellement l'image pour qu'elle rentre dans les dimensions maximales."""
-            if width > max_width:
-                height = int(height * (max_width / width))
-                width = max_width
-            if height > max_height:
-                width = int(width * (max_height / height))
-                height = max_height
-            return width, height
         
         
         # Explicitly set the color and width for the divider
@@ -1119,8 +1109,16 @@ class PDF(FPDF):
         self.ln(30)
         self.set_y(35)
     
-    
-        
+
+    def scale_image_size(self, width, height, max_width, max_height):
+            """Redimensionne proportionnellement l'image pour qu'elle rentre dans les dimensions maximales."""
+            if width > max_width:
+                height = int(height * (max_width / width))
+                width = max_width
+            if height > max_height:
+                width = int(width * (max_height / height))
+                height = max_height
+            return width, height
 
     def footer(self):
         apple_gray = (128, 128, 128)
