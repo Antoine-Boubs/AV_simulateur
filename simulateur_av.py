@@ -1559,7 +1559,13 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.add_warning()
 
+    pdf.add_objectives_section(objectives)
 
+
+    # Génération des résultats
+    resultats_df = optimiser_objectifs(params, objectifs)
+    # Appel de la méthode avec les arguments requis
+    pdf.add_simulation_parameters(params, resultats_df, objectives)
 
     # Définition des titres et descriptions des graphiques
     graph_titles = [
@@ -1571,40 +1577,32 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
     ]
 
-    graph_width = 200
+    graph_width = 180
     graph_height = 100
     for img_buffer, title in zip(img_buffers, graph_titles):
         pdf.add_page()
         pdf.set_font('Inter', 'B', 22)
         pdf.set_text_color(*blue_one)
         pdf.cell(0, 10, title, 0, 1, 'L')
-        
         # Ajout du séparateur doré
         pdf.set_draw_color(203, 163, 37)  # Couleur dorée (RGB)
         pdf.set_line_width(0.5)  # Épaisseur de la ligne
         pdf.line(15, pdf.get_y(), pdf.w - 15, pdf.get_y())
         pdf.ln(5)  # Espace après la ligne
-        
         add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
         pdf.ln(graph_height + 15)
-        
         # Ajout de l'image du track record
         pdf.add_track_record_image('assets/Track_record.png')
-        
         pdf.set_font('Inter', '', 12)
         pdf.set_text_color(*apple_gray)
         pdf.multi_cell(0, 6, graph_descriptions[graph_titles.index(title)], 0, 'L')
         
     
-    # Génération des résultats
-    resultats_df = optimiser_objectifs(params, objectifs)
-    # Appel de la méthode avec les arguments requis
-    pdf.add_simulation_parameters(params, resultats_df, objectives)
+    
     # Tableau détaillé
     pdf.create_detailed_table(resultats_df)
 
-    pdf.add_objectives_section(objectives)
-
+    
    
     
     
