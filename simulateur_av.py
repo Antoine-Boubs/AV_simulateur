@@ -1173,7 +1173,7 @@ class PDF(FPDF):
         img_width, img_height = self.get_image_dimensions(image_path)
     
         # Calculer la largeur et la hauteur proportionnelles
-        page_width = self.w - 40  # 20 mm de marge de chaque côté
+        page_width = self.w - 20 # 20 mm de marge de chaque côté
         img_height = (page_width / img_width) * img_height
     
         # Calculer la position x pour centrer l'image
