@@ -1449,11 +1449,10 @@ class PDF(FPDF):
         self.ln(10)
 
         # Dessiner les séparateurs verticaux
-        separator_y1 = self.get_y() - 27  # Reduced divider height
-        separator_y2 = self.get_y()
+        separator_y1 = self.get_y() - 37  # Cette ligne définit le point de départ (haut) des séparateurs verticaux.
+        separator_y2 = self.get_y() -10 # Cette ligne définit le point d'arrivée (bas) des séparateurs verticaux.
         self.set_draw_color(32, 32, 33)  # Couleur gris clair pour les séparateurs
         self.set_line_width(0.5)  # Set the line width to 0.5
-        self.set_y(self.get_y() - 10
         self.line(left_margin + col_width - 5, separator_y1, left_margin + col_width - 5, separator_y2)
         self.line(left_margin + 2 * col_width - 5, separator_y1, left_margin + 2 * col_width - 5, separator_y2)        
 
