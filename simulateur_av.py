@@ -1081,8 +1081,6 @@ class PDF(FPDF):
     def header(self):
         # Bouton RDV
         rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
-        rdv_width = 30  # Ajustez selon la taille souhaitée
-        rdv_height = 15  # Ajustez selon la taille souhaitée
         
         # Titre
         self.set_font('Inter', 'B', 16)
