@@ -1461,20 +1461,6 @@ class PDF(FPDF):
         # Ajouter le logo Nalo
         self.add_nalo_logo(right_margin)
     
-    def add_nalo_logo(self, right_margin):
-        logo_width, logo_height = 30, 15
-        logo_x = self.w - right_margin - logo_width
-        logo_y = 10
-        logo_path = 'assets/Logo1.png'
-    
-    def add_simulation_info_section(self, title, info_list, effective_width):
-        self.set_font_safe('Inter', 'B', 14)
-        self.cell(effective_width, 10, title, 0, 1, 'L')
-        self.ln(2)
-        self.set_font_safe('Inter', '', 10)
-        for item in info_list:
-            self.multi_cell(effective_width, 5, item)
-            self.ln(2)
     
     def set_font_safe(self, family, style='', size=0):
         try:
@@ -1498,250 +1484,6 @@ class PDF(FPDF):
             return resultats_df['Année'].max() if not resultats_df.empty else 0
         max_annee_objectif = max(obj['annee'] for obj in objectifs)
         return min(max_annee_objectif, resultats_df['Année'].max()) if not resultats_df.empty else max_annee_objectif
-
-
-    def add_nalo_page(self):
-        self.add_page()
-    
-        margin = 20  # Consistent margin for the entire page
-        self.set_left_margin(margin)
-        self.set_right_margin(margin)
-        effective_width = self.w - 2*margin
-    
-        text_color = (29, 29, 31)
-        title_color = (0, 0, 0)
-        warning_bg_color = (230, 230, 250)
-
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(*text_color)
-        self.multi_cell(effective_width, 5, "Nalo est un service d'investissements financiers innovant. En investissant avec Nalo, vous profitez de nombreux avantages :")
-        self.ln(3)
-
-        def add_section(title, content, x, y, width, max_height):
-            self.set_xy(x, y)
-            self.set_font_safe('Inter', 'B', 11)
-            self.set_text_color(*title_color)
-            self.cell(width, 6, title, ln=True)
-            self.set_font_safe('Inter', '', 9)
-            self.set_text_color(*text_color)
-            
-            # Ajuster la position x pour le contenu
-            self.set_x(x)
-            
-            self.multi_cell(width, 4, content)
-            return self.get_y()
-
-        col_width = (effective_width - 20) / 2  # -20 pour tenir compte de l'espace entre les colonnes
-
-        self.line(margin, self.get_y(), self.w - margin, self.get_y())
-        self.ln(3)
-
-        start_y = self.get_y()
-        max_height = 50
-
-        # Section 1
-        y1 = add_section("UN INVESTISSEMENT SUR-MESURE", 
-                    "Nalo vous permet d'investir en fonction de votre situation patrimoniale et de l'ensemble de vos objectifs financiers (achat immobilier, retraite, études des enfants, ou tout autre objectif). Pour chaque projet, vous disposez d'un investissement dédié et personnalisé au sein du même contrat d'assurance-vie.",
-                    margin, start_y, col_width, max_height)
-
-        # Section 2 (déplacée vers la droite)
-        y2 = add_section("UNE SÉCURISATION PROGRESSIVE", 
-                    "Pour mieux gérer votre prise de risque, nous opérons une sécurisation progressive de vos investissements au cours du temps. En fonction de vos projets, nous faisons en sorte que la proportion d'actifs peu risqués soit importante au moment où vous avez besoin de récupérer votre argent.",
-                    margin + col_width + 20, start_y, col_width, max_height)
-
-        next_y = max(y1, y2) + 5
-        self.set_y(next_y)
-
-        self.line(margin, self.get_y(), self.w - margin, self.get_y())
-        self.ln(3)
-        start_y = self.get_y()
-
-        # Section 3
-        y3 = add_section("UN CONSEIL INDÉPENDANT", 
-                    "Nalo est une société de conseil en investissement financier, qui accompagne ses clients de manière indépendante. Nous ne touchons pas de rétrocessions en fonction des fonds d'investissement choisis, cela nous permet de vous conseiller sans conflit d'intérêts.",
-                    margin, start_y, col_width, max_height)
-
-        # Section 4 (déplacée vers la droite)
-        y4 = add_section("UNE MÉTHODE EFFICACE", 
-                    "Notre méthode d'investissement est le résultat de plusieurs décennies de recherches économiques, financières et mathématiques. Elle tire son efficacité des travaux de plusieurs prix Nobel d'économie. Nous optimisons vos allocations et nous adaptons vos investissements aux conditions économiques et financières.",
-                    margin + col_width + 20, start_y, col_width, max_height)
-
-        next_y = max(y3, y4) + 5
-        self.set_y(next_y)
-
-        # Avertissement
-        warning_width = effective_width  # Use full width instead of 90%
-        warning_x = margin  # Set to left margin
-        warning_y = self.get_y() + 20  # Increased gap before warning
-        warning_height = 35  # Reduced from 45
-
-        self.set_fill_color(*warning_bg_color)
-        self.rect(warning_x, warning_y, warning_width, warning_height, 'F')
-        self.set_xy(warning_x + 10, warning_y + 2)  # Reduced from +3
-        self.set_font_safe('Inter', 'B', 11)  # Slightly larger font
-        self.cell(0, 4, "AVERTISSEMENT", ln=True)  # Reduced from 5
-        self.set_xy(warning_x + 10, self.get_y())  # Removed +1 spacing
-        self.set_font_safe('Inter', '', 9)
-        self.multi_cell(warning_width - 20, 3, "La simulation de votre investissement est non contractuelle. L'investissement sur les supports en unités de compte supporte un risque de perte en capital puisque leur valeur est sujette à fluctuation à la hausse comme à la baisse dépendant notamment de l'évolution des marchés financiers. L'assureur s'engage sur le nombre d'unités de compte et non sur leur valeur qu'il ne garantit pas. Les performances passées ne préjugent pas des performances futures et ne sont pas stables dans le temps.")
-
-    
-    def add_performance_historique(self):
-        self.add_page()
-    
-        left_margin = 20  # Increased left margin
-        right_margin = 15
-        self.set_left_margin(left_margin)
-        self.set_right_margin(right_margin)
-        effective_width = self.w - left_margin - right_margin
-    
-        text_color = (29, 29, 31)
-        title_color = (0, 0, 0)
-    
-        self.set_font_safe('Inter', 'B', 18)
-        self.set_text_color(*title_color)
-        self.cell(effective_width, 10, 'Performances historiques', 0, 1, 'L')
-        self.ln(5)
-    
-        # Ajouter le divider ici
-        self.set_draw_color(200, 200, 200)  # Couleur gris clair pour le divider
-        self.line(left_margin, self.get_y(), self.w - right_margin, self.get_y())
-        self.ln(10)  # Espace après le divider
-    
-    
-        # Données de performance (5 dernières années)
-        data = [
-            (2019, 22.69),
-            (2020, -0.80),
-            (2021, 25.33),
-            (2022, -12.17),
-            (2023, 11.91),
-        ]
-    
-        # Calcul de la performance cumulée
-        cumulative_performance = 1
-        for _, perf in data:
-            cumulative_performance *= (1 + perf / 100)
-        cumulative_performance = (cumulative_performance - 1) * 100
-    
-        # Section de commentaire (côté gauche)
-        comment_width = effective_width * 0.40  # Reduced width for comment
-        graph_width = effective_width * 0.55  # Increased width for graph
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(*text_color)
-        self.multi_cell(comment_width, 5, "Rendement sur les 5 dernières années")
-        self.ln(2)
-        self.set_font_safe('Inter', 'B', 14)
-        self.cell(comment_width, 8, f"Performance cumulée : {cumulative_performance:.2f}%", 0, 1)
-        self.ln(2)
-        self.set_font_safe('Inter', '', 11) # Update 1: Increased font size
-        self.multi_cell(comment_width, 4, "Performance historique de la stratégie conseillée pour votre projet. C'est la performance que vous auriez eue en créant ce projet en 2019 : prenant en compte les changements d'allocation conseillés par Nalo.")
-        self.ln(2)
-        self.set_font_safe('Inter', '', 8)
-        self.set_text_color(128, 128, 128)
-        self.cell(comment_width, 4, "Source : Nalo", 0, 1)
-    
-        self.ln(5)  # Reduced space between comment and graph
-    
-    
-        # Graphique (côté droit)
-        graph_x = self.w - right_margin - graph_width
-        chart_width = graph_width
-        chart_height = 80
-        chart_x = graph_x
-        chart_y = self.get_y() - 80  # Increased offset to move the graph up
-        self.set_y(chart_y)  # Set the current Y position to the start of the graph
-    
-        # Dessiner le graphique
-        bar_width = chart_width / len(data)
-        max_performance = max(abs(perf) for _, perf in data)
-        scale_factor = (chart_height / 2) / max_performance
-    
-        for i, (year, performance) in enumerate(data):
-            x = chart_x + i * bar_width
-            if performance >= 0:
-                y = chart_y + chart_height / 2 - performance * scale_factor
-                height = performance * scale_factor
-                self.set_fill_color(140, 192, 132)  # Vert pour les performances positives
-            else:
-                y = chart_y + chart_height / 2
-                height = -performance * scale_factor
-                self.set_fill_color(255, 59, 48)  # Rouge pour les performances négatives
-            
-            self.rect(x, y, bar_width * 0.8, height, 'F')
-            
-            # Ajouter les étiquettes de performance
-            self.set_font_safe('Inter', '', 8)
-            self.set_text_color(0, 0, 0)
-            perf_text = f"{'+' if performance > 0 else ''}{performance:.1f}%"
-            text_width = self.get_string_width(perf_text)
-            self.text(x + (bar_width - text_width) / 2, y - 2 if performance >= 0 else y + height + 8, perf_text)
-            
-            # Ajouter les années
-            self.text(x + (bar_width - self.get_string_width(str(year))) / 2, chart_y + chart_height + 5, str(year))
-    
-        # Ajouter une ligne de base
-        self.line(chart_x, chart_y + chart_height / 2, chart_x + chart_width, chart_y + chart_height / 2)
-
-
-    
-    def add_last_page(self):
-        self.add_page()
-        margin = 20
-        self.set_left_margin(margin)
-        self.set_right_margin(margin)
-        effective_width = self.w - 2*margin
-        
-        self.set_font_safe('Inter', '', 11)
-        self.set_text_color(60, 60, 67)
-        
-        content = [
-            "Avec notre service, vos investissements sont réalisés au sein d'un contrat d'assurance-vie. Vous profitez ainsi de nombreux avantages, parmi lesquels :",
-            "• Une fiscalité avantageuse durant la vie et à votre succession",
-            "• La disponibilité de votre épargne : vous pouvez effectuer des retraits à tout moment",
-            "• La possibilité d'effectuer des versements quand vous le souhaitez"
-        ]
-        
-        for paragraph in content:
-            self.multi_cell(effective_width, 6, paragraph, 0, 'L')
-            self.ln(4)
-        
-        self.add_info_box(
-            "Fiscalité de l'assurance-vie",
-            [
-                "• Contrat de moins de 8 ans : 12,80 % ou barème progressif de l'IR",
-                "• Contrat de plus de 8 ans : 7,5 % ou 12,8 % selon les versements, avec abattements",
-                "• Prélèvements sociaux : 17,2 % sur les plus-values"
-            ]
-        )
-        
-        self.set_y(-30)
-        self.set_font_safe('Inter', 'B', 11)
-        self.set_text_color(60, 60, 67)
-        self.cell(effective_width / 2, 10, 'Contact: 01 23 45 67 89 | contact@votreentreprise.com', 0, 0, 'L')
-        
-        if os.path.exists(self.logo_path):
-            self.image(self.logo_path, x=self.w - margin - 20, y=self.h - 30, w=20)
-
-    def add_info_box(self, title, content):
-        apple_blue = (0, 122, 255)
-        apple_light_gray = (247, 247, 247)
-        apple_dark_gray = (60, 60, 67)
-        
-        self.set_fill_color(*apple_light_gray)
-        self.rect(self.l_margin, self.get_y(), self.w - self.l_margin - self.r_margin, 50, 'F')
-        
-        self.set_xy(self.l_margin + 5, self.get_y() + 5)
-        self.set_font_safe('Inter', 'B', 14)
-        self.set_text_color(*apple_blue)
-        self.cell(0, 10, title, 0, 1)
-        
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(*apple_dark_gray)
-        for item in content:
-            self.set_x(self.l_margin + 5)
-            self.multi_cell(self.w - self.l_margin - self.r_margin - 10, 5, item, 0, 'L')
-        
-        self.ln(10)
 
 
 import re
@@ -1797,7 +1539,6 @@ def generate_pdf_report(resultats_df, params, objectives):
     return pdf_bytes
 
 
-
 def format_value(value):
     if isinstance(value, (int, float)):
         formatted = f"{value:,.2f}".replace(",", " ").replace(".", ",")
@@ -1836,7 +1577,7 @@ def create_detailed_table(pdf, resultats_df):
     border_color = (200, 200, 200)  # Gris moyen pour les bordures
 
     def add_table_header():
-        pdf.set_font_safe('Inter', 'B', 10)
+        pdf.set_font_safe('Inter', 'B', 9)
         pdf.set_fill_color(*header_color)
         pdf.set_text_color(*text_color)
         pdf.set_draw_color(*border_color)
@@ -1950,28 +1691,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_text_color(*apple_gray)
         pdf.multi_cell(0, 6, graph_descriptions[i-1], 0, 'L')
 
-    # Récapitulatif du projet
-    pdf.add_page()
-    pdf.set_font('Inter', 'B', 24)
-    pdf.set_text_color(*apple_blue)
-    pdf.cell(0, 20, '5. Récapitulatif du projet', 0, 1, 'L')
-    pdf.ln(10)
-    pdf.set_fill_color(*apple_light_gray)
-    pdf.rect(10, pdf.get_y(), 190, 100, 'F')
-    pdf.set_xy(15, pdf.get_y() + 5)
-    pdf.set_font('Inter', '', 12)
-    pdf.set_text_color(*apple_gray)
-    for key, value in params.items():
-        pdf.cell(0, 8, f"{key}: {value}", 0, 1)
-    pdf.ln(10)
-    pdf.set_font('Inter', 'B', 14)
-    pdf.cell(0, 10, 'Objectifs:', 0, 1)
-    for obj in objectives:
-        pdf.set_font('Inter', '', 12)
-        for key, value in obj.items():
-            pdf.cell(0, 8, f"{key}: {value}", 0, 1)
-        pdf.ln(5)
-
+    
     # Tableau détaillé
     pdf.add_page()
     create_detailed_table(pdf, resultats_df)
@@ -1983,8 +1703,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     # Appel de la méthode avec les arguments requis
     pdf.add_simulation_parameters(params, resultats_df, objectives)
-
-    pdf.add_nalo_page()
 
     return pdf.output(dest='S').encode('latin-1', errors='replace')
     
