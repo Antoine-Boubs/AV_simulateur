@@ -1657,8 +1657,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.cell(0, 20, title, 0, 1, 'L')
 
         # Ajout du séparateur doré
-        pdf.set_draw_color(255, 215, 0)  # Couleur dorée (RGB)
-        pdf.set_line_width(1.5)  # Épaisseur de la ligne
+        pdf.set_draw_color(203, 163, 37)  # Couleur dorée (RGB)
+        pdf.set_line_width(0.5)  # Épaisseur de la ligne
         pdf.line(15, pdf.get_y(), pdf.w - 15, pdf.get_y())
         pdf.ln(5)  # Espace après la ligne
         
