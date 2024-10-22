@@ -1282,28 +1282,18 @@ class PDF(FPDF):
     
     def rounded_rect(self, x, y, w, h, r, style=''):
         '''
-        Draw a rounded rectangle
+        Draw a rounded rectangle using standard FPDF methods
         '''
-        k = 0.4477
         self.set_line_width(0.5)
         
-        self.move_to(x + r, y)
-        self.line_to(x + w - r, y)
-        self.curve_to(x + w - r * k, y, x + w, y + r * k, x + w, y + r)
-        self.line_to(x + w, y + h - r)
-        self.curve_to(x + w, y + h - r * k, x + w - r * k, y + h, x + w - r, y + h)
-        self.line_to(x + r, y + h)
-        self.curve_to(x + r * k, y + h, x, y + h - r * k, x, y + h - r)
-        self.line_to(x, y + r)
-        self.curve_to(x, y + r * k, x + r * k, y, x + r, y)
+        # Draw the rectangle
+        self.rect(x, y, w, h, style)
         
-        if style == 'F':
-            self.fill()
-        elif style == 'FD' or style == 'DF':
-            self.fill()
-            self.draw()
-        else:
-            self.draw()
+        # Draw the rounded corners
+        self.circle(x + r, y + r, r, style)
+        self.circle(x + w - r, y + r, r, style)
+        self.circle(x + r, y + h - r, r, style)
+        self.circle(x + w - r, y + h - r, r, style)
 
 
     def create_detailed_table(self, resultats_df):
