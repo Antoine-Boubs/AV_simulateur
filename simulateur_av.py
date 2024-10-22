@@ -1147,6 +1147,7 @@ class PDF(FPDF):
         self.set_y(-10)
         self.set_text_color(*apple_blue)
         self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
+        
 
     def add_warning(self):
         self.add_page()
@@ -1176,39 +1177,6 @@ class PDF(FPDF):
         with Image.open(image_path) as img:
             return img.size
 
-    def add_recap(self, params, objectives):
-        self.add_page()
-        self.set_font_safe('Inter', 'B', 24)
-        self.set_text_color(0, 0, 0)
-        self.cell(0, 15, 'Récapitulatif de votre projet', 0, 1, 'C')
-        self.ln(5)
-        
-        self.add_info_section("Informations du client", [
-            f"Capital initial : {params['capital_initial']} €",
-            f"Versement mensuel : {params['versement_mensuel']} €",
-            f"Rendement annuel : {params['rendement_annuel']*100:.2f}%"
-        ])
-        
-        versements = []
-        if 'versements_libres' in params and params['versements_libres']:
-            versements.append("Versements libres :")
-            for vl in params['versements_libres']:
-                versements.append(f"Année {vl['annee']} : {vl['montant']} €")
-        if 'modifications_versements' in params and params['modifications_versements']:
-            versements.append("Modifications de versements :")
-            for mv in params['modifications_versements']:
-                if mv['montant'] == 0:
-                    versements.append(f"Versements arrêtés de l'année {mv['debut']} à {mv['fin']}")
-                else:
-                    versements.append(f"Versements ajustés à {mv['montant']} € de l'année {mv['debut']} à {mv['fin']}")
-        if not versements:
-            versements = ["Aucun versement libre ou modification de versement défini"]
-        self.add_info_section("Versements", versements)
-        
-        self.add_info_section("Vos objectifs", [
-            f"Objectif : {obj['nom']}\n  Montant annuel : {obj['montant_annuel']} €\n  Durée : {obj['duree_retrait']} ans\n  Année de réalisation : {obj['annee']}"
-            for obj in objectives
-        ])
 
     def add_objectives_section(self, objectives):
         self.add_page()
@@ -1269,22 +1237,6 @@ class PDF(FPDF):
             
         self.ln(20)  # Espace supplémentaire en bas
         
-
-    def add_info_section(self, title, content):
-        effective_width = self.w - self.l_margin - self.r_margin
-        
-        apple_blue = (0, 122, 255)
-        apple_dark_gray = (60, 60, 67)
-        
-        self.set_font_safe('Inter', 'B', 18)
-        self.set_text_color(*apple_blue)
-        self.cell(effective_width, 12, title, 0, 1, 'L')
-        
-        self.set_font_safe('Inter', '', 12)
-        self.set_text_color(*apple_dark_gray)
-        for item in content:
-            self.multi_cell(effective_width, 8, item, 0, 'L')
-        self.ln(10)
 
     def colored_table(self, headers, data, col_widths):
         header_color = (247, 247, 247)
@@ -1978,23 +1930,11 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Définition des titres et descriptions des graphiques
     graph_titles = [
         "Évolution du placement financier",
-        "Composition du capital",
-        "Analyse en cascade de l'évolution du capital",
-        "Performances historiques"
     ]
     
     graph_descriptions = [
         "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
         "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
-        
-        "Ce graphique en donut montre la répartition entre vos versements et les plus-values générées. "
-        "Il met en évidence la croissance de votre capital au fil du temps.",
-        
-        "Ce graphique en cascade illustre les différentes étapes de l'évolution de votre capital, "
-        "montrant l'impact de chaque facteur sur la valeur finale de votre investissement.",
-        
-        "Ce graphique présente les performances historiques de votre investissement. "
-        "Il montre les variations annuelles ainsi que la performance cumulée sur la période."
     ]
     
     graph_width = 180
@@ -2045,11 +1985,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_simulation_parameters(params, resultats_df, objectives)
 
     pdf.add_nalo_page()
-
-    pdf.add_performance_historique()  # Ajoutez cette ligne ici
-
-    # Ajouter la dernière page
-    pdf.add_last_page()
 
     return pdf.output(dest='S').encode('latin-1', errors='replace')
     
