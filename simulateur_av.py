@@ -1046,10 +1046,6 @@ from io import BytesIO
 class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
-
-        self.original_top_margin = self.t_margin
-        self.original_left_margin = self.l_margin
-        self.original_right_margin = self.r_margin
        
         self.is_custom_font_loaded = False
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1162,7 +1158,7 @@ class PDF(FPDF):
         img_width, img_height = self.get_image_dimensions(image_path)
         
         # Calculer la largeur et la hauteur proportionnelles
-        page_width = self.w - 2 * new_margin
+        page_width = self.w - 2 * self.l_margin
         img_height = (page_width / img_width) * img_height
         
         # Ajouter l'image
