@@ -1046,6 +1046,10 @@ from io import BytesIO
 class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
+
+        self.original_top_margin = self.t_margin
+        self.original_left_margin = self.l_margin
+        self.original_right_margin = self.r_margin
        
         self.is_custom_font_loaded = False
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1153,10 +1157,6 @@ class PDF(FPDF):
         
 
     def add_track_record_image(self, image_path):
-        # Sauvegarder les marges originales
-        original_top_margin = self.t_margin
-        original_left_margin = self.l_margin
-        original_right_margin = self.r_margin
     
         # Réduire les marges
         new_margin = 10
@@ -1177,7 +1177,6 @@ class PDF(FPDF):
         # Déplacer le curseur après l'image
         self.set_y(self.get_y() + img_height + 5)  # Réduit l'espace après l'image à 5 mm
     
-        # Ne pas restaurer les marges ici pour permettre à la deuxième image de suivre
     
     def add_objectives_image(self, image_path):
         # Vérifier s'il y a assez d'espace sur la page actuelle
