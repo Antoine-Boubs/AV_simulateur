@@ -1683,7 +1683,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.ln(graph_height + 15)
         
         # Ajout de l'image du track record
-        pdf.add_track_record_image('chemin/vers/votre/image/track_record.png')
+        pdf.add_track_record_image('assets/Track_record.png')
         
         pdf.set_font('Inter', '', 12)
         pdf.set_text_color(*apple_gray)
