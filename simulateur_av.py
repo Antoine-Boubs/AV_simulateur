@@ -1079,25 +1079,40 @@ class PDF(FPDF):
             self.set_font('Arial', '', 12)
 
     def header(self):
-        # Bouton RDV
+        # Chemin vers l'image du bouton RDV
         rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
         
         # Titre
         self.set_font('Inter', 'B', 16)
-        title_width = self.get_string_width('Votre simulation personnalisée') + 6
+        title = 'Votre simulation personnalisée'
+        title_width = self.get_string_width(title) + 6
         
-        # Positionnement
+        # Positionnement du titre
         self.set_xy(10, 10)
-        self.cell(title_width, 10, 'Votre simulation personnalisée', 0, 0, 'L')
+        self.cell(title_width, 10, title, 0, 0, 'L')
         
-        # Bouton RDV (à droite)
-        self.image(rdv_path, self.w - rdv_width - 10, 10, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
+        # Obtenir les dimensions originales de l'image RDV
+        rdv_img = self.image_info(rdv_path)
+        if rdv_img:
+            rdv_width, rdv_height = rdv_img['w'], rdv_img['h']
+        else:
+            # Valeurs par défaut si l'image n'est pas trouvée
+            rdv_width, rdv_height = 30, 15
+            print(f"Attention : L'image {rdv_path} n'a pas été trouvée. Utilisation des dimensions par défaut.")
+        
+        # Positionnement du bouton RDV (à droite)
+        rdv_x = self.w - rdv_width - 10
+        rdv_y = 10
+        self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
         
         # Ligne de séparation
         self.line(10, 25, self.w - 10, 25)
         
         # Espace après l'en-tête
-        self.ln(20)
+        self.ln(30)  # Augmenté pour s'assurer que le contenu commence après la ligne de séparation
+    
+        # Réinitialiser la position pour le contenu de la page
+        self.set_y(35)
 
     def footer(self):
         apple_gray = (128, 128, 128)
