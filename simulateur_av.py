@@ -1159,6 +1159,12 @@ class PDF(FPDF):
         # Calculer la largeur et la hauteur proportionnelles
         page_width = self.w - 20  # 15 mm de marge de chaque côté
         img_height = (page_width / img_width) * img_height
+
+        # Réduire les marges
+        original_top_margin = self.t_margin
+        original_bottom_margin = self.b_margin
+        self.set_top_margin(10)  # Réduire la marge supérieure à 10 mm
+        self.set_bottom_margin(10)  # Réduire la marge inférieure à 10 mm
         
         # Ajouter l'image
         self.image(image_path, x=15, y=self.get_y(), w=page_width, h=img_height)
@@ -1178,6 +1184,12 @@ class PDF(FPDF):
     
         # Calculer la position x pour centrer l'image
         x = (self.w - page_width) / 2
+
+        # Réduire les marges
+        original_top_margin = self.t_margin
+        original_bottom_margin = self.b_margin
+        self.set_top_margin(10)  # Réduire la marge supérieure à 10 mm
+        self.set_bottom_margin(10)  # Réduire la marge inférieure à 10 mm
     
         # Ajouter l'image
         self.image(image_path, x=x, y=self.get_y(), w=page_width, h=img_height)
