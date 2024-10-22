@@ -1226,44 +1226,41 @@ class PDF(FPDF):
     def add_objectives_section(self, objectives):
         self.add_page()
         
-        # Couleurs inspirées d'Apple
+        # Apple-inspired colors
         apple_blue = (0, 122, 255)
         apple_gray = (142, 142, 147)
-        apple_light_gray = (209, 225, 232)
-        apple_border = (22, 66, 91)  # Couleur de bordure légère
+        apple_light_blue = (242, 247, 255)
+        apple_border = (0, 122, 255)
         
-        # Marges et largeur effective
+        # Margins and effective width
         left_margin = 20
         right_margin = 20
         self.set_left_margin(left_margin)
         self.set_right_margin(right_margin)
-        effective_width = (self.w - left_margin - right_margin) * 0.9  # Réduire à 90% de la largeur originale
+        effective_width = self.w - left_margin - right_margin
         
-        # Titre de la section
-        self.set_font('Inter', 'B', 24)
+        # Section title
+        self.set_font('Inter', 'B', 32)
         self.set_text_color(*apple_blue)
-        self.cell(self.w - left_margin - right_margin, 15, 'Vos objectifs', 0, 1, 'L')
+        self.cell(effective_width, 20, 'Vos objectifs', 0, 1, 'L')
         self.ln(10)
-        self.ln(10)  # Espace supplémentaire en haut
         
-        # Fonction pour ajouter un objectif
         def add_objective(obj):
             start_y = self.get_y()
             
-            # Fond gris clair avec bordure
-            self.set_fill_color(*apple_light_gray)
+            # Light blue background with rounded corners
+            self.set_fill_color(*apple_light_blue)
             self.set_draw_color(*apple_border)
-            x_offset = (self.w - left_margin - right_margin - effective_width) / 2
-            self.rect(left_margin + x_offset, start_y, effective_width, 50, 'FD')  # 'FD' pour remplir et dessiner la bordure
+            self.rounded_rect(left_margin, start_y, effective_width, 80, 10, 'F')
             
-            # Nom de l'objectif
-            self.set_font('Inter', 'B', 14)
+            # Objective name
+            self.set_font('Inter', 'B', 18)
             self.set_text_color(0, 0, 0)
-            self.set_xy(left_margin + x_offset + 10, start_y + 5)
-            self.cell(effective_width - 20, 10, obj['nom'], 0, 1)
+            self.set_xy(left_margin + 15, start_y + 15)
+            self.cell(effective_width - 30, 10, obj['nom'], 0, 1)
             
-            # Détails de l'objectif
-            self.set_font('Inter', '', 10)
+            # Objective details
+            self.set_font('Inter', '', 12)
             self.set_text_color(*apple_gray)
             details = [
                 f"Période de retrait : {obj['duree_retrait']} ans",
@@ -1271,17 +1268,42 @@ class PDF(FPDF):
                 f"Montant souhaité (année) : {format_value(obj['montant_annuel'])} €"
             ]
             
-            for detail in details:
-                self.set_x(left_margin + x_offset + 10)
-                self.cell(effective_width - 20, 8, detail, 0, 1)
+            for i, detail in enumerate(details):
+                self.set_xy(left_margin + 15, start_y + 35 + (i * 15))
+                self.cell(effective_width - 30, 8, detail, 0, 1)
             
-            self.ln(25)  # Augmenter l'espace entre les objectifs
+            self.ln(90)  # Space between objectives
         
-        # Ajout de chaque objectif
+        # Add each objective
         for obj in objectives:
             add_objective(obj)
-            
-        self.ln(20)  # Espace supplémentaire en bas
+        
+        self.ln(20)  # Extra space at the bottom
+    
+    def rounded_rect(self, x, y, w, h, r, style=''):
+        '''
+        Draw a rounded rectangle
+        '''
+        k = 0.4477
+        self.set_line_width(0.5)
+        
+        self.move_to(x + r, y)
+        self.line_to(x + w - r, y)
+        self.curve_to(x + w - r * k, y, x + w, y + r * k, x + w, y + r)
+        self.line_to(x + w, y + h - r)
+        self.curve_to(x + w, y + h - r * k, x + w - r * k, y + h, x + w - r, y + h)
+        self.line_to(x + r, y + h)
+        self.curve_to(x + r * k, y + h, x, y + h - r * k, x, y + h - r)
+        self.line_to(x, y + r)
+        self.curve_to(x, y + r * k, x + r * k, y, x + r, y)
+        
+        if style == 'F':
+            self.fill()
+        elif style == 'FD' or style == 'DF':
+            self.fill()
+            self.draw()
+        else:
+            self.draw()
 
 
     def create_detailed_table(self, resultats_df):
