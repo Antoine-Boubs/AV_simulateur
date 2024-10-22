@@ -1453,6 +1453,7 @@ class PDF(FPDF):
         separator_y2 = self.get_y()
         self.set_draw_color(32, 32, 33)  # Couleur gris clair pour les séparateurs
         self.set_line_width(0.5)  # Set the line width to 0.5
+        self.set_y(self.get_y() - 10
         self.line(left_margin + col_width - 5, separator_y1, left_margin + col_width - 5, separator_y2)
         self.line(left_margin + 2 * col_width - 5, separator_y1, left_margin + 2 * col_width - 5, separator_y2)        
 
