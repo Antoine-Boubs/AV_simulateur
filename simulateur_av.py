@@ -1665,7 +1665,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     graph_width = 180
     graph_height = 100
-    for i, (img_buffer, title): 
+    for i, (img_buffer, title)
         pdf.add_page()
         pdf.set_font('Inter', 'B', 22)
         pdf.set_text_color(*blue_one)
