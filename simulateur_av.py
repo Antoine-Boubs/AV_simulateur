@@ -1321,9 +1321,9 @@ class PDF(FPDF):
             return img.size
 
 
-    def create_detailed_table(self, pdf, resultats_df):
+    def create_detailed_table(self, resultats_df):
         self.add_page()
-    
+
         col_widths = [10, 28, 24, 24, 20, 20, 20, 20, 28]
         headers = ['Année', 'Capital au 01/01', 'Versements', 'Rendement', 'Frais', 'Rachat', 'Fiscalité', 'Rachat net', 'Capital au 31/12']
         
@@ -1339,36 +1339,45 @@ class PDF(FPDF):
              format_value(row['Capital fin d\'année (NET)'])]
             for _, row in resultats_df.iterrows()
         ]
-    
+
         # Nouvelle palette de couleurs
         header_color = (230, 230, 230)  # Gris clair pour l'en-tête
         odd_row_color = (255, 255, 255)  # Blanc pour les lignes impaires
         even_row_color = (245, 245, 245)  # Gris très clair pour les lignes paires
         text_color = (60, 60, 60)  # Gris foncé pour le texte
         border_color = (200, 200, 200)  # Gris moyen pour les bordures
-    
+
         def add_table_header():
-            pdf.set_font_safe('Inter', 'B', 9)
-            pdf.set_fill_color(*header_color)
-            pdf.set_text_color(*text_color)
-            pdf.set_draw_color(*border_color)
+            self.set_font_safe('Inter', 'B', 9)
+            self.set_fill_color(*header_color)
+            self.set_text_color(*text_color)
+            self.set_draw_color(*border_color)
             for i, (header, width) in enumerate(zip(headers, col_widths)):
-                pdf.cell(width, 10, header, 1, 0, 'C', 1)
-            pdf.ln()
-    
+                self.cell(width, 10, header, 1, 0, 'C', 1)
+            self.ln()
+
         def add_table_row(row, fill_color):
-            pdf.set_font_safe('Inter', '', 9)
-            pdf.set_fill_color(*fill_color)
-            pdf.set_text_color(*text_color)
+            self.set_font_safe('Inter', '', 9)
+            self.set_fill_color(*fill_color)
+            self.set_text_color(*text_color)
             for i, (value, width) in enumerate(zip(row, col_widths)):
                 align = 'C' if i == 0 else 'R'
-                pdf.cell(width, 8, str(value), 1, 0, align, 1)
-            pdf.ln()
-    
-        pdf.add_page()
-    
+                self.cell(width, 8, str(value), 1, 0, align, 1)
+            self.ln()
+
         rows_per_page = 25
         total_width = sum(col_widths)
+
+        for i, row in enumerate(data):
+            if i % rows_per_page == 0:
+                if i != 0:
+                    self.add_page()
+                self.set_x((self.w - total_width) / 2)
+                add_table_header()
+
+            self.set_x((self.w - total_width) / 2)
+            row_color = even_row_color if i % 2 == 0 else odd_row_color
+            add_table_row(row, row_color)
 
     
 
@@ -1683,7 +1692,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Appel de la méthode avec les arguments requis
     pdf.add_simulation_parameters(params, resultats_df, objectives)
     # Tableau détaillé
-    pdf.create_detailed_table(pdf, resultats_df)
+    pdf.create_detailed_table(resultats_df)
 
     pdf.add_objectives_section(objectives)
 
