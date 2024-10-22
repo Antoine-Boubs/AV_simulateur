@@ -1078,6 +1078,8 @@ class PDF(FPDF):
             print(f"Erreur lors de la définition de la police : {e}")
             self.set_font('Arial', '', 12)
 
+    from PIL import Image
+
     def header(self):
         # Chemin vers l'image du bouton RDV
         rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
@@ -1091,14 +1093,17 @@ class PDF(FPDF):
         self.set_xy(10, 10)
         self.cell(title_width, 10, title, 0, 0, 'L')
         
-        # Obtenir les dimensions originales de l'image RDV
-        rdv_img = self.image_info(rdv_path)
-        if rdv_img:
-            rdv_width, rdv_height = rdv_img['w'], rdv_img['h']
-        else:
-            # Valeurs par défaut si l'image n'est pas trouvée
-            rdv_width, rdv_height = 30, 15
-            print(f"Attention : L'image {rdv_path} n'a pas été trouvée. Utilisation des dimensions par défaut.")
+        # Obtenir les dimensions de l'image RDV
+        try:
+            with Image.open(rdv_path) as img:
+                rdv_width, rdv_height = img.size
+            # Ajuster la taille de l'image si elle est trop grande
+            max_width, max_height = 50, 25  # Tailles maximales souhaitées
+            if rdv_width > max_width or rdv_height > max_height:
+                rdv_width, rdv_height = self.scale_image_size(rdv_width, rdv_height, max_width, max_height)
+        except Exception as e:
+            print(f"Erreur lors de l'ouverture de l'image {rdv_path}: {e}")
+            rdv_width, rdv_height = 30, 15  # Valeurs par défaut
         
         # Positionnement du bouton RDV (à droite)
         rdv_x = self.w - rdv_width - 10
@@ -1109,10 +1114,20 @@ class PDF(FPDF):
         self.line(10, 25, self.w - 10, 25)
         
         # Espace après l'en-tête
-        self.ln(30)  # Augmenté pour s'assurer que le contenu commence après la ligne de séparation
+        self.ln(30)
     
         # Réinitialiser la position pour le contenu de la page
         self.set_y(35)
+    
+    def scale_image_size(self, width, height, max_width, max_height):
+        """Redimensionne proportionnellement l'image pour qu'elle rentre dans les dimensions maximales."""
+        if width > max_width:
+            height = int(height * (max_width / width))
+            width = max_width
+        if height > max_height:
+            width = int(width * (max_height / height))
+            height = max_height
+        return width, height
 
     def footer(self):
         apple_gray = (128, 128, 128)
