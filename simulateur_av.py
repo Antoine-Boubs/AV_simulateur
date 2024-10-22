@@ -1676,19 +1676,18 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_text_color(*apple_gray)
         pdf.multi_cell(0, 6, graph_descriptions[graph_titles.index(title)], 0, 'L')
     
-
-    
+    # Génération des résultats
+    resultats_df = optimiser_objectifs(params, objectifs)
+    # Appel de la méthode avec les arguments requis
+    pdf.add_simulation_parameters(params, resultats_df, objectives)
     # Tableau détaillé
-    pdf.add_page()
-    create_detailed_table(pdf, resultats_df)
+    pdf.create_detailed_table(pdf, resultats_df)
 
     pdf.add_objectives_section(objectives)
 
-    # Génération des résultats
-    resultats_df = optimiser_objectifs(params, objectifs)
+   
     
-    # Appel de la méthode avec les arguments requis
-    pdf.add_simulation_parameters(params, resultats_df, objectives)
+    
 
     return pdf.output(dest='S').encode('latin-1', errors='replace')
     
