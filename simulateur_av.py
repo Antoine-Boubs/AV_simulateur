@@ -1314,8 +1314,6 @@ class PDF(FPDF):
         self.multi_cell(effective_width, 4, "* Les informations ci-dessus sont extraites du fichier image. "
                                             "Veuillez vous référer au document original pour plus de détails.")
     
-        # Ajouter le logo Nalo
-        self.add_nalo_logo(right_margin)
     
     def get_image_dimensions(self, image_path):
         from PIL import Image
