@@ -1315,7 +1315,7 @@ class PDF(FPDF):
 
         # Nouvelle palette de couleurs
         header_color = (22, 66, 91)  # Gris clair pour l'en-tête
-        odd_row_color = (141, 179, 197, 0.4)  # Blanc pour les lignes impaires
+        odd_row_color = (209, 225, 232)  # Blanc pour les lignes impaires
         even_row_color = (251, 251, 251)  # Gris très clair pour les lignes paires
         text_color = (60, 60, 60)  # Gris foncé pour le texte
         border_color = (22, 66, 91,)  # Gris moyen pour les bordures
