@@ -1441,16 +1441,16 @@ class PDF(FPDF):
         # Affichage des valeurs
         self.set_font_safe('Inter', 'B', 10)
         self.set_text_color(*blue_color)
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}", 0, 0, 'L')
-        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_duree_capi_max)}€", 0, 0, 'L')
+        self.cell(col_width, 6, f"{format_value(capital_fin_annee_derniere_ligne)}€", 0, 0, 'L')
         self.set_text_color(*gold_color)
-        self.cell(col_width, 6, f"{format_value(epargne_investie)}", 0, 1, 'L')
+        self.cell(col_width, 6, f"{format_value(epargne_investie)}€", 0, 1, 'L')
         
         self.ln(10)
 
         # Dessiner les séparateurs verticaux
-        separator_y1 = self.get_y() - 37  # Cette ligne définit le point de départ (haut) des séparateurs verticaux.
-        separator_y2 = self.get_y() -10 # Cette ligne définit le point d'arrivée (bas) des séparateurs verticaux.
+        separator_y1 = self.get_y() - 32  # Cette ligne définit le point de départ (haut) des séparateurs verticaux.
+        separator_y2 = self.get_y() -5 # Cette ligne définit le point d'arrivée (bas) des séparateurs verticaux.
         self.set_draw_color(32, 32, 33)  # Couleur gris clair pour les séparateurs
         self.set_line_width(0.5)  # Set the line width to 0.5
         self.line(left_margin + col_width - 5, separator_y1, left_margin + col_width - 5, separator_y2)
