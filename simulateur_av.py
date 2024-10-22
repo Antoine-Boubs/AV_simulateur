@@ -1135,6 +1135,7 @@ class PDF(FPDF):
     def footer(self):
         apple_gray = (128, 128, 128)
         apple_blue = (0, 122, 255)
+        logo_path = 'assets/Logo.png'
         
         self.set_y(-25)
         
@@ -1144,6 +1145,21 @@ class PDF(FPDF):
         self.set_font_safe('Inter', '', 8)
         self.set_text_color(*apple_gray)
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+
+        
+        # Définir la position et la taille de l'image
+        x = 20  # position x de l'image
+        y = 50  # position y de l'image
+        w = 20  # largeur de l'image
+        
+        # Obtenir les dimensions de l'image
+        img_width, img_height = self.get_image_dimensions(logo_path)
+        
+        # Calculer la hauteur proportionnelle
+        h = (w / img_width) * img_height
+        
+        # Insérer l'image
+        self.image(logo_path, x, y, w, h)
         
         self.set_y(-15)
         self.cell(0, 5, '© 2023 Votre Entreprise. Tous droits réservés.', 0, 0, 'C')
