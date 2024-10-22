@@ -1457,10 +1457,7 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         self.ln(chart_height + 20)  # Espace après le graphique
-    
-        # Ajouter le logo Nalo
-        self.add_nalo_logo(right_margin)
-    
+
     
     def set_font_safe(self, family, style='', size=0):
         try:
