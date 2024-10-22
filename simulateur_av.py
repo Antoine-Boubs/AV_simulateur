@@ -1665,16 +1665,17 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     graph_width = 180
     graph_height = 100
-    for i, (img_buffer, title)
+    for img_buffer, title in zip(img_buffers, graph_titles):
         pdf.add_page()
         pdf.set_font('Inter', 'B', 22)
         pdf.set_text_color(*blue_one)
-        pdf.cell(0, 20, f"{i}. {title}", 0, 1, 'L')
+        pdf.cell(0, 20, title, 0, 1, 'L')
         add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
         pdf.ln(graph_height + 15)
         pdf.set_font('Inter', '', 12)
         pdf.set_text_color(*apple_gray)
-        pdf.multi_cell(0, 6, graph_descriptions[i-1], 0, 'L')
+        pdf.multi_cell(0, 6, graph_descriptions[graph_titles.index(title)], 0, 'L')
+    
 
     
     # Tableau détaillé
