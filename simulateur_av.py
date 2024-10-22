@@ -1341,16 +1341,17 @@ class PDF(FPDF):
         ]
 
         # Nouvelle palette de couleurs
-        header_color = (230, 230, 230)  # Gris clair pour l'en-tête
-        odd_row_color = (255, 255, 255)  # Blanc pour les lignes impaires
-        even_row_color = (245, 245, 245)  # Gris très clair pour les lignes paires
+        header_color = (22, 66, 91)  # Gris clair pour l'en-tête
+        odd_row_color = (141, 179, 197, 0.4)  # Blanc pour les lignes impaires
+        even_row_color = (251, 251, 251)  # Gris très clair pour les lignes paires
         text_color = (60, 60, 60)  # Gris foncé pour le texte
-        border_color = (200, 200, 200)  # Gris moyen pour les bordures
+        border_color = (22, 66, 91,)  # Gris moyen pour les bordures
+        header_text_color = (251, 251, 251)
 
         def add_table_header():
             self.set_font_safe('Inter', 'B', 9)
             self.set_fill_color(*header_color)
-            self.set_text_color(*text_color)
+            self.set_text_color(*header_text_color)
             self.set_draw_color(*border_color)
             for i, (header, width) in enumerate(zip(headers, col_widths)):
                 self.cell(width, 10, header, 1, 0, 'C', 1)
@@ -1681,11 +1682,19 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_font('Inter', 'B', 22)
         pdf.set_text_color(*blue_one)
         pdf.cell(0, 20, title, 0, 1, 'L')
+
+        # Ajout du séparateur doré
+        pdf.set_draw_color(255, 215, 0)  # Couleur dorée (RGB)
+        pdf.set_line_width(1.5)  # Épaisseur de la ligne
+        pdf.line(15, pdf.get_y(), pdf.w - 15, pdf.get_y())
+        pdf.ln(5)  # Espace après la ligne
+        
         add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
         pdf.ln(graph_height + 15)
         pdf.set_font('Inter', '', 12)
         pdf.set_text_color(*apple_gray)
         pdf.multi_cell(0, 6, graph_descriptions[graph_titles.index(title)], 0, 'L')
+        
     
     # Génération des résultats
     resultats_df = optimiser_objectifs(params, objectifs)
