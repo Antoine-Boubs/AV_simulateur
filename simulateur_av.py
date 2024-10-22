@@ -1153,50 +1153,47 @@ class PDF(FPDF):
         
 
     def add_track_record_image(self, image_path):
-    
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
         
         # Calculer la largeur et la hauteur proportionnelles
-        page_width = self.w - 2 * self.l_margin
+        page_width = self.w - 20  # 10 mm de marge de chaque côté
         img_height = (page_width / img_width) * img_height
         
+        # Déplacer le curseur un peu plus haut sur la page
+        self.set_y(self.get_y() - 10)  # Ajustez cette valeur selon vos besoins
+        
         # Ajouter l'image
-        self.image(image_path, x=x, y=self.get_y(), w=page_width, h=img_height)
+        self.image(image_path, x=10, y=self.get_y(), w=page_width, h=img_height)
         
         # Déplacer le curseur après l'image
-        self.set_y(self.get_y() + img_height + 5)  # Réduit l'espace après l'image à 5 mm
+        self.set_y(self.get_y() + img_height + 5)
     
     
-    def add_objectives_image(self, image_path):
-        # Vérifier s'il y a assez d'espace sur la page actuelle
-        if self.get_y() + 100 > self.h - 10:  # 100 est une estimation de la hauteur minimale nécessaire
-            self.add_page()
-            self.set_y(10)  # Commencer en haut de la nouvelle page
-    
+   def add_objectives_image(self, image_path):
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
     
         # Calculer la largeur et la hauteur proportionnelles
-        page_width = self.w - 2 * self.l_margin
+        page_width = self.w - 20  # 10 mm de marge de chaque côté
         img_height = (page_width / img_width) * img_height
     
-        # Calculer la position x pour centrer l'image
-        x = (self.w - page_width) / 2
+        # Déplacer le curseur un peu plus haut sur la page
+        self.set_y(self.get_y() - 10)  # Ajustez cette valeur selon vos besoins
     
         # Ajouter l'image
-        self.image(image_path, x=x, y=self.get_y(), w=page_width, h=img_height)
+        self.image(image_path, x=10, y=self.get_y(), w=page_width, h=img_height)
     
         # Ajouter un lien cliquable dans la zone en bas à droite
         link_width = 60
         link_height = 20
-        link_x = x + page_width - link_width
+        link_x = self.w - 10 - link_width
         link_y = self.get_y() + img_height - link_height
     
         self.link(link_x, link_y, link_width, link_height, 'https://app.lemcal.com/@antoineberjoan')
     
         # Déplacer le curseur après l'image
-        self.set_y(self.get_y() + img_height + 5)  # Réduit l'espace après l'image à 5 mm
+        self.set_y(self.get_y() + img_height + 5)
 
     
     def add_warning(self):
