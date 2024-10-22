@@ -1162,7 +1162,7 @@ class PDF(FPDF):
         img_height = (page_width / img_width) * img_height
         
         # Ajouter l'image
-        self.image(image_path, x=new_margin, y=self.get_y(), w=page_width, h=img_height)
+        self.image(image_path, x=x, y=self.get_y(), w=page_width, h=img_height)
         
         # Déplacer le curseur après l'image
         self.set_y(self.get_y() + img_height + 5)  # Réduit l'espace après l'image à 5 mm
