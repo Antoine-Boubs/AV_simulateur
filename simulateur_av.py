@@ -1829,7 +1829,7 @@ def format_value(value):
 
 
 def create_detailed_table(pdf, resultats_df):
-    col_widths = [12, 25, 25, 25, 20, 20, 20, 20, 25]
+    col_widths = [10, 28, 24, 24, 20, 20, 20, 20, 28]
     headers = ['Année', 'Capital au 01/01', 'Versements', 'Rendement', 'Frais', 'Rachat', 'Fiscalité', 'Rachat net', 'Capital au 31/12']
     
     data = [
@@ -2008,9 +2008,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Tableau détaillé
     pdf.add_page()
-    pdf.set_font('Inter', 'B', 24)
-    pdf.set_text_color(*apple_blue)
-    pdf.cell(0, 20, '6. Détails année par année', 0, 1, 'L')
     create_detailed_table(pdf, resultats_df)
 
     # Note de bas de page
