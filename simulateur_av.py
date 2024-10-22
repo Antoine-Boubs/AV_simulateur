@@ -1048,6 +1048,8 @@ class PDF(FPDF):
         self.is_custom_font_loaded = False
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.logo_path = logo_path or os.path.join(current_dir, "assets", "Logo1.png")
+        self.track_record_path = os.path.join(os.path.dirname(__file__), "assets", "Track record.png") 
+
         font_path = os.path.join(current_dir, "assets", "Fonts")
         
         font_files = {
