@@ -1166,6 +1166,25 @@ class PDF(FPDF):
         # Déplacer le curseur après l'image
         self.set_y(self.get_y() + img_height + 10)
 
+    def add_objectives_image(self, image_path):
+        self.add_page()
+
+        # Obtenir les dimensions de l'image
+        img_width, img_height = self.get_image_dimensions(image_path)
+    
+        # Calculer la largeur et la hauteur proportionnelles
+        page_width = self.w - 40  # 20 mm de marge de chaque côté
+        img_height = (page_width / img_width) * img_height
+    
+        # Calculer la position x pour centrer l'image
+        x = (self.w - page_width) / 2
+    
+        # Ajouter l'image
+        self.image(image_path, x=x, y=self.get_y(), w=page_width, h=img_height)
+    
+        # Déplacer le curseur après l'image
+        self.set_y(self.get_y() + img_height + 10)
+
     
     def add_warning(self):
         self.add_page()
@@ -1585,15 +1604,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_font('Inter', 'B', 22)
         pdf.set_text_color(*blue_one)
         pdf.cell(0, 10, title, 0, 1, 'L')
-        # Ajout du séparateur doré
-        pdf.set_draw_color(203, 163, 37)  # Couleur dorée (RGB)
-        pdf.set_line_width(0.5)  # Épaisseur de la ligne
-        pdf.line(15, pdf.get_y(), pdf.w - 15, pdf.get_y())
-        pdf.ln(5)  # Espace après la ligne
+    
         add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
         pdf.ln(graph_height + 15)
         # Ajout de l'image du track record
-        pdf.add_track_record_image('assets/Track_record.png')
         pdf.set_font('Inter', '', 12)
         pdf.set_text_color(*apple_gray)
         pdf.multi_cell(0, 6, graph_descriptions[graph_titles.index(title)], 0, 'L')
@@ -1603,8 +1617,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Tableau détaillé
     pdf.create_detailed_table(resultats_df)
 
-    
-   
+    pdf.add_track_record_image('assets/Track_record.png')
+
+    pdf.add_objectives_image('assets/Autres_objectifs.png')
     
     
 
