@@ -1351,6 +1351,8 @@ class PDF(FPDF):
             row_color = even_row_color if i % 2 == 0 else odd_row_color
             add_table_row(row, row_color)
 
+        self.add_page()
+
     
 
     def add_simulation_parameters(self, params, resultats_df, objectifs):
