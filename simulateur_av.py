@@ -1181,6 +1181,14 @@ class PDF(FPDF):
     
         # Ajouter l'image
         self.image(image_path, x=x, y=self.get_y(), w=page_width, h=img_height)
+
+        # Ajouter un lien cliquable dans la zone en bas à droite
+        link_width = 60
+        link_height = 20
+        link_x = x + page_width - link_width
+        link_y = self.get_y() + img_height - link_height
+
+        self.link(link_x, link_y, link_width, link_height, 'https://app.lemcal.com/@antoineberjoan')
     
         # Déplacer le curseur après l'image
         self.set_y(self.get_y() + img_height + 10)
@@ -1616,9 +1624,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     # Tableau détaillé
     pdf.create_detailed_table(resultats_df)
-
+    
+    pdf.add_page()
     pdf.add_track_record_image('assets/Track_record.png')
-
     pdf.add_objectives_image('assets/Autres_objectifs.png')
     
     
