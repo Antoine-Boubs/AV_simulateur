@@ -1164,7 +1164,7 @@ class PDF(FPDF):
         self.image(image_path, x=15, y=self.get_y(), w=page_width, h=img_height)
         
         # Déplacer le curseur après l'image
-        self.set_y(self.get_y() + img_height + 10)
+        self.set_y(self.get_y() + img_height + 0)
 
     def add_objectives_image(self, image_path):
         self.add_page()
@@ -1191,7 +1191,7 @@ class PDF(FPDF):
         self.link(link_x, link_y, link_width, link_height, 'https://app.lemcal.com/@antoineberjoan')
     
         # Déplacer le curseur après l'image
-        self.set_y(self.get_y() + img_height + 10)
+        self.set_y(self.get_y() + img_height + 0)
 
     
     def add_warning(self):
