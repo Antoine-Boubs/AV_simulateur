@@ -1871,10 +1871,6 @@ def create_detailed_table(pdf, resultats_df):
         pdf.ln()
 
     pdf.add_page()
-    pdf.set_font_safe('Inter', 'B', 14)
-    pdf.set_text_color(*text_color)
-    pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
-    pdf.ln(5)
 
     rows_per_page = 25
     total_width = sum(col_widths)
@@ -1917,7 +1913,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     # Page de couverture
     pdf.add_page()
-    pdf.add_warning()
     pdf.set_font('Inter', 'B', 32)
     pdf.set_text_color(*apple_blue)
     pdf.cell(0, 60, 'Rapport Financier', 0, 1, 'C')
@@ -1925,7 +1920,8 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.set_text_color(*apple_gray)
     pdf.cell(0, 10, 'Analyse personnalisée de votre investissement', 0, 1, 'C')
 
-    
+    pdf.add_warning()
+
 
     # Sommaire
     pdf.add_page()
@@ -1947,7 +1943,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
 
     pdf.add_av_succession()
 
-    # Graphiques
 
     # Définition des titres et descriptions des graphiques
     graph_titles = [
@@ -2010,18 +2005,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_page()
     create_detailed_table(pdf, resultats_df)
 
-    # Note de bas de page
-    pdf.set_y(-30)
-    pdf.set_font('Inter', 'I', 10)
-    pdf.set_text_color(*apple_gray)
-    pdf.multi_cell(0, 5, "Note : Ce rapport est généré automatiquement et ne constitue pas un conseil financier. "
-                         "Veuillez consulter un professionnel pour des conseils personnalisés.")
-
-    pdf.add_recap(params, objectives)
-
-
     pdf.add_objectives_section(objectives)
-
 
     # Génération des résultats
     resultats_df = optimiser_objectifs(params, objectifs)
@@ -2032,9 +2016,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_nalo_page()
 
     pdf.add_performance_historique()  # Ajoutez cette ligne ici
-
-    # Ajouter l'avertissement sur la page de couverture
-    pdf.add_warning()
 
     # Ajouter la dernière page
     pdf.add_last_page()
