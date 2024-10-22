@@ -1548,6 +1548,8 @@ def format_value(value):
 
 
 def create_detailed_table(pdf, resultats_df):
+    self.add_page()
+
     col_widths = [10, 28, 24, 24, 20, 20, 20, 20, 28]
     headers = ['Année', 'Capital au 01/01', 'Versements', 'Rendement', 'Frais', 'Rachat', 'Fiscalité', 'Rachat net', 'Capital au 31/12']
     
