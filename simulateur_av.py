@@ -1082,24 +1082,37 @@ class PDF(FPDF):
             print(f"Erreur lors de la définition de la police : {e}")
             self.set_font('Arial', '', 12)
 
+
     def header(self):
-        # Header implementation
-        title = 'Votre simulation personnalisée'
+        # Chemin vers l'image du bouton RDV
+        rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
+        
+        # Titre
         self.set_font('Inter', 'B', 16)
         self.set_text_color(22, 66, 91)
+        title = 'Votre simulation personnalisée'
         title_width = self.get_string_width(title) + 6
+        
+        # Positionnement du titre
         self.set_xy(10, 10)
         self.cell(title_width, 10, title, 0, 0, 'L')
         
-        # Add RDV button
-        rdv_path = 'assets/RDV.png'
-        rdv_img = self.get_image_info(rdv_path)
-        if rdv_img:
-            rdv_width, rdv_height = rdv_img['w'], rdv_img['h']
-            rdv_x = self.w - rdv_width - 10
-            rdv_y = 5
-            self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
+        # Obtenir les dimensions de l'image RDV
+        try:
+            with Image.open(rdv_path) as img:
+                rdv_width, rdv_height = img.size
+            # Ajuster la taille de l'image si elle est trop grande
+            max_width, max_height = 50, 25  # Tailles maximales souhaitées
+            if rdv_width > max_width or rdv_height > max_height:
+                rdv_width, rdv_height = self.scale_image_size(rdv_width, rdv_height, max_width, max_height)
+        except Exception as e:
+            print(f"Erreur lors de l'ouverture de l'image {rdv_path}: {e}")
+            rdv_width, rdv_height = 30, 15  # Valeurs par défaut
         
+        # Positionnement du bouton RDV (à droite)
+        rdv_x = self.w - rdv_width - 10
+        rdv_y = 5
+        self.image(rdv_path, rdv_x, rdv_y, rdv_width, rdv_height, link='https://app.lemcal.com/@antoineberjoan')
         
         # Explicitly set the color and width for the divider
         self.set_draw_color(203, 163, 37)  # CBA325
@@ -1108,7 +1121,6 @@ class PDF(FPDF):
         self.line(10, 25, self.w - 10, 25)
         self.ln(30)
         self.set_y(35)
-    
 
     def scale_image_size(self, width, height, max_width, max_height):
             """Redimensionne proportionnellement l'image pour qu'elle rentre dans les dimensions maximales."""
