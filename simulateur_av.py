@@ -1263,9 +1263,9 @@ class PDF(FPDF):
             # Objective details
             self.set_font('Inter', '', 10)
             details = [
-                f"Période : {obj['duree_retrait']} ans",
-                f"Horizon : {obj['annee']}",
-                f"Montant : {format_value(obj['montant_annuel'])} €/an"
+                f"Durée de rachat : {obj['duree_retrait']} ans",
+                f"Horizon d'investissement : {obj['annee']}",
+                f"Montant de rachat annuel : {format_value(obj['montant_annuel'])} €/an"
             ]
             
             for i, detail in enumerate(details):
@@ -1280,11 +1280,7 @@ class PDF(FPDF):
         
         self.ln(10)  # Extra space at the bottom
     
-    def add_golden_separator(self):
-        self.set_draw_color(203, 163, 37)  # Couleur dorée (RGB)
-        self.set_line_width(0.5)  # Épaisseur de la ligne
-        self.line(15, self.get_y(), self.w - 15, self.get_y())
-        self.ln(10)  # Espace après la ligne
+    
     
     def format_value(value):
         if isinstance(value, (int, float)):
@@ -1316,7 +1312,7 @@ class PDF(FPDF):
         odd_row_color = (209, 225, 232)  # Bleu transparent
         even_row_color = (251, 251, 251)  # Alabaster
         text_color = (60, 60, 60)  # Gris foncé pour le texte
-        border_color = (22, 66, 91,)  # 16425b
+        border_color = (203, 163, 37,)  # CBA
         header_text_color = (251, 251, 251) #Alabaster
 
         def add_table_header():
@@ -1324,6 +1320,8 @@ class PDF(FPDF):
             self.set_fill_color(*header_color)
             self.set_text_color(*header_text_color)
             self.set_draw_color(*border_color)
+            self.set_line_width(0.4)  # Set the line width to 0.5
+
             for i, (header, width) in enumerate(zip(headers, col_widths)):
                 self.cell(width, 10, header, 1, 0, 'C', 1)
             self.ln()
