@@ -1594,17 +1594,6 @@ def create_detailed_table(pdf, resultats_df):
     rows_per_page = 25
     total_width = sum(col_widths)
 
-    for i, row in enumerate(data):
-        if i % rows_per_page == 0:
-            if i != 0:
-                pdf.add_page()
-            pdf.set_x((pdf.w - total_width) / 2)
-            add_table_header()
-
-        pdf.set_x((pdf.w - total_width) / 2)
-        row_color = even_row_color if i % 2 == 0 else odd_row_color
-        add_table_row(row, row_color)
-
 
 
 import tempfile
@@ -1621,6 +1610,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     apple_blue = (0, 122, 255)
     apple_gray = (142, 142, 147)
     apple_light_gray = (242, 242, 247)
+    blue_one = (22, 66, 91)
 
     def add_image_to_pdf(pdf, img_buffer, x, y, w, h):
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
@@ -1675,10 +1665,10 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     
     graph_width = 180
     graph_height = 100
-    for i, (img_buffer, title) in enumerate(zip(img_buffers, graph_titles), start=1):
+    for i, (img_buffer, title): 
         pdf.add_page()
-        pdf.set_font('Inter', 'B', 24)
-        pdf.set_text_color(*apple_blue)
+        pdf.set_font('Inter', 'B', 22)
+        pdf.set_text_color(*blue_one)
         pdf.cell(0, 20, f"{i}. {title}", 0, 1, 'L')
         add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
         pdf.ln(graph_height + 15)
