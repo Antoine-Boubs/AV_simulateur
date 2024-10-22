@@ -1571,13 +1571,13 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
     ]
 
-    graph_width = 160
+    graph_width = 200
     graph_height = 100
     for img_buffer, title in zip(img_buffers, graph_titles):
         pdf.add_page()
         pdf.set_font('Inter', 'B', 22)
         pdf.set_text_color(*blue_one)
-        pdf.cell(0, 20, title, 0, 1, 'L')
+        pdf.cell(0, 10, title, 0, 1, 'L')
         
         # Ajout du séparateur doré
         pdf.set_draw_color(203, 163, 37)  # Couleur dorée (RGB)
