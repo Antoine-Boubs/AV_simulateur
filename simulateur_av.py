@@ -1245,10 +1245,6 @@ class PDF(FPDF):
         self.ln(5)
         
         def add_objective(obj):
-            # Save current drawing color
-            current_draw_color = self.draw_color
-            current_line_width = self.line_width
-            
             # Background
             self.set_fill_color(*light_gray)
             self.rect(left_margin, self.get_y(), effective_width, 40, 'F')
@@ -1276,10 +1272,6 @@ class PDF(FPDF):
                 self.set_xy(left_margin + 10, self.get_y() + 2)
                 self.cell(effective_width - 20, 6, detail, 0, 1)
             
-            # Restore original drawing color and line width
-            self.set_draw_color(*current_draw_color)
-            self.set_line_width(current_line_width)
-            
             self.ln(10)  # Space between objectives
         
         # Add each objective
@@ -1288,12 +1280,16 @@ class PDF(FPDF):
         
         self.ln(10)  # Extra space at the bottom
     
-    # Ensure that the original divider style is preserved
     def add_golden_separator(self):
         self.set_draw_color(203, 163, 37)  # Couleur dorée (RGB)
         self.set_line_width(0.5)  # Épaisseur de la ligne
         self.line(15, self.get_y(), self.w - 15, self.get_y())
         self.ln(10)  # Espace après la ligne
+    
+    def format_value(value):
+        if isinstance(value, (int, float)):
+            return f"{value:,.2f}".replace(",", " ").replace(".", ",")
+        return str(value)
 
 
     def create_detailed_table(self, resultats_df):
