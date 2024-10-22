@@ -1149,6 +1149,21 @@ class PDF(FPDF):
         self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
         
 
+    def add_track_record_image(self, image_path):
+        # Obtenir les dimensions de l'image
+        img_width, img_height = self.get_image_dimensions(image_path)
+        
+        # Calculer la largeur et la hauteur proportionnelles
+        page_width = self.w - 30  # 15 mm de marge de chaque côté
+        img_height = (page_width / img_width) * img_height
+        
+        # Ajouter l'image
+        self.image(image_path, x=15, y=self.get_y(), w=page_width, h=img_height)
+        
+        # Déplacer le curseur après l'image
+        self.set_y(self.get_y() + img_height + 10)
+
+    
     def add_warning(self):
         self.add_page()
         
@@ -1642,12 +1657,12 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     graph_titles = [
         "Évolution du placement financier",
     ]
-    
+
     graph_descriptions = [
         "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
         "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
     ]
-    
+
     graph_width = 180
     graph_height = 100
     for img_buffer, title in zip(img_buffers, graph_titles):
@@ -1655,15 +1670,19 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
         pdf.set_font('Inter', 'B', 22)
         pdf.set_text_color(*blue_one)
         pdf.cell(0, 20, title, 0, 1, 'L')
-
+        
         # Ajout du séparateur doré
-        pdf.set_draw_color(203, 163, 37)  # Couleur dorée (RGB)
+        pdf.set_draw_color(203, 163, 37  # Couleur dorée (RGB)
         pdf.set_line_width(0.5)  # Épaisseur de la ligne
         pdf.line(15, pdf.get_y(), pdf.w - 15, pdf.get_y())
         pdf.ln(5)  # Espace après la ligne
         
         add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
         pdf.ln(graph_height + 15)
+        
+        # Ajout de l'image du track record
+        pdf.add_track_record_image('chemin/vers/votre/image/track_record.png')
+        
         pdf.set_font('Inter', '', 12)
         pdf.set_text_color(*apple_gray)
         pdf.multi_cell(0, 6, graph_descriptions[graph_titles.index(title)], 0, 'L')
