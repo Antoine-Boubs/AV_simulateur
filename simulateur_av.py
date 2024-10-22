@@ -1829,8 +1829,8 @@ def format_value(value):
 
 
 def create_detailed_table(pdf, resultats_df):
-    col_widths = [12, 25, 20, 20, 20, 20, 20, 20, 25]
-    headers = ['Année', 'Capital initial', 'Versements', 'Rendement', 'Frais', 'Rachats', 'Fiscalité', 'Rachat net', 'Capital final']
+    col_widths = [12, 25, 25, 25, 20, 20, 20, 20, 25]
+    headers = ['Année', 'Capital au 01/01', 'Versements', 'Rendement', 'Frais', 'Rachat', 'Fiscalité', 'Rachat net', 'Capital au 31/12']
     
     data = [
         [row['Année'], 
@@ -1845,22 +1845,34 @@ def create_detailed_table(pdf, resultats_df):
         for _, row in resultats_df.iterrows()
     ]
 
+    # Nouvelle palette de couleurs
+    header_color = (230, 230, 230)  # Gris clair pour l'en-tête
+    odd_row_color = (255, 255, 255)  # Blanc pour les lignes impaires
+    even_row_color = (245, 245, 245)  # Gris très clair pour les lignes paires
+    text_color = (60, 60, 60)  # Gris foncé pour le texte
+    border_color = (200, 200, 200)  # Gris moyen pour les bordures
+
     def add_table_header():
         pdf.set_font_safe('Inter', 'B', 10)
-        pdf.set_fill_color(240, 240, 240)
+        pdf.set_fill_color(*header_color)
+        pdf.set_text_color(*text_color)
+        pdf.set_draw_color(*border_color)
         for i, (header, width) in enumerate(zip(headers, col_widths)):
             pdf.cell(width, 10, header, 1, 0, 'C', 1)
         pdf.ln()
 
-    def add_table_row(row):
+    def add_table_row(row, fill_color):
         pdf.set_font_safe('Inter', '', 9)
+        pdf.set_fill_color(*fill_color)
+        pdf.set_text_color(*text_color)
         for i, (value, width) in enumerate(zip(row, col_widths)):
             align = 'C' if i == 0 else 'R'
-            pdf.cell(width, 8, str(value), 1, 0, align)
+            pdf.cell(width, 8, str(value), 1, 0, align, 1)
         pdf.ln()
 
     pdf.add_page()
     pdf.set_font_safe('Inter', 'B', 14)
+    pdf.set_text_color(*text_color)
     pdf.cell(0, 10, 'Détails année par année', 0, 1, 'C')
     pdf.ln(5)
 
@@ -1875,20 +1887,8 @@ def create_detailed_table(pdf, resultats_df):
             add_table_header()
 
         pdf.set_x((pdf.w - total_width) / 2)
-        add_table_row(row)
-
-    # Ajouter une ligne de total si nécessaire
-    if len(data) > 0:
-        pdf.set_x((pdf.w - total_width) / 2)
-        pdf.set_font_safe('Inter', 'B', 9)
-        pdf.cell(col_widths[0], 8, 'Total', 1, 0, 'C')
-        for i in range(1, len(col_widths)):
-            if i in [2, 3, 4, 5, 6, 7]:  # Colonnes à additionner
-                total = sum(float(row[i].replace(' ', '').replace(',', '.').replace('€', '')) for row in data)
-                pdf.cell(col_widths[i], 8, format_value(total), 1, 0, 'R')
-            else:
-                pdf.cell(col_widths[i], 8, '', 1, 0, 'R')
-        pdf.ln()
+        row_color = even_row_color if i % 2 == 0 else odd_row_color
+        add_table_row(row, row_color)
 
 
 
