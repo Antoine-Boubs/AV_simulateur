@@ -668,15 +668,18 @@ def style_dataframe(df):
     ]
 
     # Appliquer le style et les formats conditionnels
-    return (df.style
-            .set_table_styles(styles)
-            .background_gradient(cmap="YlOrBr", subset=["Capital fin d'année (NET)"])
-            .background_gradient(cmap="RdYlGn", subset=["Rendement"])
-            .background_gradient(cmap="RdYlGn_r", subset=["Frais de gestion"])
-            .format(precision=2, thousands=" ", decimal=",")
-            .set_properties(**{'font-family': 'Inter', 'font-size': '12px'})
-            .hide_index()
-           )
+    styled = (df.style
+              .set_table_styles(styles)
+              .background_gradient(cmap="YlOrBr", subset=["Capital fin d'année (NET)"])
+              .background_gradient(cmap="RdYlGn", subset=["Rendement"])
+              .background_gradient(cmap="RdYlGn_r", subset=["Frais de gestion"])
+              .format(precision=2, thousands=" ", decimal=",")
+              .set_properties(**{'font-family': 'Inter', 'font-size': '12px'})
+             )
+    
+    # Réinitialiser l'index pour le cacher effectivement
+    df_reset = df.reset_index(drop=True)
+    return styled.data
 
 # Utilisation de la fonction
 styled_df = style_dataframe(resultats_df)
