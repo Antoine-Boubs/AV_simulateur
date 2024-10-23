@@ -1151,38 +1151,39 @@ class PDF(FPDF):
         return width, height
 
     def footer(self):
-        apple_gray = (128, 128, 128)
-        apple_blue = (0, 122, 255)
-        
-        self.set_y(-25)
+        # Position initiale du footer
+        self.set_y(-25)  # 25 mm du bas de la page
 
-        # Divider
-        self.set_draw_color(22, 66, 91)
-        self.set_line_width(0.5)  # Set the line width to 0.5
+        # Dessiner le divider
+        self.set_draw_color(0, 0, 0)  # Couleur noire
         self.line(10, self.get_y(), self.w - 10, self.get_y())
 
-        # Copyright
-        self.set_y(-15)
-        self.cell(0, 5, '© 2023 Votre Entreprise. Tous droits réservés.', 0, 0, 'C')
-        self.set_y(-10)
-        self.set_text_color(*apple_blue)
-        self.cell(0, 5, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
+        # Positionner les icônes juste en dessous du divider
+        self.set_y(self.get_y() + 2)  # 2 mm d'espace après le divider
 
-        total_width = 50
-        start_x = (self.w - total_width) / 2
-        icon_size = 10
+        # Calcul des positions pour centrer les icônes
+        icon_size = 7  # Taille réduite des icônes
         spacing = 5
+        total_width = (3 * icon_size) + (2 * spacing)
+        start_x = (self.w - total_width) / 2
 
         icons = [
             (self.linkedin_icon, 'https://www.linkedin.com/in/votre-profil'),
             (self.email_icon, f'mailto:{self.email}'),
-            (self.whatsapp_icon, f'https://wa.me/{self.phone}?text={urllib.parse.quote(self.whatsapp_message)}'),
+            (self.whatsapp_icon, f'https://wa.me/{self.phone}?text={urllib.parse.quote(self.whatsapp_message)}')
         ]
 
         for i, (icon_path, link) in enumerate(icons):
             if os.path.exists(icon_path):
                 x = start_x + i * (icon_size + spacing)
                 self.image(icon_path, x, self.get_y(), icon_size, icon_size, link=link)
+
+        # Texte de copyright et URL
+        self.set_y(self.get_y() + icon_size + 2)  # Espace après les icônes
+        self.set_font('Arial', '', 8)
+        self.set_text_color(128, 128, 128)  # Gris
+        self.cell(0, 4, '© 2023 Votre Entreprise. Tous droits réservés.', 0, 1, 'C')
+        self.cell(0, 4, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
 
 
     
