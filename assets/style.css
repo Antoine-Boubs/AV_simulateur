@@ -302,14 +302,16 @@ p {
                                         /* BUTTON */
     .stButton > button {
         background-color: #16425B;
-        color: #FBFBFB;
         border-radius: 20px;
         padding: 0.5rem 1.5rem;
         font-weight: 500;
         transition: all 0.3s ease;
     }
+    .stButton > p {
+        color: #FBFBFB;
+    }
     .stButton > button:hover {
-        background-color: rgba(22, 66, 91, 0.7);
+        background-color: rgba(22, 66, 91, 0.9);
     }
     .delete-button {
         color: #E8B0AA;
