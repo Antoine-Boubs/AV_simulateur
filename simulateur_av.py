@@ -13,6 +13,8 @@ import plotly.graph_objects as go
 import io
 import urllib.parse
 import numpy as np
+import uuid
+
 
 
 
@@ -935,7 +937,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import streamlit as st
 
-def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
+def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None, chart_id="donut_chart_1"):
     # Vérifier si des objectifs sont définis et non vides
     if objectifs and len(objectifs) > 0:
         try:
@@ -1051,14 +1053,9 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
 objectif_annee_max = calculer_duree_capi_max(objectifs)
 duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi max réelle
 
-# Créer le graphique et obtenir le titre
-fig, title = create_donut_chart(resultats_df, duree_capi_max, objectifs)
-
-# Afficher le titre
-st.markdown(title, unsafe_allow_html=True)
-
-# Afficher le graphique
-st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+fig1, title1 = create_donut_chart(resultats_df, duree_capi_max, objectifs, chart_id=f"donut_chart_{uuid.uuid4()}")
+st.markdown(title1, unsafe_allow_html=True)
+st.plotly_chart(fig1, use_container_width=True, config={'displayModeBar': False}, key=f"plot_{uuid.uuid4()}")
 
 
 
@@ -1068,7 +1065,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import streamlit as st
 
-def create_donut_chart2(df: pd.DataFrame, objectifs=None):
+def create_donut_chart2(df: pd.DataFrame, objectifs=None, chart_id="donut_chart_2"):
     # Vérifier si des objectifs sont définis et non vides
     if objectifs and len(objectifs) > 0:
         try:
@@ -1180,15 +1177,9 @@ def create_donut_chart2(df: pd.DataFrame, objectifs=None):
 
     return fig, title
 
-# Utilisation de la fonction
-# Créer le graphique et obtenir le titre
-fig, title = create_donut_chart2(resultats_df, objectifs)
-
-# Afficher le titre
-st.markdown(title, unsafe_allow_html=True)
-
-# Afficher le graphique
-st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+fig2, title2 = create_donut_chart2(resultats_df, objectifs, chart_id=f"donut_chart_{uuid.uuid4()}")
+st.markdown(title2, unsafe_allow_html=True)
+st.plotly_chart(fig2, use_container_width=True, config={'displayModeBar': False}, key=f"plot_{uuid.uuid4()}")
 
 
 def fig_to_img_buffer(fig):
