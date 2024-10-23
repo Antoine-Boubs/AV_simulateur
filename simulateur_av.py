@@ -629,6 +629,12 @@ st.dataframe(resultats_df)
 
 
 def create_financial_chart(df: pd.DataFrame):
+    # Définir les couleurs
+    couleur_principal = '#16425B'
+    couleur_secondaire = '#CBA325'
+    couleur_aire_principal = '#8DB3C5'
+    couleur_aire_secondaire = '#F1D87A'
+
     # Create figure with secondary y-axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
@@ -638,8 +644,11 @@ def create_financial_chart(df: pd.DataFrame):
             x=df['Année'],
             y=df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float),
             name='Capital fin d\'année',
-            line=dict(color='#007AFF', width=3),
-            mode='lines'
+            line=dict(color=couleur_principal, width=3),
+            fill='tozeroy',
+            fillcolor=couleur_aire_principal,
+            mode='lines',
+            hovertemplate='<span style="color:' + couleur_principal + ';">●</span> Capital fin d\'année <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
         ),
         secondary_y=False,
     )
@@ -649,8 +658,11 @@ def create_financial_chart(df: pd.DataFrame):
             x=df['Année'],
             y=df['Épargne investie'].str.replace(' €', '').astype(float),
             name='Épargne investie',
-            line=dict(color='#34C759', width=3),
-            mode='lines'
+            line=dict(color=couleur_secondaire, width=3),
+            fill='tozeroy',
+            fillcolor=couleur_aire_secondaire,
+            mode='lines',
+            hovertemplate='<span style="color:' + couleur_secondaire + ';">●</span> Épargne investie <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
         ),
         secondary_y=False,
     )
@@ -660,77 +672,111 @@ def create_financial_chart(df: pd.DataFrame):
             x=df['Année'],
             y=df['Rachat'].str.replace(' €', '').astype(float),
             name='Rachats',
-            marker_color='#FF3B30',
-            opacity=0.7
+            marker_color='rgba(255, 59, 48, 0.7)',
+            hovertemplate='<span style="color:#FF3B30;">●</span> Rachats <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
         ),
         secondary_y=True,
     )
 
+    # Calculer le maximum pour l'axe y et arrondir au multiple de 1000 supérieur
+    y_max = max(df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).max(),
+                df['Épargne investie'].str.replace(' €', '').astype(float).max())
+    y_max_rounded = np.ceil(y_max / 1000) * 1000
+
     # Customize the layout
     fig.update_layout(
-        title={
-            'text': 'Évolution du placement financier',
-            'y':0.95,
-            'x':0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': dict(size=24, color='#1D1D1F')
-        },
-        font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color="#1D1D1F"),
-        plot_bgcolor='white',
+        title=dict(
+            text='<b>Évolution du placement financier</b>',
+            font=dict(family="Inter", size=24, color="#16425B"),
+            x=0.5,
+            y=0.95,
+            xanchor='center',
+            yanchor='top'
+        ),
+        font=dict(family="Inter", size=14),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
         hovermode="x unified",
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
-            xanchor="right",
-            x=1
+            xanchor="center",
+            x=0.5,
+            bgcolor='rgba(255,255,255,1)',
+            bordercolor='#cba325',
+            borderwidth=3
         ),
-        margin=dict(l=60, r=30, t=100, b=50),
+        margin=dict(t=100, b=60, l=60, r=60),
+        height=500,
+        width=1000,
     )
 
     # Update axes
     fig.update_xaxes(
-        title_text="Année",
-        showgrid=True,
-        gridcolor='#E5E5EA',
-        tickfont=dict(size=12)
+        title="<b>Années</b>",
+        tickmode='linear',
+        dtick=5,
+        ticksuffix=" ",
+        showgrid=False,
+        zeroline=False,
+        showline=True,
+        linewidth=3,
+        linecolor='#CBA325',
     )
 
     fig.update_yaxes(
-        title_text="Montant (€)",
+        title="<b>Montant (€)</b>",
+        tickmode='linear',
+        dtick=1000,
+        ticksuffix=" €",
+        tickformat=",",
         showgrid=True,
-        gridcolor='#E5E5EA',
-        tickfont=dict(size=12),
+        gridwidth=1,
+        gridcolor='rgba(200,200,200,0.2)',
+        zeroline=False,
+        showline=True,
+        linewidth=3,
+        linecolor='#CBA325',
+        range=[0, y_max_rounded],
         secondary_y=False
     )
 
     fig.update_yaxes(
-        title_text="Rachats (€)",
+        title="<b>Rachats (€)</b>",
+        ticksuffix=" €",
         showgrid=False,
-        tickfont=dict(size=12),
+        zeroline=False,
+        showline=True,
+        linewidth=3,
+        linecolor='#CBA325',
         secondary_y=True
     )
 
-    # Add range slider
+    # Ajout du cadre autour du graphique
     fig.update_layout(
-        xaxis=dict(
-            rangeslider=dict(visible=True),
-            type="linear"
-        )
+        shapes=[
+            dict(
+                type="rect",
+                xref="paper",
+                yref="paper",
+                x0=0,
+                y0=0,
+                x1=1,
+                y1=1,
+                line=dict(
+                    color="#16425B",
+                    width=2,
+                ),
+                fillcolor="rgba(0,0,0,0)"
+            ),
+        ]
     )
-
-    # Use a template inspired by Apple's design
-    pio.templates["apple"] = go.layout.Template(
-        layout=go.Layout(
-            colorway=['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#000000'],
-            font={'color': '#1D1D1F'},
-        )
-    )
-    fig.update_layout(template="apple")
 
     return fig
-st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True)
+
+# Utilisation de la fonction
+st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True, config={'displayModeBar': False})
 
 
 
