@@ -732,6 +732,7 @@ def create_financial_chart(df: pd.DataFrame):
         )
     )
 
+    # Ajouter les rachats en dernier pour qu'ils soient au premier plan
     fig.add_trace(
         go.Bar(
             x=df.index,
@@ -783,6 +784,7 @@ def create_financial_chart(df: pd.DataFrame):
             font=dict(size=14),
         ),
         hovermode="x unified",
+        autosize=True,  # Permet au graphique de s'adapter à la taille du conteneur
     )
 
     return fig
@@ -804,6 +806,7 @@ st.markdown("""
 </h2>
 """, unsafe_allow_html=True)
 
+# Utiliser toute la largeur disponible
 st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True, config={'displayModeBar': False})
 
 
