@@ -1171,7 +1171,7 @@ def create_donut_chart2(df: pd.DataFrame, objectifs=None, chart_id="donut_chart_
         padding: 20px 15px; 
         border-radius: 15px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-        '> Votre capital final : {objectif_name}
+        '> Votre capital au terme de vos projets
     </h2>
     """
 
