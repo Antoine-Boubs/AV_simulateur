@@ -13,7 +13,6 @@ import plotly.graph_objects as go
 import io
 import urllib.parse
 import numpy as np
-import numpy financial as npf
 
 
 
