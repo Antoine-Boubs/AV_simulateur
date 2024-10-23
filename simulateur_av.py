@@ -1475,27 +1475,27 @@ class PDF(FPDF):
         self.add_page()
 
     def add_graphs_to_pdf(pdf, img_buffers, graph_descriptions=None, add_titles=False):
-    graph_width = 180
-    graph_height = 100
-    blue_one = (22, 66, 91)
-    apple_gray = (142, 142, 147)
-
-    for i, img_buffer in enumerate(img_buffers):
-        pdf.add_page()
-        
-        if add_titles and i < len(graph_titles):
-            pdf.set_font('Inter', 'B', 22)
-            pdf.set_text_color(*blue_one)
-            pdf.cell(0, 10, graph_titles[i], 0, 1, 'L')
-            pdf.ln(5)
-
-        add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
-        pdf.ln(graph_height + 15)
-
-        if graph_descriptions and i < len(graph_descriptions):
-            pdf.set_font('Inter', '', 12)
-            pdf.set_text_color(*apple_gray)
-            pdf.multi_cell(0, 6, graph_descriptions[i], 0, 'L')
+        graph_width = 180
+        graph_height = 100
+        blue_one = (22, 66, 91)
+        apple_gray = (142, 142, 147)
+    
+        for i, img_buffer in enumerate(img_buffers):
+            pdf.add_page()
+            
+            if add_titles and i < len(graph_titles):
+                pdf.set_font('Inter', 'B', 22)
+                pdf.set_text_color(*blue_one)
+                pdf.cell(0, 10, graph_titles[i], 0, 1, 'L')
+                pdf.ln(5)
+    
+            add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
+            pdf.ln(graph_height + 15)
+    
+            if graph_descriptions and i < len(graph_descriptions):
+                pdf.set_font('Inter', '', 12)
+                pdf.set_text_color(*apple_gray)
+                pdf.multi_cell(0, 6, graph_descriptions[i], 0, 'L')
 
     def add_simulation_parameters(self, params, resultats_df, objectifs):
         self.set_section("Paramètres de simulation")
