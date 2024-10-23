@@ -1061,6 +1061,136 @@ st.markdown(title, unsafe_allow_html=True)
 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 
+
+
+
+import pandas as pd
+import plotly.graph_objs as go
+import streamlit as st
+
+def create_donut_chart2(df: pd.DataFrame, objectifs=None):
+    # Vérifier si des objectifs sont définis et non vides
+    if objectifs and len(objectifs) > 0:
+        try:
+            objectif_max = max(objectifs, key=lambda obj: obj.get("annee", 0))
+            objectif_name = objectif_max.get("nom", "Objectif sans nom")
+        except ValueError:
+            objectif_name = "Objectif indéfini"
+    else:
+        objectif_name = "sans objectif spécifique"
+    
+    # Vérifier si le DataFrame est vide
+    if df.empty:
+        fig = go.Figure()
+        fig.add_annotation(
+            x=0.5, y=0.5,
+            text="Pas de données à afficher",
+            font=dict(size=20, family="Inter", color='#16425B'),
+            showarrow=False
+        )
+        return fig, f"<h2>Aucune donnée disponible pour : {objectif_name}</h2>"
+
+    # Utiliser la dernière ligne du DataFrame
+    target_year = df.iloc[-1]
+
+    # Fonction pour convertir en float de manière sûre
+    def safe_float(value):
+        if pd.isna(value):
+            return 0.0
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            try:
+                return float(value.replace(' €', '').replace(',', '.').replace('%', ''))
+            except ValueError:
+                st.warning(f"Impossible de convertir la valeur '{value}' en nombre. Utilisation de 0.")
+                return 0.0
+        st.warning(f"Type de données inattendu: {type(value)}. Utilisation de 0.")
+        return 0.0
+
+    # Calculer les valeurs nécessaires
+    capital_final = safe_float(target_year.get('Capital fin d\'année (NET)', 0))
+    pourcentage_plus_value = safe_float(target_year.get('%', 0)) / 100
+    plus_values = capital_final * pourcentage_plus_value
+    versements = capital_final - plus_values
+
+    if capital_final == 0:
+        # Si le capital final est 0, afficher un message au lieu du graphique
+        fig = go.Figure()
+        fig.add_annotation(
+            x=0.5, y=0.5,
+            text="Pas de données à afficher",
+            font=dict(size=20, family="Inter", color='#16425B'),
+            showarrow=False
+        )
+    else:
+        # Créer le graphique en donut
+        colors = ['#16425B', '#CBA325']
+        fig = go.Figure(data=[go.Pie(
+            labels=['Versements', 'Plus-values'],
+            values=[versements, plus_values],
+            hole=.7,
+            textinfo='label+value',
+            texttemplate='%{label}<br>%{value:,.0f} €',
+            textposition='outside',
+            insidetextorientation='horizontal',
+            marker=dict(colors=colors, line=dict(color='#ffffff', width=2)),
+            direction='clockwise',
+            sort=False,
+            pull=[0, 0.1],
+            textfont=dict(size=14, family="Inter"),
+            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>%{percent:.2f}%<extra></extra>'
+        )])
+
+        # Calcul du pourcentage de croissance
+        growth_percentage = (plus_values / versements * 100) if versements != 0 else 0
+        growth_text = f"+{growth_percentage:.1f}%"
+
+        fig.update_layout(
+            annotations=[
+                dict(text=f'<b>{capital_final:,.0f} €</b><br>Capital final', x=0.5, y=0.5, font_size=20, showarrow=False),
+                dict(text=f'<b>{growth_text}</b><br>Plus-values', x=0.5, y=0.35, font_size=16, showarrow=False, font_color='#CBA325'),
+            ]
+        )
+
+    fig.update_layout(
+        font=dict(family="Inter", size=14, color='#16425B'),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        margin=dict(t=60, b=60, l=60, r=60),
+    )
+
+    # Créer le titre dynamiquement
+    title = f"""
+    <h2 style='
+        text-align: center; 
+        color: #16425B; 
+        font-size: 20px; 
+        font-weight: 700; 
+        margin-top: 30px; 
+        margin-bottom: 0px; 
+        background-color: rgba(251, 251, 251, 1); 
+        padding: 20px 15px; 
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        '> Votre capital final : {objectif_name}
+    </h2>
+    """
+
+    return fig, title
+
+# Utilisation de la fonction
+# Créer le graphique et obtenir le titre
+fig, title = create_donut_chart2(resultats_df, objectifs)
+
+# Afficher le titre
+st.markdown(title, unsafe_allow_html=True)
+
+# Afficher le graphique
+st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+
 def fig_to_img_buffer(fig):
     img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
     return io.BytesIO(img_bytes)
