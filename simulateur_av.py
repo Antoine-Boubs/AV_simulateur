@@ -915,16 +915,6 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             annotations=[
                 dict(text=f'<b>{capital_final:,.0f} €</b><br>Capital final', x=0.5, y=0.5, font_size=20, showarrow=False),
                 dict(text=f'<b>{growth_text}</b><br>Plus-values', x=0.5, y=0.35, font_size=16, showarrow=False, font_color='#CBA325'),
-                dict(
-                    text=f'<b>Votre capital pour :</b><br>{objectif_name}',
-                    x=0.5,
-                    y=0.5,
-                    xref='paper',
-                    yref='paper',
-                    showarrow=False,
-                    font=dict(size=20, color='#16425B', family='Inter'),
-                    align='center',
-                    )
             ]
         )
 
