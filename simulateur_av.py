@@ -937,7 +937,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         padding: 20px 15px; 
         border-radius: 15px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-        '> Composition du capital en année {objectif_name}
+        '> Composition du capital en année 
     </h2>
     """
 
