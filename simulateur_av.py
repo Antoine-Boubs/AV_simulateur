@@ -863,24 +863,17 @@ st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True)
 
 
 
-import plotly.graph_objects as go
-import plotly.io as pio
+import plotly.graph_objs as go
 import pandas as pd
+import streamlit as st
 
-def create_donut_chart(df: pd.DataFrame, objectifs: list):
-    # Calculer la durée de capitalisation maximale
-    duree_capi_max = calculer_duree_capi_max(objectifs)
-    
-    # Trouver l'objectif correspondant à la durée de capitalisation maximale
-    objectif_max = max(objectifs, key=lambda obj: obj["annee"])
-    objectif_name = objectif_max["nom"]
-
+def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
     # Trouver l'année correspondant à duree_capi_max
     target_year = df[df['Année'] == duree_capi_max].iloc[0]
 
     # Calculer les valeurs nécessaires
-    capital_final = float(target_year['Capital fin année'].replace(' €', '').replace(',', '.'))
-    pourcentage_plus_value = float(target_year['%'].replace('%', '')) / 100
+    capital_final = float(target_year['Capital fin d\'année (NET)'].replace(' €', '').replace(',', ''))
+    pourcentage_plus_value = float(target_year['%'].replace('%', '')) / 100  # Convertir le pourcentage en décimal
     plus_values = capital_final * pourcentage_plus_value
     versements = capital_final - plus_values
 
@@ -909,7 +902,7 @@ def create_donut_chart(df: pd.DataFrame, objectifs: list):
             sort=False,
             pull=[0, 0.1],
             textfont=dict(size=14, family="Inter, Arial, sans-serif"),
-            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>%{percent:.1f}%<extra></extra>'
+            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<extra></extra>'
         )])
 
         # Calcul du pourcentage de croissance
@@ -931,7 +924,7 @@ def create_donut_chart(df: pd.DataFrame, objectifs: list):
         margin=dict(t=60, b=60, l=60, r=60),
     )
 
-    # Créer le titre dynamiquement avec le nom de l'objectif
+    # Créer le titre dynamiquement
     title = f"""
     <h2 style='
         text-align: center; 
@@ -944,14 +937,18 @@ def create_donut_chart(df: pd.DataFrame, objectifs: list):
         padding: 20px 15px; 
         border-radius: 15px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-        '> Composition du capital pour l'objectif : {objectif_name}
+        '> Composition du capital en année {duree_capi_max}
     </h2>
     """
 
     return fig, title
 
 # Utilisation de la fonction
-fig, title = create_donut_chart(df_test, st.session_state.objectifs)
+objectif_annee_max = calculer_duree_capi_max(objectifs)
+duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi max réelle
+
+# Créer le graphique et obtenir le titre
+fig, title = create_donut_chart(resultats_df, duree_capi_max)
 
 # Afficher le titre
 st.markdown(title, unsafe_allow_html=True)
