@@ -1052,6 +1052,14 @@ class PDF(FPDF):
         self.logo_path = logo_path or os.path.join(current_dir, "assets", "Logo.png")
         self.track_record_path = os.path.join(os.path.dirname(__file__), "assets", "Track_record.png") 
 
+        self.linkedin_icon = 'assets/Logo.png'
+        self.email_icon = 'assets/Logo1.png'
+        self.phone_icon = 'assets/Logo.png'
+        self.email = 'antoineberjoan@gmail.com'
+        self.phone = '+33686514317'
+        self.sms_message = "Bonjour, j'aimerais en savoir plus sur vos services."  # Message par défaut pour le SMS
+
+
         self.current_section = 'Votre simulation personnalisée'  # Titre par défaut
 
 
@@ -1102,7 +1110,7 @@ class PDF(FPDF):
         title_width = self.get_string_width(title) + 6
         
         # Positionnement du titre (ajusté pour laisser de la place au logo)
-        self.set_xy(20, 10)  # Déplacé vers la droite pour laisser de la place au logo
+        self.set_xy(30, 10)  # Déplacé vers la droite pour laisser de la place au logo
         self.cell(title_width, 10, title, 0, 0, 'L')
         
         # Obtenir les dimensions de l'image RDV
@@ -1143,29 +1151,49 @@ class PDF(FPDF):
     def footer(self):
         apple_gray = (128, 128, 128)
         apple_blue = (0, 122, 255)
-        logo_path = 'assets/Logo.png'
         
         self.set_y(-25)
-        
-        self.set_draw_color(229, 229, 234)
+
+        # Divider
+        self.set_draw_color(22, 66, 91)
+        self.set_line_width(0.5)  # Set the line width to 0.5
         self.line(10, self.get_y(), self.w - 10, self.get_y())
-        
-        self.set_font_safe('Inter', '', 8)
-        self.set_text_color(*apple_gray)
-        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
-        
+
+        # Copyright
         self.set_y(-15)
         self.cell(0, 5, '© 2023 Votre Entreprise. Tous droits réservés.', 0, 0, 'C')
         self.set_y(-10)
         self.set_text_color(*apple_blue)
-        self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
+        self.cell(0, 5, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
 
+        # Calcul des positions pour centrer les icônes
+        total_width = 50  # Largeur totale occupée par les icônes
+        start_x = (self.w - total_width) / 2
+        icon_size = 10
+        spacing = 5
+
+        # Bouton LinkedIn
+        if os.path.exists(self.linkedin_icon):
+            self.image(self.linkedin_icon, start_x, self.get_y(), icon_size, icon_size, link='https://www.linkedin.com/in/votre-profil')
+        
+        # Bouton Email
+        if os.path.exists(self.email_icon):
+            self.image(self.email_icon, start_x + icon_size + spacing, self.get_y(), icon_size, icon_size, link=f'mailto:{self.email}')
+        
+        # Bouton SMS (remplace le bouton Téléphone)
+        if os.path.exists(self.sms_icon):
+            sms_link = f'sms:{self.phone}?body={self.sms_message.replace(" ", "%20")}'
+            self.image(self.sms_icon, start_x + 2 * (icon_size + spacing), self.get_y(), icon_size, icon_size, link=sms_link)
+
+    
     def set_section(self, section_name):
         """Définit le nom de la section actuelle."""
         self.current_section = section_name
         
 
     def add_track_record_image(self, image_path):
+        self.set_section("Prenez en main votre avenir")
+
         # Obtenir les dimensions de l'image
         img_width, img_height = self.get_image_dimensions(image_path)
         
@@ -1623,7 +1651,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_simulation_parameters(params, resultats_df, objectives)
 
     # Définition des titres et descriptions des graphiques
-    pdf.add_page()
     graph_titles = [
         "Évolution du placement financier",
     ]
@@ -1653,7 +1680,6 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Tableau détaillé
     pdf.create_detailed_table(resultats_df)
     
-    pdf.add_page()
     pdf.add_track_record_image('assets/Track_record.png')
     pdf.add_objectives_image('assets/Autres_objectifs.png')
     
