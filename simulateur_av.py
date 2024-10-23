@@ -901,7 +901,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             direction='clockwise',
             sort=False,
             pull=[0, 0.1],
-            textfont=dict(size=14, family="Inter, Arial, sans-serif"),
+            textfont=dict(size=14, family="Inter"),
             hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<extra></extra>'
         )])
 
@@ -917,7 +917,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         )
 
     fig.update_layout(
-        font=dict(family="Inter, Arial, sans-serif", size=14, color='#16425B'),
+        font=dict(family="Inter", size=14, color='#16425B'),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
         showlegend=False,
@@ -937,7 +937,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         padding: 20px 15px; 
         border-radius: 15px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-        '> Composition du capital en année {duree_capi_max}
+        '> Composition du capital en année {objectif_name}
     </h2>
     """
 
