@@ -871,54 +871,54 @@ def create_waterfall_chart(df: pd.DataFrame):
     ))
 
     # Personnalisation du layout
-fig.update_layout(
-    font=dict(family="Inter", size=14, color='#16425B'),
-    plot_bgcolor='rgba(0,0,0,0)',
-    paper_bgcolor='rgba(0,0,0,0)',
-    xaxis=dict(
-        title="<b>Années</b>",
-        tickfont=dict(size=12),
-        gridcolor='rgba(200,200,200,0.2)',
-        showline=True,
-        linewidth=3,
-        linecolor='#CBA325',
-        tickmode='linear',
-        dtick=5,
-        ticksuffix=" ",
-        showgrid=False,
-        zeroline=False,
-    ),
-    yaxis=dict(
-        title="<b>Variation du capital (€)</b>",
-        tickfont=dict(size=12),
-        gridcolor='rgba(200,200,200,0.2)',
-        tickformat=',.0f',
-        showline=True,
-        linewidth=3,
-        linecolor='#CBA325',
-        tickmode='auto',
-        nticks=6,
-        ticksuffix=" €",
-        showgrid=True,
-        zeroline=False,
-    ),
-    margin=dict(l=60, r=60, t=60, b=60),
-    hoverlabel=dict(
-        bgcolor="white",
-        font_size=14,
-        font_family="Inter"
-    ),
-    hovermode="x unified",
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="center",
-        x=0.5,
-        font=dict(size=14),
-    ),
-    showlegend=True  # Changé de False à True pour afficher la légende
-)
+    fig.update_layout(
+        font=dict(family="Inter", size=14, color='#16425B'),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(
+            title="<b>Années</b>",
+            tickfont=dict(size=12),
+            gridcolor='rgba(200,200,200,0.2)',
+            showline=True,
+            linewidth=3,
+            linecolor='#CBA325',
+            tickmode='linear',
+            dtick=5,
+            ticksuffix=" ",
+            showgrid=False,
+            zeroline=False,
+        ),
+        yaxis=dict(
+            title="<b>Variation du capital (€)</b>",
+            tickfont=dict(size=12),
+            gridcolor='rgba(200,200,200,0.2)',
+            tickformat=',.0f',
+            showline=True,
+            linewidth=3,
+            linecolor='#CBA325',
+            tickmode='auto',
+            nticks=6,
+            ticksuffix=" €",
+            showgrid=True,
+            zeroline=False,
+        ),
+        margin=dict(l=60, r=60, t=60, b=60),
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=14,
+            font_family="Inter"
+        ),
+        hovermode="x unified",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=14),
+        ),
+        showlegend=True  # Changé de False à True pour afficher la légende
+    )
 
     return fig
 
