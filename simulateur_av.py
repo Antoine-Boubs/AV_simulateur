@@ -1102,7 +1102,7 @@ class PDF(FPDF):
         title_width = self.get_string_width(title) + 6
         
         # Positionnement du titre (ajusté pour laisser de la place au logo)
-        self.set_xy(40, 10)  # Déplacé vers la droite pour laisser de la place au logo
+        self.set_xy(20, 10)  # Déplacé vers la droite pour laisser de la place au logo
         self.cell(title_width, 10, title, 0, 0, 'L')
         
         # Obtenir les dimensions de l'image RDV
@@ -1623,6 +1623,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     pdf.add_simulation_parameters(params, resultats_df, objectives)
 
     # Définition des titres et descriptions des graphiques
+    pdf.add_page()
     graph_titles = [
         "Évolution du placement financier",
     ]
@@ -1652,6 +1653,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Tableau détaillé
     pdf.create_detailed_table(resultats_df)
     
+    pdf.add_page()
     pdf.add_track_record_image('assets/Track_record.png')
     pdf.add_objectives_image('assets/Autres_objectifs.png')
     
