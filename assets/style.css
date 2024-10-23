@@ -315,6 +315,7 @@ p {
     
     .delete-button {
         color: #E8B0AA;
+        background-color: #F0D97A;
         background: none;
         border: none;
         cursor: pointer;
