@@ -868,6 +868,10 @@ st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True)
 
 
 
+import pandas as pd
+import plotly.graph_objs as go
+import streamlit as st
+
 def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
     # Vérifier si des objectifs sont définis et non vides
     if objectifs and len(objectifs) > 0:
@@ -897,13 +901,20 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
     def safe_float(value):
         if pd.isna(value):
             return 0.0
+        if isinstance(value, (int, float)):
+            return float(value)
         if isinstance(value, str):
-            return float(value.replace(' €', '').replace(',', '.'))
-        return float(value)
+            try:
+                return float(value.replace(' €', '').replace(',', '.').replace('%', ''))
+            except ValueError:
+                st.warning(f"Impossible de convertir la valeur '{value}' en nombre. Utilisation de 0.")
+                return 0.0
+        st.warning(f"Type de données inattendu: {type(value)}. Utilisation de 0.")
+        return 0.0
 
     # Calculer les valeurs nécessaires
-    capital_final = safe_float(target_year['Capital fin d\'année (NET)'])
-    pourcentage_plus_value = safe_float(target_year['%']) / 100 if '%' in target_year else 0
+    capital_final = safe_float(target_year.get('Capital fin d\'année (NET)', 0))
+    pourcentage_plus_value = safe_float(target_year.get('%', 0)) / 100
     plus_values = capital_final * pourcentage_plus_value
     versements = capital_final - plus_values
 
