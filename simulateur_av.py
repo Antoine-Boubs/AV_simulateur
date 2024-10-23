@@ -711,8 +711,8 @@ def create_financial_chart(df: pd.DataFrame):
         ),
         yaxis=dict(
             title="<b>Montant (€)</b>",
-            tickmode='linear',
-            dtick=1000,
+            tickmode='auto',
+            nticks=6,
             ticksuffix=" €",
             tickformat=",",
             showgrid=True,
@@ -723,9 +723,22 @@ def create_financial_chart(df: pd.DataFrame):
             linewidth=3,
             linecolor='#CBA325',
         ),
+        yaxis2=dict(
+            title="<b>Rachats (€)</b>",
+            ticksuffix=" €",
+            tickformat=",",
+            showgrid=False,
+            zeroline=False,
+            showline=True,
+            linewidth=3,
+            linecolor='#CBA325',
+            tickmode='auto',
+            nticks=6,
+            range=[0, max(rachat) * 1.1],  # Adjust the range for better proportionality
+        ),
         font=dict(family="Inter", size=14),
         height=600,
-        width=1200,
+        width=1400,  # Increased width
         margin=dict(t=60, b=60, l=60, r=60),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
@@ -738,17 +751,6 @@ def create_financial_chart(df: pd.DataFrame):
             font=dict(size=14),
         ),
         hovermode="x unified",
-    )
-
-    fig.update_yaxes(
-        title="<b>Rachats (€)</b>",
-        ticksuffix=" €",
-        showgrid=False,
-        zeroline=False,
-        showline=True,
-        linewidth=3,
-        linecolor='#CBA325',
-        secondary_y=True
     )
 
     # Ajouter le titre en tant qu'élément séparé
