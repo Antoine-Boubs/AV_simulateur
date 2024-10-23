@@ -863,14 +863,6 @@ st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True)
 
 
 
-import plotly.graph_objs as go
-import pandas as pd
-import streamlit as st
-
-import plotly.graph_objs as go
-import pandas as pd
-import streamlit as st
-
 def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
     # Calculer la durée de capitalisation maximale
     duree_capi_max = calculer_duree_capi_max(objectifs)
@@ -913,8 +905,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             sort=False,
             pull=[0, 0.1],
             textfont=dict(size=14, family="Inter"),
-            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>%{percent:.1f}%<extra></extra>'
-        )])
+            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>%{percent:.1f}%<extra></extra>'        )])
 
         # Calcul du pourcentage de croissance
         growth_percentage = (plus_values / versements * 100) if versements != 0 else 0
@@ -933,7 +924,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
                     showarrow=False,
                     font=dict(size=20, color='#16425B', family='Inter'),
                     align='center',
-                )
+                    )
             ]
         )
 
@@ -945,14 +936,34 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         margin=dict(t=60, b=60, l=60, r=60),
     )
 
-    return fig
+    # Créer le titre dynamiquement
+    title = f"""
+    <h2 style='
+        text-align: center; 
+        color: #16425B; 
+        font-size: 20px; 
+        font-weight: 700; 
+        margin-top: 30px; 
+        margin-bottom: 0px; 
+        background-color: rgba(251, 251, 251, 1); 
+        padding: 20px 15px; 
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        '> Votre capital pour : {objectif_name}
+    </h2>
+    """
+
+    return fig, title
 
 # Utilisation de la fonction
 objectif_annee_max = calculer_duree_capi_max(objectifs)
 duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi max réelle
 
-# Créer le graphique
-fig = create_donut_chart(resultats_df, duree_capi_max)
+# Créer le graphique et obtenir le titre
+fig, title = create_donut_chart(resultats_df, duree_capi_max)
+
+# Afficher le titre
+st.markdown(title, unsafe_allow_html=True)
 
 # Afficher le graphique
 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
