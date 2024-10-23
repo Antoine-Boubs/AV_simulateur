@@ -858,6 +858,9 @@ def create_waterfall_chart(df: pd.DataFrame):
     yearly_change = capital_fin_annee.diff()
     yearly_change = yearly_change.fillna(capital_fin_annee.iloc[0])
 
+    # Assurez-vous que yearly_change a le même index que le DataFrame original
+    yearly_change = yearly_change.reindex(df.index)
+
     # Création du graphique
     fig = go.Figure(go.Waterfall(
         name = "Evolution du capital",
@@ -876,17 +879,17 @@ def create_waterfall_chart(df: pd.DataFrame):
     ))
 
     # Ajout des annotations pour le hover
-    for i, (year, capital, epargne, rachat) in enumerate(zip(df.index, capital_fin_annee, epargne_investie, rachats)):
+    for year in df.index:
         fig.add_trace(go.Scatter(
             x=[year],
-            y=[yearly_change[i]],
+            y=[yearly_change.loc[year]],
             mode="markers",
             marker=dict(size=0.1, color="rgba(0,0,0,0)"),
             hoverinfo="text",
             hovertext=f"<b>{year}</b><br><br>" +
-                      f"• Capital fin d'année<br>  Montant: {capital:,.0f} €<br><br>" +
-                      f"• Épargne investie<br>  Montant: {epargne:,.0f} €<br><br>" +
-                      f"• Rachats<br>  Montant: {rachat:,.0f} €",
+                      f"• Capital fin d'année<br>  Montant: {capital_fin_annee.loc[year]:,.0f} €<br><br>" +
+                      f"• Épargne investie<br>  Montant: {epargne_investie.loc[year]:,.0f} €<br><br>" +
+                      f"• Rachats<br>  Montant: {rachats.loc[year]:,.0f} €",
             showlegend=False
         ))
 
