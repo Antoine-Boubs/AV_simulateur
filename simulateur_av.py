@@ -647,8 +647,11 @@ def create_financial_chart(df: pd.DataFrame):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     # Convertir les colonnes en float
-    df['Capital fin d\'année (NET)'] = df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float)
-    df['Épargne investie'] = df['Épargne investie'].str.replace(' €', '').astype(float)
+    df['Capital fin d\'année (NET)'] = df['Capital fin d\'année (NET)'].astype(str)
+    
+    capital_fin_annee = df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float)
+    epargne_investie = df['Épargne investie'].str.replace(' €', '').str.replace(',', '.').astype(float)
+    rachat = df['Rachat'].str.replace(' €', '').str.replace(',', '.').astype(float)    df['Épargne investie'] = df['Épargne investie'].str.replace(' €', '').astype(float)
     df['Rachat'] = df['Rachat'].str.replace(' €', '').astype(float)
 
     # Add traces
