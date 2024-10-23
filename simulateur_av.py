@@ -97,64 +97,7 @@ def input_simulateur():
 
 import streamlit as st
 
-# CSS for Apple-inspired simple and elegant style
-st.markdown("""
-<style>
-    .main {
-        background-color: #f5f5f7;
-    }
-    .stApp {
-        margin: 0 auto;
-    }
-    .card {
-        background-color: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-    }
-    .card-title {
-        font-size: 18px;
-        font-weight: 500;
-        margin-bottom: 20px;
-        color: #1d1d1f;
-    }
-    .stSlider > div > div > div {
-        background-color: #0071e3;
-    }
-    .stSlider > div > div > div > div {
-        background-color: #0077ed;
-    }
-    .stNumberInput > div > div > input {
-        border-radius: 5px;
-        border: 1px solid #d2d2d7;
-    }
-    .delete-button {
-        background-color: #ff3b30;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        float: right;
-    }
-    .delete-button:hover {
-        background-color: #ff453a;
-    }
-    .action-button {
-        background-color: #0071e3;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-    .action-button:hover {
-        background-color: #0077ed;
-    }
-</style>
-""", unsafe_allow_html=True)
+
 
 # Initialisation des variables de session
 if "versements_libres" not in st.session_state:
