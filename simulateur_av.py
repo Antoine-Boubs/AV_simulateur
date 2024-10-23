@@ -893,7 +893,8 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             labels=['Versements', 'Plus-values'],
             values=[versements, plus_values],
             hole=.7,
-            textinfo='label',
+            textinfo='label+value',
+            texttemplate='%{label}<br>%{value:,.0f} €',
             textposition='outside',
             insidetextorientation='horizontal',
             marker=dict(colors=colors, line=dict(color='#ffffff', width=2)),
@@ -923,28 +924,37 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         margin=dict(t=60, b=60, l=60, r=60),
     )
 
-    return fig
+    # Créer le titre dynamiquement
+    title = f"""
+    <h2 style='
+        text-align: center; 
+        color: #16425B; 
+        font-size: 20px; 
+        font-weight: 700; 
+        margin-top: 30px; 
+        margin-bottom: 0px; 
+        background-color: rgba(251, 251, 251, 1); 
+        padding: 20px 15px; 
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        '> Composition du capital en année {duree_capi_max}
+    </h2>
+    """
+
+    return fig, title
 
 # Utilisation de la fonction
-st.markdown("""
-<h2 style='
-    text-align: center; 
-    color: #16425B; 
-    font-size: 20px; 
-    font-weight: 700; 
-    margin-top: 30px; 
-    margin-bottom: 0px; 
-    background-color: rgba(251, 251, 251, 1); 
-    padding: 20px 15px; 
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-    '> Composition du capital en année {duree_capi_max}
-</h2>
-""", unsafe_allow_html=True)
-
 objectif_annee_max = calculer_duree_capi_max(objectifs)
 duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi max réelle
-st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True, config={'displayModeBar': False})
+
+# Créer le graphique et obtenir le titre
+fig, title = create_donut_chart(resultats_df, duree_capi_max)
+
+# Afficher le titre
+st.markdown(title, unsafe_allow_html=True)
+
+# Afficher le graphique
+st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 
 
