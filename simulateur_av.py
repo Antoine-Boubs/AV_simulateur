@@ -778,7 +778,7 @@ st.markdown("""
     padding: 20px 15px; 
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-    '> Évolution de votre placement financier
+    '> Parcours de votre investissement : de l'épargne aux rachats
 </h2>
 """, unsafe_allow_html=True)
 
