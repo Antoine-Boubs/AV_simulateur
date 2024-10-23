@@ -837,6 +837,10 @@ st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True, 
 
 
 
+import plotly.graph_objs as go
+import pandas as pd
+import streamlit as st
+
 def create_waterfall_chart(df: pd.DataFrame):
     # Traitement des données
     def safe_float(value):
@@ -853,6 +857,14 @@ def create_waterfall_chart(df: pd.DataFrame):
     yearly_change = yearly_change.fillna(capital_fin_annee.iloc[0])
     final_capital = capital_fin_annee.iloc[-1]
 
+    # Création des icônes pour le hover
+    def get_triangle_icon(val):
+        return "▲" if val >= 0 else "▼"
+
+    hover_text = [f"{get_triangle_icon(val)} Variation: <b>{val:,.0f} €</b><br>Capital fin d'année: <b>{cap:,.0f} €</b>" 
+                  for val, cap in zip(yearly_change, capital_fin_annee)]
+    hover_text.append(f"Capital final: <b>{final_capital:,.0f} €</b>")
+
     # Création du graphique
     fig = go.Figure(go.Waterfall(
         name = "Evolution du capital",
@@ -866,7 +878,8 @@ def create_waterfall_chart(df: pd.DataFrame):
         increasing = {"marker":{"color":"#16425B"}},
         decreasing = {"marker":{"color":"#CBA325"}},
         totals = {"marker":{"color":"#16425B"}},
-        hovertemplate = '<span style="color:%{marker.color};">●</span> %{x}<br>Variation: <b>%{text}</b><extra></extra>'
+        hoverinfo = "text",
+        hovertext = hover_text,
     ))
 
     # Personnalisation du layout
