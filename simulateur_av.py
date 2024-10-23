@@ -879,8 +879,8 @@ def create_donut_chart(df: pd.DataFrame, objectifs: list):
     target_year = df[df['Année'] == duree_capi_max].iloc[0]
 
     # Calculer les valeurs nécessaires
-    capital_final = float(target_year['Capital fin année'].replace(' €', '').replace(',', '')) if isinstance(target_year['Capital fin année'], str) else target_year['Capital fin année']
-    pourcentage_plus_value = 0  # À calculer si disponible dans vos données
+    capital_final = float(target_year['Capital fin année'].replace(' €', '').replace(',', '.'))
+    pourcentage_plus_value = float(target_year['%'].replace('%', '')) / 100
     plus_values = capital_final * pourcentage_plus_value
     versements = capital_final - plus_values
 
