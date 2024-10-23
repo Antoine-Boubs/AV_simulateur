@@ -905,7 +905,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             sort=False,
             pull=[0, 0.1],
             textfont=dict(size=14, family="Inter"),
-            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>(%{percent:.2f}%)*100<extra></extra>'        )])
+            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>%{percent:.2f}%<extra></extra>'        )])
 
         # Calcul du pourcentage de croissance
         growth_percentage = (plus_values / versements * 100) if versements != 0 else 0
