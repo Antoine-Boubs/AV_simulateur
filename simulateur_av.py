@@ -646,14 +646,20 @@ def create_financial_chart(df: pd.DataFrame):
     # Create figure with secondary y-axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # Convertir les colonnes en float
+    # Fonction pour convertir les valeurs en float de manière sûre
+    def safe_float_convert(x):
+        if pd.isna(x):
+            return 0.0
+        if isinstance(x, str):
+            return float(x.replace(' €', '').replace(',', '.'))
+        return float(x)
 
-    capital_fin_annee = df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float)
-    epargne_investie = df['Épargne investie'].str.replace(' €', '').str.replace(',', '.').astype(float)
-    rachat = df['Rachat'].str.replace(' €', '').str.replace(',', '.').astype(float)
-    df['Épargne investie'] = df['Épargne investie'].str.replace(' €', '').astype(float)
-    df['Rachat'] = df['Rachat'].str.replace(' €', '').astype(float)
+    # Convertir les colonnes en float de manière sûre
+    capital_fin_annee = df['Capital fin d\'année (NET)'].apply(safe_float_convert)
+    epargne_investie = df['Épargne investie'].apply(safe_float_convert)
+    rachat = df['Rachat'].apply(safe_float_convert)
 
+    
     # Add traces
     fig.add_trace(
         go.Scatter(
