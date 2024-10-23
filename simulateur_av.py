@@ -861,9 +861,18 @@ def create_waterfall_chart(df: pd.DataFrame):
     def get_triangle_icon(val):
         return "▲" if val >= 0 else "▼"
 
-    hover_text = [f"{get_triangle_icon(val)} Variation: <b>{val:,.0f} €</b><br>Capital fin d'année: <b>{cap:,.0f} €</b>" 
-                  for val, cap in zip(yearly_change, capital_fin_annee)]
-    hover_text.append(f"Capital final: <b>{final_capital:,.0f} €</b>")
+    # Définition des couleurs personnalisées
+    color_increasing = "#16425B"
+    color_decreasing = "#CBA325"
+
+    hover_text = [
+        f"<b>Année {year}</b><br><br>" +
+        f"<span style='color:{color_increasing if val >= 0 else color_decreasing};'>{get_triangle_icon(val)}</span> " +
+        f"Variation: <b>{val:,.0f} €</b><br>" +
+        f"Capital fin d'année: <b>{cap:,.0f} €</b>"
+        for year, val, cap in zip(df.index, yearly_change, capital_fin_annee)
+    ]
+    hover_text.append(f"<b>Total</b><br>Capital final: <b>{final_capital:,.0f} €</b>")
 
     # Création du graphique
     fig = go.Figure(go.Waterfall(
@@ -875,9 +884,9 @@ def create_waterfall_chart(df: pd.DataFrame):
         text = [f"{val:,.0f} €" for val in yearly_change] + [f"{final_capital:,.0f} €"],
         y = yearly_change.tolist() + [0],
         connector = {"line":{"color":"rgba(63, 63, 63, 0.2)"}},
-        increasing = {"marker":{"color":"#16425B"}},
-        decreasing = {"marker":{"color":"#CBA325"}},
-        totals = {"marker":{"color":"#16425B"}},
+        increasing = {"marker":{"color":color_increasing}},
+        decreasing = {"marker":{"color":color_decreasing}},
+        totals = {"marker":{"color":color_increasing}},
         hoverinfo = "text",
         hovertext = hover_text,
     ))
