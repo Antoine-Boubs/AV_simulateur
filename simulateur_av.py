@@ -883,12 +883,12 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         fig.add_annotation(
             x=0.5, y=0.5,
             text="Pas de données à afficher",
-            font=dict(size=20, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F'),
+            font=dict(size=20, family="Inter, Arial, sans-serif", color='#16425B'),
             showarrow=False
         )
     else:
         # Créer le graphique en donut
-        colors = ['#007AFF', '#34C759']
+        colors = ['#16425B', '#CBA325']
         fig = go.Figure(data=[go.Pie(
             labels=['Versements', 'Plus-values'],
             values=[versements, plus_values],
@@ -901,7 +901,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             direction='clockwise',
             sort=False,
             pull=[0, 0.1],
-            textfont=dict(size=14, family="SF Pro Display, Arial, sans-serif"),
+            textfont=dict(size=14, family="Inter, Arial, sans-serif"),
         )])
 
         # Calcul du pourcentage de croissance
@@ -911,123 +911,40 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         fig.update_layout(
             annotations=[
                 dict(text=f'<b>{capital_final:,.0f} €</b><br>Capital final', x=0.5, y=0.5, font_size=16, showarrow=False),
-                dict(text=f'<b>{growth_text}</b><br>Plus-values', x=0.5, y=0.35, font_size=14, showarrow=False, font_color='#34C759')
+                dict(text=f'<b>{growth_text}</b><br>Plus-values', x=0.5, y=0.35, font_size=14, showarrow=False, font_color='#CBA325')
             ]
         )
 
     fig.update_layout(
-        title={
-            'text': f"Composition du capital en année {duree_capi_max}",
-            'y': 0.95,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': dict(size=24, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F')
-        },
-        font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color='#1D1D1F'),
-        paper_bgcolor='white',
-        plot_bgcolor='white',
+        font=dict(family="Inter, Arial, sans-serif", size=14, color='#16425B'),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
         showlegend=False,
+        margin=dict(t=60, b=60, l=60, r=60),
     )
-
-    pio.templates["apple"] = go.layout.Template(
-        layout=go.Layout(
-            colorway=['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#000000'],
-            font={'color': '#1D1D1F'},
-        )
-    )
-    fig.update_layout(template="apple")
 
     return fig
 
+# Utilisation de la fonction
+st.markdown("""
+<h2 style='
+    text-align: center; 
+    color: #16425B; 
+    font-size: 20px; 
+    font-weight: 700; 
+    margin-top: 30px; 
+    margin-bottom: 0px; 
+    background-color: rgba(251, 251, 251, 1); 
+    padding: 20px 15px; 
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    '> Composition du capital en année {duree_capi_max}
+</h2>
+""", unsafe_allow_html=True)
 
-# Dans votre application Streamlit
 objectif_annee_max = calculer_duree_capi_max(objectifs)
 duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi max réelle
-st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True)
-
-
-
-def create_historical_performance_chart():
-        fig = go.Figure()
-        years = [2019, 2020, 2021, 2022, 2023]
-        performances = [22.69, -0.80, 25.33, -12.17, 11.91]
-    
-        fig.add_trace(go.Bar(
-            x=years,
-            y=performances,
-            text=[f"{p:+.2f}%" for p in performances],
-            textposition='outside',
-            marker_color=['#34C759' if p >= 0 else '#FF3B30' for p in performances],  # Apple green and red
-            marker_line_color='rgba(0,0,0,0.5)',
-            marker_line_width=1.5,
-            opacity=0.8,
-            name='Performance annuelle'
-        ))
-    
-        cumulative_performance = np.cumprod(1 + np.array(performances) / 100) * 100 - 100
-        fig.add_trace(go.Scatter(
-            x=years,
-            y=cumulative_performance,
-            mode='lines+markers',
-            name='Performance cumulée',
-            line=dict(color='#007AFF', width=3),  # Apple blue
-            marker=dict(size=8, symbol='diamond', line=dict(width=2, color='#1D1D1F')),
-            yaxis='y2'
-        ))
-    
-        fig.update_layout(
-            title={
-                'text': 'Performances historiques',
-                'y':0.95,
-                'x':0.5,
-                'xanchor': 'center',
-                'yanchor': 'top',
-                'font': dict(size=24, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F')
-            },
-            font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color='#1D1D1F'),
-            xaxis_title='Année',
-            yaxis_title='Performance annuelle (%)',
-            yaxis2=dict(
-                title='Performance cumulée (%)',
-                overlaying='y',
-                side='right',
-                showgrid=False
-            ),
-            plot_bgcolor='rgba(240,240,240,0.5)',
-            paper_bgcolor='white',
-            yaxis=dict(gridcolor='rgba(0,0,0,0.1)', zeroline=True, zerolinecolor='#1D1D1F', zerolinewidth=1.5),
-            xaxis=dict(gridcolor='rgba(0,0,0,0.1)'),
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
-            ),
-            margin=dict(l=50, r=50, t=100, b=50),  # Increased top margin
-            hovermode="x unified"
-        )
-    
-        total_cumulative_performance = cumulative_performance[-1]
-        fig.add_annotation(
-            x=0.5, y=1.12,
-            xref='paper', yref='paper',
-            text=f"Performance cumulée sur 5 ans : {total_cumulative_performance:.2f}%",
-            showarrow=False,
-            font=dict(size=16, family="SF Pro Display, Arial, sans-serif", color='#1D1D1F', weight='bold')
-        )
-    
-        fig.update_traces(
-            hovertemplate="<b>Année:</b> %{x}<br><b>Performance:</b> %{text}<extra></extra>",
-            selector=dict(type='bar')
-        )
-        fig.update_traces(
-            hovertemplate="<b>Année:</b> %{x}<br><b>Performance cumulée:</b> %{y:.2f}%<extra></extra>",
-            selector=dict(type='scatter')
-        )
-    
-        return fig
+st.plotly_chart(create_donut_chart(resultats_df, duree_capi_max), use_container_width=True, config={'displayModeBar': False})
 
 
 
