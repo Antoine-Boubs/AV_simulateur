@@ -630,25 +630,36 @@ st.dataframe(resultats_df)
 
 
 
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+import pandas as pd
+import streamlit as st
+
 def create_financial_chart(df: pd.DataFrame):
     # Définir les couleurs
     couleur_principal = '#16425B'
+    couleur_principal_aire = 'rgba(141, 179, 197, 0.3)'
     couleur_secondaire = '#CBA325'
-    couleur_aire_principal = '#8DB3C5'
-    couleur_aire_secondaire = '#F1D87A'
+    couleur_secondaire_aire = 'rgba(241, 216, 122, 0.5)'
+    couleur_tertiaire = '#FF3B30'
 
     # Create figure with secondary y-axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    # Convertir les colonnes en float
+    df['Capital fin d\'année (NET)'] = df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float)
+    df['Épargne investie'] = df['Épargne investie'].str.replace(' €', '').astype(float)
+    df['Rachat'] = df['Rachat'].str.replace(' €', '').astype(float)
 
     # Add traces
     fig.add_trace(
         go.Scatter(
             x=df['Année'],
-            y=df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float),
+            y=df['Capital fin d\'année (NET)'],
             name='Capital fin d\'année',
             line=dict(color=couleur_principal, width=3),
             fill='tozeroy',
-            fillcolor=couleur_aire_principal,
+            fillcolor=couleur_principal_aire,
             mode='lines',
             hovertemplate='<span style="color:' + couleur_principal + ';">●</span> Capital fin d\'année <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
         ),
@@ -658,11 +669,11 @@ def create_financial_chart(df: pd.DataFrame):
     fig.add_trace(
         go.Scatter(
             x=df['Année'],
-            y=df['Épargne investie'].str.replace(' €', '').astype(float),
+            y=df['Épargne investie'],
             name='Épargne investie',
             line=dict(color=couleur_secondaire, width=3),
             fill='tozeroy',
-            fillcolor=couleur_aire_secondaire,
+            fillcolor=couleur_secondaire_aire,
             mode='lines',
             hovertemplate='<span style="color:' + couleur_secondaire + ';">●</span> Épargne investie <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
         ),
@@ -672,76 +683,57 @@ def create_financial_chart(df: pd.DataFrame):
     fig.add_trace(
         go.Bar(
             x=df['Année'],
-            y=df['Rachat'].str.replace(' €', '').astype(float),
+            y=df['Rachat'],
             name='Rachats',
-            marker_color='rgba(255, 59, 48, 0.7)',
-            hovertemplate='<span style="color:#FF3B30;">●</span> Rachats <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
+            marker_color=couleur_tertiaire,
+            opacity=0.7,
+            hovertemplate='<span style="color:' + couleur_tertiaire + ';">●</span> Rachats <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
         ),
         secondary_y=True,
     )
 
-    # Calculer le maximum pour l'axe y et arrondir au multiple de 1000 supérieur
-    y_max = max(df['Capital fin d\'année (NET)'].str.replace(' €', '').astype(float).max(),
-                df['Épargne investie'].str.replace(' €', '').astype(float).max())
-    y_max_rounded = np.ceil(y_max / 1000) * 1000
-
     # Customize the layout
     fig.update_layout(
-        title=dict(
-            text='<b>Évolution du placement financier</b>',
-            font=dict(family="Inter", size=24, color="#16425B"),
-            x=0.5,
-            y=0.95,
-            xanchor='center',
-            yanchor='top'
+        xaxis=dict(
+            title="<b>Années</b>",
+            tickmode='linear',
+            dtick=5,
+            ticksuffix=" ",
+            showgrid=False,
+            zeroline=False,
+            showline=True,
+            linewidth=3,
+            linecolor='#CBA325',
+        ),
+        yaxis=dict(
+            title="<b>Montant (€)</b>",
+            tickmode='linear',
+            dtick=1000,
+            ticksuffix=" €",
+            tickformat=",",
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='rgba(200,200,200,0.2)',
+            zeroline=False,
+            showline=True,
+            linewidth=3,
+            linecolor='#CBA325',
         ),
         font=dict(family="Inter", size=14),
-        plot_bgcolor='rgba(0,0,0,0)',
+        height=600,
+        width=1200,
+        margin=dict(t=60, b=60, l=60, r=60),
         paper_bgcolor='rgba(0,0,0,0)',
-        hovermode="x unified",
+        plot_bgcolor='rgba(0,0,0,0)',
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
             xanchor="center",
             x=0.5,
-            bgcolor='rgba(255,255,255,1)',
-            bordercolor='#cba325',
-            borderwidth=3
+            font=dict(size=14),
         ),
-        margin=dict(t=100, b=60, l=60, r=60),
-        height=500,
-        width=1000,
-    )
-
-    # Update axes
-    fig.update_xaxes(
-        title="<b>Années</b>",
-        tickmode='linear',
-        dtick=5,
-        ticksuffix=" ",
-        showgrid=False,
-        zeroline=False,
-        showline=True,
-        linewidth=3,
-        linecolor='#CBA325',
-    )
-
-    fig.update_yaxes(
-        title="<b>Montant (€)</b>",
-        tickmode='linear',
-        dtick=1000,
-        ticksuffix=" €",
-        tickformat=",",
-        showgrid=True,
-        gridwidth=1,
-        gridcolor='rgba(200,200,200,0.2)',
-        zeroline=False,
-        showline=True,
-        linewidth=3,
-        linecolor='#CBA325',
-        range=[0, y_max_rounded],
-        secondary_y=False
+        hovermode="x unified",
     )
 
     fig.update_yaxes(
@@ -755,25 +747,22 @@ def create_financial_chart(df: pd.DataFrame):
         secondary_y=True
     )
 
-    # Ajout du cadre autour du graphique
-    fig.update_layout(
-        shapes=[
-            dict(
-                type="rect",
-                xref="paper",
-                yref="paper",
-                x0=0,
-                y0=0,
-                x1=1,
-                y1=1,
-                line=dict(
-                    color="#16425B",
-                    width=2,
-                ),
-                fillcolor="rgba(0,0,0,0)"
-            ),
-        ]
-    )
+    # Ajouter le titre en tant qu'élément séparé
+    st.markdown("""
+    <h2 style='
+        text-align: center; 
+        color: #16425B; 
+        font-size: 20px; 
+        font-weight: 700; 
+        margin-top: 30px; 
+        margin-bottom: 0px; 
+        background-color: rgba(251, 251, 251, 1); 
+        padding: 20px 15px; 
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        '> Évolution de votre placement financier
+    </h2>
+    """, unsafe_allow_html=True)
 
     return fig
 
