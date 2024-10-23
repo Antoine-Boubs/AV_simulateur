@@ -624,6 +624,9 @@ resultats_df = optimiser_objectifs(params, objectifs)
 
 # Affichage des résultats avec les rachats
 st.header("📊 Résultats de la simulation avec rachats")
+
+resultats_df.set_index('Année', inplace=True)
+
 st.dataframe(resultats_df)
 
 
