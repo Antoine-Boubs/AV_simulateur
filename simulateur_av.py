@@ -869,6 +869,12 @@ st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True)
 
 
 def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
+    if not objectifs:
+        objectif_name = "Votre capital sans objectif spécifique"
+    else:
+        objectif_max = max(objectifs, key=lambda obj: obj["annee"])
+        objectif_name = objectif_max["nom"]
+        
     # Calculer la durée de capitalisation maximale
     duree_capi_max = calculer_duree_capi_max(objectifs)
 
