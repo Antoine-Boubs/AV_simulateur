@@ -1180,7 +1180,7 @@ class PDF(FPDF):
 
         # Texte de copyright et URL
         self.set_y(self.get_y() + icon_size + 2)  # Espace après les icônes
-        self.set_font('Arial', '', 8)
+        self.set_font('Inter', '', 8)
         self.set_text_color(128, 128, 128)  # Gris
         self.cell(0, 4, '© 2023 Votre Entreprise. Tous droits réservés.', 0, 1, 'C')
         self.cell(0, 4, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
