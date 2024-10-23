@@ -325,7 +325,7 @@ p {
         box-shadow: 0 4px 60px rgba(0, 0, 0, 0.8);
     }
 
-    .stDataFrameGlideDataEditor > dataFrame:hover{
+    .stDataFrameGlideDataEditor > :hover {
             border: 1px solid #CBA325;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
         }
