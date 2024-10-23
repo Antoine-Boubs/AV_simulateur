@@ -193,6 +193,7 @@ p {
         font-weight: 500;
     }
 
+                                        /* RADIO GROUP */
     div[role="radiogroup"] {
         display: flex;
         justify-content: space-between;
@@ -218,7 +219,9 @@ p {
         color: #202021;
         margin: 0 0 0 5px;
     }
-
+    .radio-horizontal .stRadio > div {
+        flex-direction: row;
+    }
 
 
     button[data-baseweb="tab"] {
@@ -265,8 +268,9 @@ p {
         border-radius: 5px;
         margin: 10px;
     }
-        
-        
+
+
+                                        /* SIDEBAR */
     .stSidebar .stHeading h2 {
         color: #16425B; 
         font-size: 20px; 
@@ -279,3 +283,48 @@ p {
         border-radius: 10px; 
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
+
+
+                                        /* EXPANDER */
+    .stExpander {
+        background-color: #FBFBFB;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    .stExpander:hover {
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+
+
+                                        /* BUTTON */
+    .stButton > button {
+        background-color: #16425B;
+        color: #FBFBFB;
+        border-radius: 20px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        background-color: rgba(22, 66, 91, 0.7);
+    }
+    .delete-button {
+        color: #E8B0AA;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+    .delete-button:hover {
+        color: #A33432;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 20px;
+    }
+
+
