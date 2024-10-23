@@ -1245,7 +1245,7 @@ class PDF(FPDF):
         start_x = (self.w - total_width) / 2
 
         icons = [
-            (self.linkedin_icon, 'https://www.linkedin.com/in/votre-profil'),
+            (self.linkedin_icon, 'https://www.linkedin.com/in/antoine_berjoan'),
             (self.email_icon, f'mailto:{self.email}'),
             (self.whatsapp_icon, f'https://wa.me/{self.phone}?text={urllib.parse.quote(self.whatsapp_message)}')
         ]
