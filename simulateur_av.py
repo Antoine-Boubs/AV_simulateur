@@ -620,7 +620,6 @@ params = input_simulateur()
 duree_totale = calculer_duree_totale(objectifs)
 
 # Calcul du tableau avec les paramètres actuels et intégration des rachats
-resultats_df = optimiser_objectifs(params, objectifs)
 
 # Affichage des résultats avec les rachats
 st.header("📊 Résultats de la simulation avec rachats")
