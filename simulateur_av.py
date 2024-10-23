@@ -889,6 +889,7 @@ def create_waterfall_chart(df: pd.DataFrame):
         totals = {"marker":{"color":color_increasing}},
         hoverinfo = "text",
         hovertext = hover_text,
+        showlegend = False  # Ajoutez cette ligne pour supprimer la légende
     ))
 
     # Personnalisation du layout
@@ -919,7 +920,8 @@ def create_waterfall_chart(df: pd.DataFrame):
             font_size=14,
             font_family="Inter"
         ),
-        hovermode="x unified"
+        hovermode="x unified",
+        showlegend = False  # Ajoutez également cette ligne ici
     )
 
     # Ajout d'un range slider
