@@ -1077,6 +1077,11 @@ import pandas as pd
 import plotly.graph_objs as go
 import streamlit as st
 
+import plotly.graph_objs as go
+import pandas as pd
+import streamlit as st
+import uuid
+
 def create_donut_chart2(df: pd.DataFrame, objectifs=None, chart_id="donut_chart_2"):
     # Vérifier si des objectifs sont définis et non vides
     if objectifs and len(objectifs) > 0:
@@ -1124,13 +1129,19 @@ def create_donut_chart2(df: pd.DataFrame, objectifs=None, chart_id="donut_chart_
     versements = capital_final - plus_values
 
     if capital_final == 0:
-        # Si le capital final est 0, afficher un message au lieu du graphique
-        fig = go.Figure()
-        fig.add_annotation(
-            x=0.5, y=0.5,
-            text="Pas de données à afficher",
-            font=dict(size=20, family="Inter", color='#16425B'),
-            showarrow=False
+        # Si le capital final est 0, afficher un donut vide gris clair
+        fig = go.Figure(data=[go.Pie(
+            labels=['Capital épuisé'],
+            values=[1],
+            hole=.7,
+            textinfo='none',
+            marker=dict(colors=['#E0E0E0']),
+            hoverinfo='none'
+        )])
+        fig.update_layout(
+            annotations=[
+                dict(text='<b>0 €</b><br>Capital épuisé', x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color='#16425B'))
+            ]
         )
     else:
         # Créer le graphique en donut
@@ -1189,6 +1200,7 @@ def create_donut_chart2(df: pd.DataFrame, objectifs=None, chart_id="donut_chart_
 
     return fig, title
 
+# Utilisation de la fonction
 fig2, title2 = create_donut_chart2(resultats_df, objectifs, chart_id=f"donut_chart_{uuid.uuid4()}")
 st.markdown(title2, unsafe_allow_html=True)
 st.plotly_chart(fig2, use_container_width=True, config={'displayModeBar': False}, key=f"plot_{uuid.uuid4()}")
