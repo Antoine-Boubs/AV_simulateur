@@ -1777,7 +1777,7 @@ def main():
             
             # Créer un lien de téléchargement pour le PDF
             b64 = base64.b64encode(pdf_bytes).decode()
-            href = f'<a href="data:application/pdf;base64,{b64}" download="rapport_simulation_financiere.pdf">Télécharger le rapport PDF</a>'
+            href = f'<a href="data:application/pdf;base64,{b64}" download="Votre simulation personnalisée">Télécharger le rapport PDF</a>'
             st.markdown(href, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Une erreur s'est produite lors de la génération du PDF : {str(e)}")
