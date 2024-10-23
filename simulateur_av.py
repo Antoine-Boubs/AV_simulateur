@@ -678,7 +678,6 @@ st.dataframe(styled_df, use_container_width=True)
 
 
 import plotly.graph_objs as go
-from plotly.subplots import make_subplots
 import pandas as pd
 import streamlit as st
 
@@ -690,8 +689,8 @@ def create_financial_chart(df: pd.DataFrame):
     couleur_secondaire_aire = 'rgba(241, 216, 122, 0.5)'
     couleur_tertiaire = '#FF3B30'
 
-    # Create figure with secondary y-axis
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    # Create figure
+    fig = go.Figure()
 
     # Fonction pour convertir les valeurs en float de manière sûre
     def safe_float_convert(x):
@@ -706,7 +705,6 @@ def create_financial_chart(df: pd.DataFrame):
     epargne_investie = df['Épargne investie'].apply(safe_float_convert)
     rachat = df['Rachat'].apply(safe_float_convert)
 
-    
     # Add traces
     fig.add_trace(
         go.Scatter(
@@ -718,8 +716,7 @@ def create_financial_chart(df: pd.DataFrame):
             fillcolor=couleur_principal_aire,
             mode='lines',
             hovertemplate='<span style="color:' + couleur_principal + ';">●</span> Capital fin d\'année <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
-        ),
-        secondary_y=False,
+        )
     )
 
     fig.add_trace(
@@ -732,8 +729,7 @@ def create_financial_chart(df: pd.DataFrame):
             fillcolor=couleur_secondaire_aire,
             mode='lines',
             hovertemplate='<span style="color:' + couleur_secondaire + ';">●</span> Épargne investie <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
-        ),
-        secondary_y=False,
+        )
     )
 
     fig.add_trace(
@@ -744,14 +740,8 @@ def create_financial_chart(df: pd.DataFrame):
             marker_color=couleur_tertiaire,
             opacity=0.7,
             hovertemplate='<span style="color:' + couleur_tertiaire + ';">●</span> Rachats <br>Montant: <b>%{y:.0f} €</b><extra></extra>'
-        ),
-        secondary_y=True,
+        )
     )
-
-    # Calculer l'échelle pour l'axe des rachats
-    max_principal = max(capital_fin_annee.max(), epargne_investie.max())
-    max_rachat = rachat.max()
-    scale_factor = max_principal / max_rachat if max_rachat > 0 else 1
 
     # Customize the layout
     fig.update_layout(
@@ -779,21 +769,6 @@ def create_financial_chart(df: pd.DataFrame):
             showline=True,
             linewidth=3,
             linecolor='#CBA325',
-        ),
-        yaxis2=dict(
-            title="<b>Rachats (€)</b>",
-            ticksuffix=" €",
-            tickformat=",",
-            showgrid=False,
-            zeroline=False,
-            showline=True,
-            linewidth=3,
-            linecolor='#CBA325',
-            tickmode='auto',
-            nticks=6,
-            range=[0, max_rachat * scale_factor],  # Ajuster l'échelle des rachats
-            overlaying='y',
-            side='right',
         ),
         font=dict(family="Inter", size=14),
         margin=dict(t=60, b=60, l=60, r=60),
