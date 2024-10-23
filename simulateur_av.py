@@ -868,6 +868,13 @@ import pandas as pd
 import streamlit as st
 
 def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
+    # Calculer la durée de capitalisation maximale
+    duree_capi_max = calculer_duree_capi_max(objectifs)
+
+    # Trouver l'objectif correspondant à la durée de capitalisation maximale
+    objectif_max = max(objectifs, key=lambda obj: obj["annee"])
+    objectif_name = objectif_max["nom"]
+    
     # Trouver l'année correspondant à duree_capi_max
     target_year = df[df['Année'] == duree_capi_max].iloc[0]
 
@@ -937,7 +944,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
         padding: 20px 15px; 
         border-radius: 15px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-        '> Composition du capital en année 
+        '> Votre capital pour : {objectif_name}
     </h2>
     """
 
