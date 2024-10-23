@@ -617,14 +617,20 @@ def color_alternating_rows(s):
     return ['background-color: #EEEFF1' if i % 2 == 0 else 'background-color: #FBFBFB' for i in range(len(s))]
 
 def format_currency(val):
-    if pd.isna(val):
+    if pd.isna(val) or not isinstance(val, (int, float)):
         return ""
     return f"{val:,.2f} €".replace(",", " ").replace(".", ",")
 
 def format_percentage(val):
-    if pd.isna(val):
+    if pd.isna(val) or not isinstance(val, (int, float)):
         return ""
-    return f"{val:.2f}%".replace(".", ",")
+    try:
+        return f"{val:.2f}%".replace(".", ",")
+    except ValueError:
+        return str(val)
+
+def color_alternating_rows(s):
+    return ['background-color: #EEEFF1' if i % 2 == 0 else 'background-color: #FBFBFB' for i in range(len(s))]
 
 def style_dataframe(df):
     return df.style.format({
@@ -646,6 +652,7 @@ def style_dataframe(df):
          'props': [('width', '100%'),
                    ('table-layout', 'fixed')]},
     ])
+
 
 
 params = input_simulateur()
