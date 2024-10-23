@@ -146,29 +146,6 @@ def verifier_chevauchements():
                     chevauchements.append((i, j))
     return chevauchements
 
-# Style personnalisé
-st.markdown("""
-<style>
-    .stButton>button {
-        width: 100%;
-        border-radius: 20px;
-    }
-    .stTextInput>div>div>input {
-        border-radius: 20px;
-    }
-    .stSlider>div>div>div>div {
-        background-color: #f0f2f6;
-    }
-    .stSlider>div>div>div>div>div {
-        background-color: #4e8cff;
-    }
-    .streamlit-expanderHeader {
-        font-size: 1em;
-        color: #31333F;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 
 
 # Boutons pour gérer les versements
@@ -258,65 +235,6 @@ if "objectifs" not in st.session_state:
 # Fonction pour mettre à jour les valeurs des sliders
 def mettre_a_jour_slider(cle):
     st.session_state[cle] = st.session_state[cle]
-
-# CSS pour un design épuré et élégant
-st.markdown("""
-<style>
-    .main {
-        background-color: #f5f5f7;
-        padding: 2rem;
-        border-radius: 20px;
-    }
-    h1 {
-        color: #1d1d1f;
-        font-weight: 700;
-        font-size: 2.5rem;
-        margin-bottom: 2rem;
-    }
-    .stTextInput > div > div > input {
-        border-radius: 10px;
-        border: 1px solid #d2d2d7;
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-    }
-    .stSlider > div > div > div {
-        background-color: #0071e3;
-    }
-    .stExpander {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
-        padding: 1rem;
-        transition: all 0.3s ease;
-    }
-    .stExpander:hover {
-        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    }
-    .stButton > button {
-        background-color: #0071e3;
-        color: white;
-        border-radius: 20px;
-        padding: 0.5rem 1.5rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    .stButton > button:hover {
-        background-color: #0077ed;
-    }
-    .delete-button {
-        color: #ff3b30;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
-    }
-    .delete-button:hover {
-        color: #F1B8A2;
-    }
-</style>
-""", unsafe_allow_html=True)
 
 
 # Affichage de tous les objectifs
