@@ -792,7 +792,16 @@ st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True, 
 
 def create_waterfall_chart(df: pd.DataFrame):
     # Traitement des données
-    capital_fin_annee = df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float)
+    def safe_float(value):
+        if pd.isna(value):
+            return 0.0
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            return float(value.replace(' €', '').replace(',', '.'))
+        return 0.0
+
+    capital_fin_annee = df['Capital fin d\'année (NET)'].apply(safe_float)
     yearly_change = capital_fin_annee.diff()
     yearly_change = yearly_change.fillna(capital_fin_annee.iloc[0])
     final_capital = capital_fin_annee.iloc[-1]
@@ -807,9 +816,9 @@ def create_waterfall_chart(df: pd.DataFrame):
         text = [f"{val:,.0f} €" for val in yearly_change] + [f"{final_capital:,.0f} €"],
         y = yearly_change.tolist() + [0],
         connector = {"line":{"color":"rgba(63, 63, 63, 0.2)"}},
-        increasing = {"marker":{"color":"#34C759"}},
-        decreasing = {"marker":{"color":"#FF3B30"}},
-        totals = {"marker":{"color":"#007AFF"}},
+        increasing = {"marker":{"color":"#16425B"}},
+        decreasing = {"marker":{"color":"#CBA325"}},
+        totals = {"marker":{"color":"#16425B"}},
     ))
 
     # Personnalisation du layout
@@ -820,27 +829,33 @@ def create_waterfall_chart(df: pd.DataFrame):
             'x':0.5,
             'xanchor': 'center',
             'yanchor': 'top',
-            'font': dict(size=24, color='#1D1D1F')
+            'font': dict(size=20, color='#16425B', family="Inter")
         },
-        font=dict(family="SF Pro Display, Arial, sans-serif", size=14, color="#1D1D1F"),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
+        font=dict(family="Inter", size=14, color='#16425B'),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
         xaxis=dict(
             title="Année",
             tickfont=dict(size=12),
-            gridcolor='#E5E5EA'
+            gridcolor='rgba(200,200,200,0.2)',
+            showline=True,
+            linewidth=3,
+            linecolor='#CBA325',
         ),
         yaxis=dict(
             title="Variation du capital (€)",
             tickfont=dict(size=12),
-            gridcolor='#E5E5EA',
-            tickformat=',.0f'
+            gridcolor='rgba(200,200,200,0.2)',
+            tickformat=',.0f',
+            showline=True,
+            linewidth=3,
+            linecolor='#CBA325',
         ),
         margin=dict(l=60, r=30, t=100, b=50),
         hoverlabel=dict(
             bgcolor="white",
             font_size=14,
-            font_family="SF Pro Display, Arial, sans-serif"
+            font_family="Inter"
         )
     )
 
@@ -852,19 +867,10 @@ def create_waterfall_chart(df: pd.DataFrame):
         )
     )
 
-    # Utilisation d'un template personnalisé inspiré d'Apple
-    pio.templates["apple"] = go.layout.Template(
-        layout=go.Layout(
-            colorway=['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#000000'],
-            font={'color': '#1D1D1F'},
-        )
-    )
-    fig.update_layout(template="apple")
-
     return fig
 
 # Dans votre application Streamlit
-st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True)
+st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True, config={'displayModeBar': False})
 
 
 
@@ -881,7 +887,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
         except ValueError:
             objectif_name = "Objectif indéfini"
     else:
-        objectif_name = "Votre capital sans objectif spécifique"
+        objectif_name = "sans objectif spécifique"
     
     # Vérifier si le DataFrame est vide
     if df.empty:
@@ -889,7 +895,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
         fig.add_annotation(
             x=0.5, y=0.5,
             text="Pas de données à afficher",
-            font=dict(size=20, family="Inter, Arial, sans-serif", color='#16425B'),
+            font=dict(size=20, family="Inter", color='#16425B'),
             showarrow=False
         )
         return fig, f"<h2>Aucune donnée disponible pour : {objectif_name}</h2>"
@@ -924,7 +930,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
         fig.add_annotation(
             x=0.5, y=0.5,
             text="Pas de données à afficher",
-            font=dict(size=20, family="Inter, Arial, sans-serif", color='#16425B'),
+            font=dict(size=20, family="Inter", color='#16425B'),
             showarrow=False
         )
     else:
