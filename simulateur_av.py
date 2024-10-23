@@ -613,7 +613,29 @@ def optimiser_objectifs(params, duree_totale):
     ])
 
 
+def color_alternating_rows(s):
+    return ['background-color: #EEEFF1' if i % 2 == 0 else 'background-color: #FBFBFB' for i in range(len(s))]
 
+def style_dataframe(df):
+    return df.style.format("{:,.2f} €", subset=[col for col in df.columns if col != 'Année' and col != '%']) \
+        .format("{:.2f}%", subset=['%']) \
+        .set_properties(**{
+            'color': '#202021',
+            'font-family': 'Inter, sans-serif',
+            'font-size': '14px',
+        }) \
+        .apply(color_alternating_rows) \
+        .set_table_styles([
+            {'selector': 'th',
+             'props': [('font-weight', 'bold'),
+                       ('background-color', '#284264'),
+                       ('color', 'white'),
+                       ('font-family', 'Inter, sans-serif'),
+                       ('font-size', '14px')]},
+            {'selector': 'table',
+             'props': [('width', '100%'),
+                       ('table-layout', 'fixed')]},
+        ])
 
 
 params = input_simulateur()
@@ -627,7 +649,11 @@ resultats_df = optimiser_objectifs(params, objectifs)
 
 resultats_df.set_index('Année', inplace=True)
 
-st.dataframe(resultats_df)
+# Appliquez le style au DataFrame
+styled_df = style_dataframe(resultats_df)
+
+# Affichez le DataFrame stylisé
+st.dataframe(styled_df, use_container_width=True)
 
 
 
@@ -1000,8 +1026,6 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
         '> Votre capital pour : {objectif_name}
     </h2>
-    *Note explicative :* Ce graphique représente le capital accumulé au dernier jour de votre phase d'épargne. Il est basé sur l'objectif ayant l'horizon d'investissement le plus lointain, offrant ainsi une vue à long terme de votre stratégie d'épargne et d'investissement.
-
     """
 
     return fig, title
