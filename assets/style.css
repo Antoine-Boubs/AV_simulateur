@@ -306,13 +306,14 @@ p {
         padding: 0.5rem 1.5rem;
         font-weight: 500;
         transition: all 0.3s ease;
+        color: #FBFBFB !important; /* Ajout de la couleur du texte ici */
+        width: 100%;
     }
-    .stButton > p {
-        color: #FBFBFB;
-    }
+    
     .stButton > button:hover {
-        background-color: rgba(22, 66, 91, 0.9);
+        background-color: rgba(22, 66, 83); /* Utilisation de rgba pour la transparence */
     }
+    
     .delete-button {
         color: #E8B0AA;
         background: none;
@@ -321,12 +322,19 @@ p {
         font-size: 1.2rem;
         transition: all 0.3s ease;
     }
+    
     .delete-button:hover {
         color: #A33432;
     }
-    .stButton>button {
-        width: 100%;
-        border-radius: 20px;
-    }
 
 
+
+
+    .stTextInput > div > div > input {
+        border-radius: 10px;
+        border: 5px solid #d2d2d7;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+
+
+    
