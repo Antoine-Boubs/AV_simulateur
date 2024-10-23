@@ -651,14 +651,15 @@ def create_financial_chart(df: pd.DataFrame):
     
     capital_fin_annee = df['Capital fin d\'année (NET)'].str.replace(' €', '').str.replace(',', '.').astype(float)
     epargne_investie = df['Épargne investie'].str.replace(' €', '').str.replace(',', '.').astype(float)
-    rachat = df['Rachat'].str.replace(' €', '').str.replace(',', '.').astype(float)    df['Épargne investie'] = df['Épargne investie'].str.replace(' €', '').astype(float)
+    rachat = df['Rachat'].str.replace(' €', '').str.replace(',', '.').astype(float)
+    df['Épargne investie'] = df['Épargne investie'].str.replace(' €', '').astype(float)
     df['Rachat'] = df['Rachat'].str.replace(' €', '').astype(float)
 
     # Add traces
     fig.add_trace(
         go.Scatter(
             x=df['Année'],
-            y=df['Capital fin d\'année (NET)'],
+            y=capital_fin_annee,
             name='Capital fin d\'année',
             line=dict(color=couleur_principal, width=3),
             fill='tozeroy',
@@ -672,7 +673,7 @@ def create_financial_chart(df: pd.DataFrame):
     fig.add_trace(
         go.Scatter(
             x=df['Année'],
-            y=df['Épargne investie'],
+            y=epargne_investie,
             name='Épargne investie',
             line=dict(color=couleur_secondaire, width=3),
             fill='tozeroy',
@@ -686,7 +687,7 @@ def create_financial_chart(df: pd.DataFrame):
     fig.add_trace(
         go.Bar(
             x=df['Année'],
-            y=df['Rachat'],
+            y=rachat,
             name='Rachats',
             marker_color=couleur_tertiaire,
             opacity=0.7,
