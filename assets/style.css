@@ -306,7 +306,6 @@ p {
         padding: 0.5rem 1.5rem;
         font-weight: 500;
         transition: all 0.3s ease;
-        color: #FBFBFB !important; /* Ajout de la couleur du texte ici */
         width: 100%;
     }
     
@@ -333,7 +332,7 @@ p {
     .stTextInput > div > div > input {
         border-radius: 10px;
         border: 3px solid #CBA325;
-        padding: 1.5rem 2rem;
+        padding: 0.5rem 1rem;
         font-size: 1rem;
 
 
