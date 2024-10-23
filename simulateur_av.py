@@ -1182,7 +1182,7 @@ class PDF(FPDF):
         self.set_y(self.get_y() + icon_size + 2)  # Espace après les icônes
         self.set_font('Inter', '', 8)
         self.set_text_color(128, 128, 128)  # Gris
-        self.cell(0, 4, '© {self.current_year} Antoine Berjoan. Tous droits réservés.', 0, 1, 'C')
+        self.cell(0, 4, f'© {self.current_year} Antoine Berjoan', 0, 1, 'C')
         self.cell(0, 4, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
 
 
