@@ -310,22 +310,9 @@ p {
     }
     
     .stButton > button:hover {
-        background-color: rgba(22, 66, 83, 0.8); /* Utilisation de rgba pour la transparence */
+        background-color: rgba(22, 66, 63); /* Utilisation de rgba pour la transparence */
     }
     
-    .delete-button {
-        color: #E8B0AA;
-        background-color: #F0D97A;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
-    }
-    
-    .delete-button:hover {
-        color: #A33432;
-    }
 
 
     div[data-testid="stButton"] p {
