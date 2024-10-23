@@ -616,26 +616,36 @@ def optimiser_objectifs(params, duree_totale):
 def color_alternating_rows(s):
     return ['background-color: #EEEFF1' if i % 2 == 0 else 'background-color: #FBFBFB' for i in range(len(s))]
 
+def format_currency(val):
+    if pd.isna(val):
+        return ""
+    return f"{val:,.2f} €".replace(",", " ").replace(".", ",")
+
+def format_percentage(val):
+    if pd.isna(val):
+        return ""
+    return f"{val:.2f}%".replace(".", ",")
+
 def style_dataframe(df):
-    return df.style.format("{:,.2f} €", subset=[col for col in df.columns if col != 'Année' and col != '%']) \
-        .format("{:.2f}%", subset=['%']) \
-        .set_properties(**{
-            'color': '#202021',
-            'font-family': 'Inter, sans-serif',
-            'font-size': '14px',
-        }) \
-        .apply(color_alternating_rows) \
-        .set_table_styles([
-            {'selector': 'th',
-             'props': [('font-weight', 'bold'),
-                       ('background-color', '#284264'),
-                       ('color', 'white'),
-                       ('font-family', 'Inter, sans-serif'),
-                       ('font-size', '14px')]},
-            {'selector': 'table',
-             'props': [('width', '100%'),
-                       ('table-layout', 'fixed')]},
-        ])
+    return df.style.format({
+        col: format_currency for col in df.columns if col not in ['Année', '%']
+    }).format({
+        '%': format_percentage
+    }).set_properties(**{
+        'color': '#202021',
+        'font-family': 'Inter, sans-serif',
+        'font-size': '14px',
+    }).apply(color_alternating_rows).set_table_styles([
+        {'selector': 'th',
+         'props': [('font-weight', 'bold'),
+                   ('background-color', '#284264'),
+                   ('color', 'white'),
+                   ('font-family', 'Inter, sans-serif'),
+                   ('font-size', '14px')]},
+        {'selector': 'table',
+         'props': [('width', '100%'),
+                   ('table-layout', 'fixed')]},
+    ])
 
 
 params = input_simulateur()
