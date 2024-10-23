@@ -737,7 +737,6 @@ def create_financial_chart(df: pd.DataFrame):
             range=[0, max(rachat) * 1.1],  # Adjust the range for better proportionality
         ),
         font=dict(family="Inter", size=14),
-        height=600,
         margin=dict(t=60, b=60, l=60, r=60),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
