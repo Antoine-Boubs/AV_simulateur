@@ -744,7 +744,6 @@ def create_financial_chart(df: pd.DataFrame):
             side='right',
         ),
         font=dict(family="Inter", size=14),
-        height=600,
         margin=dict(t=60, b=60, l=60, r=60),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
@@ -761,35 +760,24 @@ def create_financial_chart(df: pd.DataFrame):
 
     return fig
 
-def display_financial_chart(df: pd.DataFrame, width_percentage: int = 80):
-    # Créer trois colonnes avec des proportions calculées
-    left_space = (100 - width_percentage) // 2
-    right_space = 100 - width_percentage - left_space
-    col1, col2, col3 = st.columns([left_space, width_percentage, right_space])
-    
-    # Ajouter le titre en tant qu'élément séparé
-    col2.markdown("""
-    <h2 style='
-        text-align: center; 
-        color: #16425B; 
-        font-size: 20px; 
-        font-weight: 700; 
-        margin-top: 30px; 
-        margin-bottom: 0px; 
-        background-color: rgba(251, 251, 251, 1); 
-        padding: 20px 15px; 
-        border-radius: 15px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-        '> Évolution de votre placement financier
-    </h2>
-    """, unsafe_allow_html=True)
-    
-    # Afficher le graphique dans la colonne centrale
-    with col2:
-        st.plotly_chart(create_financial_chart(df), use_container_width=True, config={'displayModeBar': False})
+# Utilisation de la fonction
+st.markdown("""
+<h2 style='
+    text-align: center; 
+    color: #16425B; 
+    font-size: 20px; 
+    font-weight: 700; 
+    margin-top: 30px; 
+    margin-bottom: 0px; 
+    background-color: rgba(251, 251, 251, 1); 
+    padding: 20px 15px; 
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    '> Évolution de votre placement financier
+</h2>
+""", unsafe_allow_html=True)
 
-# Appel de la fonction
-display_financial_chart(resultats_df, width_percentage=80)
+st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True, config={'displayModeBar': False})
 
 
 
