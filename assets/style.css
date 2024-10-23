@@ -321,8 +321,8 @@ p {
 
 
     .stDataFrameGlideDataEditor {
-        border: 2px solid #16425B;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        border: 1px solid #16425B;
+        box-shadow: 0 4px 60px rgba(0, 0, 0, 0.8);
     }
 
     .stExpander > details {
