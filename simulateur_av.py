@@ -1052,12 +1052,12 @@ class PDF(FPDF):
         self.logo_path = logo_path or os.path.join(current_dir, "assets", "Logo.png")
         self.track_record_path = os.path.join(os.path.dirname(__file__), "assets", "Track_record.png") 
 
-        self.linkedin_icon = 'assets/Logo.png'
-        self.email_icon = 'assets/Logo1.png'
-        self.sms_icon = 'assets/Logo.png'
+        self.linkedin_icon = 'assets/linkedin_icon.png'
+        self.email_icon = 'assets/email_icon.png'
+        self.whatsapp_icon = 'assets/whatsapp_icon.png'
         self.email = 'antoineberjoan@gmail.com'
-        self.phone = '+33686514317'
-        self.sms_message = "Bonjour, j'aimerais en savoir plus sur vos services."  # Message par défaut pour le SMS
+        self.phone = '33686514317'
+        self.whatsapp_message = "Bonjour, j'aimerais en savoir plus sur vos services."  # Message par défaut pour le SMS
 
 
         self.current_section = 'Votre simulation personnalisée'  # Titre par défaut
@@ -1166,24 +1166,22 @@ class PDF(FPDF):
         self.set_text_color(*apple_blue)
         self.cell(0, 5, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
 
-        # Calcul des positions pour centrer les icônes
-        total_width = 50  # Largeur totale occupée par les icônes
+       total_width = 50
         start_x = (self.w - total_width) / 2
         icon_size = 10
         spacing = 5
 
-        # Bouton LinkedIn
-        if os.path.exists(self.linkedin_icon):
-            self.image(self.linkedin_icon, start_x, self.get_y(), icon_size, icon_size, link='https://www.linkedin.com/in/votre-profil')
-        
-        # Bouton Email
-        if os.path.exists(self.email_icon):
-            self.image(self.email_icon, start_x + icon_size + spacing, self.get_y(), icon_size, icon_size, link=f'mailto:{self.email}')
-        
-        # Bouton SMS (remplace le bouton Téléphone)
-        if os.path.exists(self.sms_icon):
-            sms_link = f'sms:{self.phone}?body={self.sms_message.replace(" ", "%20")}'
-            self.image(self.sms_icon, start_x + 2 * (icon_size + spacing), self.get_y(), icon_size, icon_size, link=sms_link)
+        icons = [
+            (self.linkedin_icon, 'https://www.linkedin.com/in/votre-profil'),
+            (self.email_icon, f'mailto:{self.email}'),
+            (self.whatsapp_icon, f'https://wa.me/{self.phone}?text={urllib.parse.quote(self.whatsapp_message)}'),
+        ]
+
+        for i, (icon_path, link) in enumerate(icons):
+            if os.path.exists(icon_path):
+                x = start_x + i * (icon_size + spacing)
+                self.image(icon_path, x, self.get_y(), icon_size, icon_size, link=link)
+
 
     
     def set_section(self, section_name):
