@@ -1474,7 +1474,28 @@ class PDF(FPDF):
 
         self.add_page()
 
-    
+    def add_graphs_to_pdf(pdf, img_buffers, graph_descriptions=None, add_titles=False):
+    graph_width = 180
+    graph_height = 100
+    blue_one = (22, 66, 91)
+    apple_gray = (142, 142, 147)
+
+    for i, img_buffer in enumerate(img_buffers):
+        pdf.add_page()
+        
+        if add_titles and i < len(graph_titles):
+            pdf.set_font('Inter', 'B', 22)
+            pdf.set_text_color(*blue_one)
+            pdf.cell(0, 10, graph_titles[i], 0, 1, 'L')
+            pdf.ln(5)
+
+        add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
+        pdf.ln(graph_height + 15)
+
+        if graph_descriptions and i < len(graph_descriptions):
+            pdf.set_font('Inter', '', 12)
+            pdf.set_text_color(*apple_gray)
+            pdf.multi_cell(0, 6, graph_descriptions[i], 0, 'L')
 
     def add_simulation_parameters(self, params, resultats_df, objectifs):
         self.set_section("Paramètres de simulation")
@@ -1732,30 +1753,20 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Appel de la méthode avec les arguments requis
     pdf.add_simulation_parameters(params, resultats_df, objectives)
 
-    # Définition des titres et descriptions des graphiques
-    graph_titles = [
-        "Évolution du placement financier",
-    ]
-
+    # Définition des descriptions des graphiques (si nécessaire)
     graph_descriptions = [
         "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
         "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
+        "Ce graphique en cascade montre les variations de votre capital année par année, "
+        "mettant en évidence les contributions positives et négatives à votre investissement.",
+        "Ce graphique en anneau présente la répartition de votre capital entre les versements initiaux et les plus-values "
+        "à la fin de votre phase d'épargne, avant le début de vos projets.",
+        "Ce graphique en anneau montre la répartition finale de votre capital entre les versements initiaux et les plus-values "
+        "après la réalisation de tous vos projets."
     ]
 
-    graph_width = 180
-    graph_height = 100
-    for img_buffer, title in zip(img_buffers, graph_titles):
-        pdf.add_page()
-        pdf.set_font('Inter', 'B', 22)
-        pdf.set_text_color(*blue_one)
-        pdf.cell(0, 10, title, 0, 1, 'L')
-    
-        add_image_to_pdf(pdf, img_buffer, x=15, y=pdf.get_y(), w=graph_width, h=graph_height)
-        pdf.ln(graph_height + 15)
-        # Ajout de l'image du track record
-        pdf.set_font('Inter', '', 12)
-        pdf.set_text_color(*apple_gray)
-        pdf.multi_cell(0, 6, graph_descriptions[graph_titles.index(title)], 0, 'L')
+    # Ajout des graphiques au PDF
+    add_graphs_to_pdf(pdf, img_buffers, graph_descriptions, add_titles=False)
         
     
     
