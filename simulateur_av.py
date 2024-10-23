@@ -665,7 +665,7 @@ def create_financial_chart(df: pd.DataFrame):
     # Add traces
     fig.add_trace(
         go.Scatter(
-            x=df['Année'],
+            x=df.index,
             y=capital_fin_annee,
             name='Capital fin d\'année',
             line=dict(color=couleur_principal, width=3),
@@ -679,7 +679,7 @@ def create_financial_chart(df: pd.DataFrame):
 
     fig.add_trace(
         go.Scatter(
-            x=df['Année'],
+            x=df.index,
             y=epargne_investie,
             name='Épargne investie',
             line=dict(color=couleur_secondaire, width=3),
@@ -693,7 +693,7 @@ def create_financial_chart(df: pd.DataFrame):
 
     fig.add_trace(
         go.Bar(
-            x=df['Année'],
+            x=df.index,
             y=rachat,
             name='Rachats',
             marker_color=couleur_tertiaire,
@@ -813,7 +813,7 @@ def create_waterfall_chart(df: pd.DataFrame):
         name = "Evolution du capital",
         orientation = "v",
         measure = ["relative"] * len(df) + ["total"],
-        x = df['Année'].tolist() + ["Total"],
+        x = df.index.tolist() + ["Total"],
         textposition = "outside",
         text = [f"{val:,.0f} €" for val in yearly_change] + [f"{final_capital:,.0f} €"],
         y = yearly_change.tolist() + [0],
