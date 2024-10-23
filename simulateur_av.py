@@ -1000,6 +1000,8 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
         '> Votre capital pour : {objectif_name}
     </h2>
+    *Note explicative :* Ce graphique représente le capital accumulé au dernier jour de votre phase d'épargne. Il est basé sur l'objectif ayant l'horizon d'investissement le plus lointain, offrant ainsi une vue à long terme de votre stratégie d'épargne et d'investissement.
+
     """
 
     return fig, title
