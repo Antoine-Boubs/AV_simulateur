@@ -1052,6 +1052,9 @@ class PDF(FPDF):
         self.logo_path = logo_path or os.path.join(current_dir, "assets", "Logo.png")
         self.track_record_path = os.path.join(os.path.dirname(__file__), "assets", "Track_record.png") 
 
+        self.current_section = 'Votre simulation personnalisée'  # Titre par défaut
+
+
         font_path = os.path.join(current_dir, "assets", "Fonts")
         
         font_files = {
@@ -1072,12 +1075,6 @@ class PDF(FPDF):
         if not self.is_custom_font_loaded:
             print("Aucune police personnalisée n'a été chargée. Utilisation des polices par défaut.")
 
-        self.page_titles = {
-                1: 'Votre simulation personnalisée',
-                2: 'Détails de votre investissement',
-                3: 'Projection financière',
-                # Ajoutez d'autres titres pour chaque page si nécessaire
-            }
 
     def set_font_safe(self, family, style='', size=0):
         try:
@@ -1093,7 +1090,7 @@ class PDF(FPDF):
     def header(self):
         # Ajouter le logo
         if self.logo_path:
-            self.image(self.logo_path, 10, 8, 25)  # Ajustez les dimensions selon votre logo
+            self.image(self.logo_path, 8, 7, 15)  # Ajustez les dimensions selon votre logo
 
         # Chemin vers l'image du bouton RDV
         rdv_path = 'assets/RDV.png'  # Assurez-vous que le chemin est correct
@@ -1101,7 +1098,7 @@ class PDF(FPDF):
         # Titre
         self.set_font('Inter', 'B', 16)
         self.set_text_color(22, 66, 91)
-        title = self.page_titles.get(self.page_no(), 'Votre simulation personnalisée')
+        title = self.current_section
         title_width = self.get_string_width(title) + 6
         
         # Positionnement du titre (ajusté pour laisser de la place au logo)
@@ -1156,27 +1153,16 @@ class PDF(FPDF):
         self.set_font_safe('Inter', '', 8)
         self.set_text_color(*apple_gray)
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
-
-        
-        # Définir la position et la taille de l'image
-        x = 20  # position x de l'image
-        y = 50  # position y de l'image
-        w = 20  # largeur de l'image
-        
-        # Obtenir les dimensions de l'image
-        img_width, img_height = self.get_image_dimensions(logo_path)
-        
-        # Calculer la hauteur proportionnelle
-        h = (w / img_width) * img_height
-        
-        # Insérer l'image
-        self.image(logo_path, x, y, w, h)
         
         self.set_y(-15)
         self.cell(0, 5, '© 2023 Votre Entreprise. Tous droits réservés.', 0, 0, 'C')
         self.set_y(-10)
         self.set_text_color(*apple_blue)
         self.cell(0, 5, 'www.votreentreprise.com', 0, 0, 'C', link="https://www.votreentreprise.com")
+
+    def set_section(self, section_name):
+        """Définit le nom de la section actuelle."""
+        self.current_section = section_name
         
 
     def add_track_record_image(self, image_path):
@@ -1253,6 +1239,7 @@ class PDF(FPDF):
 
 
     def add_objectives_section(self, objectives):
+        self.set_section("Vos objectifs")
         self.add_page()
         
         # Colors
@@ -1318,6 +1305,7 @@ class PDF(FPDF):
 
 
     def create_detailed_table(self, resultats_df):
+        self.set_section("Tableau détaillé des résultats")
         self.add_page()
 
         col_widths = [10, 28, 24, 24, 20, 20, 20, 20, 28]
@@ -1383,6 +1371,7 @@ class PDF(FPDF):
     
 
     def add_simulation_parameters(self, params, resultats_df, objectifs):
+        self.set_section("Paramètres de simulation")
         self.add_page()
         
         # Marges et largeur effective
