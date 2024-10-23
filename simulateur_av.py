@@ -1048,7 +1048,9 @@ from io import BytesIO
 class PDF(FPDF):
     def __init__(self, logo_path=None):
         super().__init__()
-       
+
+        self.current_year = datetime.datetime.now().year
+
         self.is_custom_font_loaded = False
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.logo_path = logo_path or os.path.join(current_dir, "assets", "Logo.png")
