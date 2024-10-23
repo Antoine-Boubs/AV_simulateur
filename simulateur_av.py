@@ -853,13 +853,17 @@ def create_waterfall_chart(df: pd.DataFrame):
         return 0.0
 
     capital_fin_annee = df['Capital fin d\'année (NET)'].apply(safe_float)
-    epargne_investie = df['Épargne investie'].apply(safe_float)
-    rachats = df['Rachat'].apply(safe_float)
     yearly_change = capital_fin_annee.diff()
     yearly_change = yearly_change.fillna(capital_fin_annee.iloc[0])
+    final_capital = capital_fin_annee.iloc[-1]
 
-    # Assurez-vous que yearly_change a le même index que le DataFrame original
-    yearly_change = yearly_change.reindex(df.index)
+    # Création des icônes pour le hover
+    def get_triangle_icon(val):
+        return "▲" if val >= 0 else "▼"
+
+    hover_text = [f"{get_triangle_icon(val)} Variation: <b>{val:,.0f} €</b><br>Capital fin d'année: <b>{cap:,.0f} €</b>" 
+                  for val, cap in zip(yearly_change, capital_fin_annee)]
+    hover_text.append(f"Capital final: <b>{final_capital:,.0f} €</b>")
 
     # Création du graphique
     fig = go.Figure(go.Waterfall(
@@ -868,30 +872,15 @@ def create_waterfall_chart(df: pd.DataFrame):
         measure = ["relative"] * len(df) + ["total"],
         x = df.index.tolist() + ["Total"],
         textposition = "outside",
-        text = [f"{val:,.0f} €" for val in yearly_change] + [f"{capital_fin_annee.iloc[-1]:,.0f} €"],
+        text = [f"{val:,.0f} €" for val in yearly_change] + [f"{final_capital:,.0f} €"],
         y = yearly_change.tolist() + [0],
         connector = {"line":{"color":"rgba(63, 63, 63, 0.2)"}},
         increasing = {"marker":{"color":"#16425B"}},
         decreasing = {"marker":{"color":"#CBA325"}},
         totals = {"marker":{"color":"#16425B"}},
-        hoverinfo = "none",
-        hovertemplate = None
+        hoverinfo = "text",
+        hovertext = hover_text,
     ))
-
-    # Ajout des annotations pour le hover
-    for year in df.index:
-        fig.add_trace(go.Scatter(
-            x=[year],
-            y=[yearly_change.loc[year]],
-            mode="markers",
-            marker=dict(size=0.1, color="rgba(0,0,0,0)"),
-            hoverinfo="text",
-            hovertext=f"<b>{year}</b><br><br>" +
-                      f"• Capital fin d'année<br>  Montant: {capital_fin_annee.loc[year]:,.0f} €<br><br>" +
-                      f"• Épargne investie<br>  Montant: {epargne_investie.loc[year]:,.0f} €<br><br>" +
-                      f"• Rachats<br>  Montant: {rachats.loc[year]:,.0f} €",
-            showlegend=False
-        ))
 
     # Personnalisation du layout
     fig.update_layout(
@@ -921,7 +910,7 @@ def create_waterfall_chart(df: pd.DataFrame):
             font_size=14,
             font_family="Inter"
         ),
-        hovermode="closest"
+        hovermode="x unified"
     )
 
     # Ajout d'un range slider
