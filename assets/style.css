@@ -311,7 +311,7 @@ p {
     }
     
     .stButton > button:hover {
-        background-color: rgba(22, 66, 83); /* Utilisation de rgba pour la transparence */
+        background-color: rgba(22, 66, 83, 0.8); /* Utilisation de rgba pour la transparence */
     }
     
     .delete-button {
@@ -332,8 +332,8 @@ p {
 
     .stTextInput > div > div > input {
         border-radius: 10px;
-        border: 5px solid #d2d2d7;
-        padding: 0.5rem 1rem;
+        border: 3px solid #CBA325;
+        padding: 1.5rem 2rem;
         font-size: 1rem;
 
 
