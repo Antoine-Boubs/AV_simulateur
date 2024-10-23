@@ -893,8 +893,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             labels=['Versements', 'Plus-values'],
             values=[versements, plus_values],
             hole=.7,
-            textinfo='label+value',
-            texttemplate='%{label}<br>%{value:,.0f} €',
+            textinfo='label',
             textposition='outside',
             insidetextorientation='horizontal',
             marker=dict(colors=colors, line=dict(color='#ffffff', width=2)),
@@ -902,6 +901,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             sort=False,
             pull=[0, 0.1],
             textfont=dict(size=14, family="Inter, Arial, sans-serif"),
+            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<extra></extra>'
         )])
 
         # Calcul du pourcentage de croissance
@@ -910,8 +910,8 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
 
         fig.update_layout(
             annotations=[
-                dict(text=f'<b>{capital_final:,.0f} €</b><br>Capital final', x=0.5, y=0.5, font_size=16, showarrow=False),
-                dict(text=f'<b>{growth_text}</b><br>Plus-values', x=0.5, y=0.35, font_size=14, showarrow=False, font_color='#CBA325')
+                dict(text=f'<b>{capital_final:,.0f} €</b><br>Capital final', x=0.5, y=0.5, font_size=20, showarrow=False),
+                dict(text=f'<b>{growth_text}</b><br>Plus-values', x=0.5, y=0.35, font_size=16, showarrow=False, font_color='#CBA325')
             ]
         )
 
