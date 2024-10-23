@@ -50,7 +50,7 @@ st.markdown(
 st.markdown("""
 <style>
     .main {
-        background-color: #f5f5f7;
+        background-color: #F0D97A;
         padding: 2rem;
         border-radius: 20px;
     }
@@ -62,7 +62,7 @@ st.markdown("""
     }
     .stTextInput > div > div > input {
         border-radius: 10px;
-        border: 1px solid #d2d2d7;
+        border: 5px solid #d2d2d7;
         padding: 0.5rem 1rem;
         font-size: 1rem;
     }
@@ -70,7 +70,7 @@ st.markdown("""
         background-color: #0071e3;
     }
     .stExpander {
-        background-color: white;
+        background-color: #8DB3C5;
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin-bottom: 1rem;
@@ -81,7 +81,7 @@ st.markdown("""
         box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     }
     .stButton > button {
-        background-color: #0071e3;
+        background-color: #A33432;
         color: white;
         border-radius: 20px;
         padding: 0.5rem 1.5rem;
@@ -92,7 +92,7 @@ st.markdown("""
         background-color: #0077ed;
     }
     .delete-button {
-        color: #ff3b30;
+        color: #D56844;
         background: none;
         border: none;
         cursor: pointer;
@@ -100,7 +100,7 @@ st.markdown("""
         transition: all 0.3s ease;
     }
     .delete-button:hover {
-        color: #F1B8A2;
+        color: #A33432;
     }
 </style>
 """, unsafe_allow_html=True)
