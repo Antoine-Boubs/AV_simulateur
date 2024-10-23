@@ -819,18 +819,11 @@ def create_waterfall_chart(df: pd.DataFrame):
         increasing = {"marker":{"color":"#16425B"}},
         decreasing = {"marker":{"color":"#CBA325"}},
         totals = {"marker":{"color":"#16425B"}},
+        hovertemplate = '<span style="color:%{marker.color};">●</span> %{x}<br>Variation: <b>%{text}</b><extra></extra>'
     ))
 
     # Personnalisation du layout
     fig.update_layout(
-        title = {
-            'text': "Évolution du capital année par année",
-            'y':0.95,
-            'x':0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': dict(size=20, color='#16425B', family="Inter")
-        },
         font=dict(family="Inter", size=14, color='#16425B'),
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
@@ -856,7 +849,8 @@ def create_waterfall_chart(df: pd.DataFrame):
             bgcolor="white",
             font_size=14,
             font_family="Inter"
-        )
+        ),
+        hovermode="x unified"
     )
 
     # Ajout d'un range slider
@@ -869,7 +863,25 @@ def create_waterfall_chart(df: pd.DataFrame):
 
     return fig
 
+# Création du titre stylisé en dehors du graphique
+title = """
+<h2 style='
+    text-align: center; 
+    color: #16425B; 
+    font-size: 20px; 
+    font-weight: 700; 
+    margin-top: 30px; 
+    margin-bottom: 0px; 
+    background-color: rgba(251, 251, 251, 1); 
+    padding: 20px 15px; 
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    '> Évolution de votre capital année par année
+</h2>
+"""
+
 # Dans votre application Streamlit
+st.markdown(title, unsafe_allow_html=True)
 st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True, config={'displayModeBar': False})
 
 
