@@ -310,7 +310,7 @@ p {
     }
     
     .stButton > button:hover {
-        background-color: rgba(22, 66, 63); /* Utilisation de rgba pour la transparence */
+        background-color: rgba(22, 56, 81); /* Utilisation de rgba pour la transparence */
     }
     
 
@@ -318,7 +318,12 @@ p {
     div[data-testid="stButton"] p {
         color: #FBFBFB
     }
-            
+
+
+    .stDataFrameGlideDataEditor {
+        border: 2px solid #16425B;
+    }
+
     .stExpander > details {
         border: none
     }
