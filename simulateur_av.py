@@ -868,26 +868,42 @@ st.plotly_chart(create_waterfall_chart(resultats_df), use_container_width=True)
 
 
 
-def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
-    if not objectifs:
-        objectif_name = "Votre capital sans objectif spécifique"
+def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
+    # Vérifier si des objectifs sont définis et non vides
+    if objectifs and len(objectifs) > 0:
+        try:
+            objectif_max = max(objectifs, key=lambda obj: obj.get("annee", 0))
+            objectif_name = objectif_max.get("nom", "Objectif sans nom")
+        except ValueError:
+            objectif_name = "Objectif indéfini"
     else:
-        objectif_max = max(objectifs, key=lambda obj: obj["annee"])
-        objectif_name = objectif_max["nom"]
-        
-    # Calculer la durée de capitalisation maximale
-    duree_capi_max = calculer_duree_capi_max(objectifs)
-
-    # Trouver l'objectif correspondant à la durée de capitalisation maximale
-    objectif_max = max(objectifs, key=lambda obj: obj["annee"])
-    objectif_name = objectif_max["nom"]
+        objectif_name = "Votre capital sans objectif spécifique"
     
+    # Vérifier si le DataFrame est vide
+    if df.empty:
+        fig = go.Figure()
+        fig.add_annotation(
+            x=0.5, y=0.5,
+            text="Pas de données à afficher",
+            font=dict(size=20, family="Inter, Arial, sans-serif", color='#16425B'),
+            showarrow=False
+        )
+        return fig, f"<h2>Aucune donnée disponible pour : {objectif_name}</h2>"
+
     # Trouver l'année correspondant à duree_capi_max
-    target_year = df[df['Année'] == duree_capi_max].iloc[0]
+    target_year = df[df['Année'] == duree_capi_max].iloc[0] if duree_capi_max in df['Année'].values else df.iloc[-1]
+
+    # Fonction pour convertir en float de manière sûre
+    def safe_float(value):
+        if pd.isna(value):
+            return 0.0
+        if isinstance(value, str):
+            return float(value.replace(' €', '').replace(',', '.'))
+        return float(value)
 
     # Calculer les valeurs nécessaires
-    capital_final = float(target_year['Capital fin d\'année (NET)'].replace(' €', '').replace(',', ''))
-    pourcentage_plus_value = float(target_year['%'].replace('%', '')) / 100  # Convertir le pourcentage en décimal
+    capital_final = safe_float(target_year['Capital fin d\'année (NET)'])
+    pourcentage_plus_value = safe_float(target_year['%']) / 100 if '%' in target_year else 0
     plus_values = capital_final * pourcentage_plus_value
     versements = capital_final - plus_values
 
@@ -916,7 +932,8 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int):
             sort=False,
             pull=[0, 0.1],
             textfont=dict(size=14, family="Inter"),
-            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>%{percent:.2f}%<extra></extra>'        )])
+            hovertemplate='<span style="color:%{marker.color};">●</span> %{label}<br>%{percent:.2f}%<extra></extra>'
+        )])
 
         # Calcul du pourcentage de croissance
         growth_percentage = (plus_values / versements * 100) if versements != 0 else 0
@@ -961,14 +978,13 @@ objectif_annee_max = calculer_duree_capi_max(objectifs)
 duree_capi_max = objectif_annee_max  # Remplacez cette valeur par la durée capi max réelle
 
 # Créer le graphique et obtenir le titre
-fig, title = create_donut_chart(resultats_df, duree_capi_max)
+fig, title = create_donut_chart(resultats_df, duree_capi_max, objectifs)
 
 # Afficher le titre
 st.markdown(title, unsafe_allow_html=True)
 
 # Afficher le graphique
 st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-
 
 
 def fig_to_img_buffer(fig):
