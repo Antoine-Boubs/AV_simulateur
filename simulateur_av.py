@@ -1166,7 +1166,7 @@ class PDF(FPDF):
         self.set_text_color(*apple_blue)
         self.cell(0, 5, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
 
-       total_width = 50
+        total_width = 50
         start_x = (self.w - total_width) / 2
         icon_size = 10
         spacing = 5
