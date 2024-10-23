@@ -1054,9 +1054,9 @@ class PDF(FPDF):
 
         self.linkedin_icon = 'assets/Logo.png'
         self.email_icon = 'assets/Logo1.png'
-        self.phone_icon = 'assets/Logo.png'
+        self.sms_icon = 'assets/Logo.png'
         self.email = 'antoineberjoan@gmail.com'
-        self.sms_icon = '+33686514317'
+        self.phone = '+33686514317'
         self.sms_message = "Bonjour, j'aimerais en savoir plus sur vos services."  # Message par défaut pour le SMS
 
 
