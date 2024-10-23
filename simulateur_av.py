@@ -915,7 +915,7 @@ def create_donut_chart(df: pd.DataFrame, duree_capi_max: int, objectifs=None):
         return fig, f"<h2>Aucune donnée disponible pour : {objectif_name}</h2>"
 
     # Trouver l'année correspondant à duree_capi_max
-    target_year = df[df['Année'] == duree_capi_max].iloc[0] if duree_capi_max in df['Année'].values else df.iloc[-1]
+    target_year = df.loc[duree_capi_max] if duree_capi_max in df.index else df.iloc[-1]
 
     # Fonction pour convertir en float de manière sûre
     def safe_float(value):
