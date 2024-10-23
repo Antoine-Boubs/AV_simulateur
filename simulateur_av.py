@@ -627,6 +627,94 @@ st.header("📊 Résultats de la simulation avec rachats")
 st.dataframe(resultats_df)
 
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+
+def style_dataframe(df):
+    # Fonction pour formater les valeurs monétaires
+    def format_currency(val):
+        if isinstance(val, (int, float)):
+            return f"{val:,.2f} €".replace(",", " ").replace(".", ",")
+        return val
+
+    # Fonction pour formater les pourcentages
+    def format_percentage(val):
+        if isinstance(val, (int, float)):
+            return f"{val:.2f}%".replace(".", ",")
+        return val
+
+    # Appliquer le formatage aux colonnes appropriées
+    numeric_columns = df.select_dtypes(include=[np.number]).columns
+    for col in numeric_columns:
+        if "%" in col:
+            df[col] = df[col].apply(format_percentage)
+        elif "Année" not in col:
+            df[col] = df[col].apply(format_currency)
+
+    # Définir les styles
+    styles = [
+        dict(selector="th", props=[("font-family", "Inter"), 
+                                   ("font-weight", "bold"),
+                                   ("background-color", "#16425B"),
+                                   ("color", "white"),
+                                   ("font-size", "14px"),
+                                   ("text-align", "center")]),
+        dict(selector="td", props=[("font-family", "Inter"), 
+                                   ("font-size", "12px"),
+                                   ("text-align", "right")]),
+        dict(selector="", props=[("border", "1px solid #CBA325"),
+                                 ("border-collapse", "collapse")])
+    ]
+
+    # Appliquer le style et les formats conditionnels
+    return (df.style
+            .set_table_styles(styles)
+            .background_gradient(cmap="YlOrBr", subset=["Capital fin d'année (NET)"])
+            .background_gradient(cmap="RdYlGn", subset=["Rendement"])
+            .background_gradient(cmap="RdYlGn_r", subset=["Frais de gestion"])
+            .format(precision=2, thousands=" ", decimal=",")
+            .set_properties(**{'font-family': 'Inter', 'font-size': '12px'})
+            .hide_index()
+           )
+
+# Utilisation de la fonction
+styled_df = style_dataframe(resultats_df)
+
+# Affichage du DataFrame stylisé
+st.markdown("""
+<style>
+    .dataframe {
+        font-family: Inter, sans-serif;
+        border-collapse: collapse;
+        margin: 25px 0;
+        font-size: 0.9em;
+        min-width: 400px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    }
+    .dataframe thead tr {
+        background-color: #16425B;
+        color: #ffffff;
+        text-align: left;
+    }
+    .dataframe th,
+    .dataframe td {
+        padding: 12px 15px;
+    }
+    .dataframe tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+    .dataframe tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+    }
+    .dataframe tbody tr:last-of-type {
+        border-bottom: 2px solid #16425B;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.dataframe(styled_df)
+
 
 
 
