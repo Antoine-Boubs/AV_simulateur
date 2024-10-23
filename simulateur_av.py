@@ -861,10 +861,6 @@ def create_waterfall_chart(df: pd.DataFrame):
     def get_triangle_icon(val):
         return "▲" if val >= 0 else "▼"
 
-    hover_text = [f"{get_triangle_icon(val)} Variation: <b>{val:,.0f} €</b><br>Capital fin d'année: <b>{cap:,.0f} €</b>" 
-                  for val, cap in zip(yearly_change, capital_fin_annee)]
-    hover_text.append(f"Capital final: <b>{final_capital:,.0f} €</b>")
-
     # Création du graphique
     fig = go.Figure(go.Waterfall(
         name = "Evolution du capital",
@@ -878,8 +874,14 @@ def create_waterfall_chart(df: pd.DataFrame):
         increasing = {"marker":{"color":"#16425B"}},
         decreasing = {"marker":{"color":"#CBA325"}},
         totals = {"marker":{"color":"#16425B"}},
-        hoverinfo = "text",
-        hovertext = hover_text,
+        hovertemplate = '<span style="color:%{marker.color};">●</span> %{x}<br>' +
+                        '%{customdata[0]}<br>' +
+                        'Variation: <b>%{customdata[1]}</b><br>' +
+                        'Capital fin d\'année: <b>%{customdata[2]}</b>' +
+                        '<extra></extra>',
+        customdata=[[f"{get_triangle_icon(val)}", f"{val:,.0f} €", f"{cap:,.0f} €"] 
+                    for val, cap in zip(yearly_change, capital_fin_annee)] +
+                   [["", f"{final_capital:,.0f} €", ""]]  # Pour la barre "Total"
     ))
 
     # Personnalisation du layout
