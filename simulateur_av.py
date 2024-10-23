@@ -696,6 +696,11 @@ def create_financial_chart(df: pd.DataFrame):
         secondary_y=True,
     )
 
+    # Calculer l'échelle pour l'axe des rachats
+    max_principal = max(capital_fin_annee.max(), epargne_investie.max())
+    max_rachat = rachat.max()
+    scale_factor = max_principal / max_rachat if max_rachat > 0 else 1
+
     # Customize the layout
     fig.update_layout(
         xaxis=dict(
@@ -734,9 +739,12 @@ def create_financial_chart(df: pd.DataFrame):
             linecolor='#CBA325',
             tickmode='auto',
             nticks=6,
-            range=[0, max(rachat) * 1.1],  # Adjust the range for better proportionality
+            range=[0, max_rachat * scale_factor],  # Ajuster l'échelle des rachats
+            overlaying='y',
+            side='right',
         ),
         font=dict(family="Inter", size=14),
+        height=600,
         margin=dict(t=60, b=60, l=60, r=60),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
@@ -751,8 +759,16 @@ def create_financial_chart(df: pd.DataFrame):
         hovermode="x unified",
     )
 
+    return fig
+
+def display_financial_chart(df: pd.DataFrame, width_percentage: int = 80):
+    # Créer trois colonnes avec des proportions calculées
+    left_space = (100 - width_percentage) // 2
+    right_space = 100 - width_percentage - left_space
+    col1, col2, col3 = st.columns([left_space, width_percentage, right_space])
+    
     # Ajouter le titre en tant qu'élément séparé
-    st.markdown("""
+    col2.markdown("""
     <h2 style='
         text-align: center; 
         color: #16425B; 
@@ -767,11 +783,13 @@ def create_financial_chart(df: pd.DataFrame):
         '> Évolution de votre placement financier
     </h2>
     """, unsafe_allow_html=True)
+    
+    # Afficher le graphique dans la colonne centrale
+    with col2:
+        st.plotly_chart(create_financial_chart(df), use_container_width=True, config={'displayModeBar': False})
 
-    return fig
-
-# Utilisation de la fonction
-st.plotly_chart(create_financial_chart(resultats_df), use_container_width=True, config={'displayModeBar': False})
+# Appel de la fonction
+display_financial_chart(resultats_df, width_percentage=80)
 
 
 
