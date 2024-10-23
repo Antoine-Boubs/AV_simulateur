@@ -1186,7 +1186,7 @@ class PDF(FPDF):
         self.set_y(self.get_y() + icon_size + 2)  # Espace après les icônes
         self.set_font('Inter', '', 8)
         self.set_text_color(128, 128, 128)  # Gris
-        self.cell(0, 4, f'© {self.current_year} Antoine Berjoan', 0, 1, 'C')
+        self.cell(0, 4, f'© {self.current_year} Antoine Berjoan. Tous droits réservés.', 0, 1, 'C')
         self.cell(0, 4, 'www.antoineberjoan.com', 0, 0, 'C', link="https://www.antoineberjoan.com")
 
 
@@ -1685,8 +1685,9 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Tableau détaillé
     pdf.create_detailed_table(resultats_df)
     
-    pdf.add_track_record_image('assets/Track_record.png')
-    pdf.add_objectives_image('assets/Autres_objectifs.png')
+    pdf.add_page()
+        pdf.add_track_record_image('assets/Track_record.png')
+        pdf.add_objectives_image('assets/Autres_objectifs.png')
     
     
 
