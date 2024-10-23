@@ -105,6 +105,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Style personnalisé
+st.markdown("""
+<style>
+    .stButton>button {
+        width: 100%;
+        border-radius: 20px;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 20px;
+    }
+    .stSlider>div>div>div>div {
+        background-color: #f0f2f6;
+    }
+    .stSlider>div>div>div>div>div {
+        background-color: #4e8cff;
+    }
+    .streamlit-expanderHeader {
+        font-size: 1em;
+        color: #31333F;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 def input_simulateur():
     with st.sidebar:
         st.header("📊 Paramètres de l'investissement")
