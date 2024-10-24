@@ -1635,13 +1635,6 @@ class PDF(FPDF):
             self.image(temp_filename, x=left_margin, y=financial_chart_y, w=financial_chart_width, h=financial_chart_height)
             os.unlink(temp_filename)
     
-            # Ajouter un titre et un commentaire pour le graphique financier
-            self.ln(financial_chart_height + 5)
-            self.set_font('Inter', 'B', 12)
-            self.cell(0, 10, "Évolution de votre placement financier", 0, 1, 'C')
-            self.set_font('Inter', '', 9)
-            self.multi_cell(0, 5, "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps.")
-            self.ln(10)
     
         except Exception as e:
             print(f"Erreur détaillée lors de la création du graphique financier : {e}")
@@ -1650,14 +1643,10 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique financier : {str(e)}", 0, 'C')
     
         # Ajout des graphiques donuts côte à côte
-        chart_width = effective_width / 2 - 10  # La moitié de la largeur effective moins un petit espace entre les graphiques
+        chart_width = effective_width / 2 - 5  # La moitié de la largeur effective moins un petit espace entre les graphiques
         chart_height = 80  # Ajustez cette valeur si nécessaire
         chart_y = self.get_y()
     
-        # Titre général pour les graphiques donuts
-        self.set_font('Inter', 'B', 12)
-        self.cell(0, 10, "Répartition de votre capital", 0, 1, 'C')
-        self.ln(5)
     
         # Création et ajout du premier graphique donut
         try:
