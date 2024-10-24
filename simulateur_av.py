@@ -1624,7 +1624,7 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
-            waterfall_chart = create_donut_chart(resultats_df, duree_capi_max)
+            donut_chart = create_donut_chart(resultats_df, duree_capi_max)
             chart_buffer = fig_to_img_buffer(donut_chart)
             
             # Créer un fichier temporaire pour stocker l'image
