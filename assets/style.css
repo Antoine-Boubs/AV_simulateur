@@ -301,7 +301,7 @@ p {
 
                                         /* BUTTON */
     .stButton > button {
-        background-color: #16425B;
+        background-color: rgba(22, 56, 81);
         border-radius: 20px;
         padding: 0.5rem 1.5rem;
         font-weight: 500;
@@ -310,7 +310,7 @@ p {
     }
     
     .stButton > button:hover {
-        background-color: rgba(22, 56, 81); /* Utilisation de rgba pour la transparence */
+        background-color: #16425B; /* Utilisation de rgba pour la transparence */
     }
     
 
