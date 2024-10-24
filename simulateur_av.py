@@ -1624,7 +1624,7 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
-            waterfall_chart = create_donut_chart(resultats_df)
+            waterfall_chart = create_donut_chart(resultats_df, duree_capi_max)
             chart_buffer = fig_to_img_buffer(donut_chart)
             
             # Créer un fichier temporaire pour stocker l'image
@@ -1670,42 +1670,6 @@ class PDF(FPDF):
         max_annee_objectif = max(obj['annee'] for obj in objectifs)
         return min(max_annee_objectif, resultats_df['Année'].max()) if not resultats_df.empty else max_annee_objectif
         
-
-def add_graph(self, chart_function, df, title, description, chart_width, chart_height):
-        chart_x = self.get_x()
-        chart_y = self.get_y()
-
-        try:
-            # Création du graphique
-            chart = chart_function(df)
-            chart_buffer = self.fig_to_img_buffer(chart)
-            
-            # Créer un fichier temporaire pour stocker l'image
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-                temp_filename = temp_file.name
-                temp_file.write(chart_buffer.getvalue())
-            
-            # Ajoutez l'image au PDF en utilisant le fichier temporaire
-            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
-            
-            # Supprimez le fichier temporaire après utilisation
-            os.unlink(temp_filename)
-
-            # Ajout du titre et de la description
-            self.ln(chart_height + 5)
-            self.set_font('Inter', 'B', 14)
-            self.cell(0, 10, title, 0, 1, 'C')
-            self.set_font('Inter', '', 10)
-            self.multi_cell(0, 5, description)
-            self.ln(10)
-
-        except Exception as e:
-            print(f"Erreur détaillée lors de la création du graphique {title} : {e}")
-            self.set_font_safe('Inter', '', 10)
-            self.set_text_color(32, 32, 33)  # text_color
-            self.multi_cell(0, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
-
-        self.ln(10)  # Espace après le graphique
 
 
 import re
