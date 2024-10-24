@@ -1650,8 +1650,8 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique financier : {str(e)}", 0, 'C')
     
         # Ajout des graphiques donuts côte à côte
-        chart_width = effective_width / 2 - 5  # Réduire l'espace entre les graphiques
-        chart_height = 90  # Ajustez cette valeur si nécessaire
+        chart_width = (effective_width / 2) + 10  # Augmenté pour des graphiques plus larges
+        chart_height = 120  # Augmenté pour des graphiques plus grands
         chart_y = self.get_y()
     
         # Création et ajout du premier graphique donut
@@ -1673,7 +1673,7 @@ class PDF(FPDF):
             os.unlink(temp_filename1)
     
             # Titre et commentaire pour le premier graphique donut
-            self.set_xy(left_margin, chart_y + new_height1 + 5)
+            self.set_xy(left_margin, chart_y + new_height1 + 2)
             self.set_font('Inter', 'B', 9)
             self.cell(chart_width, 8, "À la fin de la phase d'épargne", 0, 1, 'C')
             self.set_font('Inter', '', 8)
@@ -1704,11 +1704,11 @@ class PDF(FPDF):
             os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
-            self.set_xy(left_margin + chart_width + 10, chart_y + new_height2 + 5)
+            self.set_xy(left_margin + chart_width - 10, chart_y + new_height2 + 2)
             self.set_font('Inter', 'B', 9)
             self.cell(chart_width, 8, "Au terme de vos projets", 0, 1, 'C')
             self.set_font('Inter', '', 8)
-            self.set_x(left_margin + chart_width + 10)  # Aligner avec le titre
+            self.set_x(left_margin + chart_width - 10)  # Aligner avec le titre
             self.multi_cell(chart_width, 4, "Répartition finale entre versements initiaux et plus-values après la réalisation de tous vos projets.")
     
         except Exception as e:
@@ -1718,7 +1718,7 @@ class PDF(FPDF):
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         # Espace après les graphiques donuts
-        self.ln(max(new_height1, new_height2) + 30)
+        self.ln(max(new_height1, new_height2) + 10)
 
     
     def set_font_safe(self, family, style='', size=0):
