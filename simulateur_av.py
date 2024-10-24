@@ -1693,7 +1693,7 @@ class PDF(FPDF):
                 temp_filename2 = temp_file.name
                 temp_file.write(chart_buffer2.getvalue())
             
-            self.image(temp_filename2, x=left_margin + y=chart_y, w=chart_width, h=chart_height)
+            self.image(temp_filename2, x=left_margin, y=chart_y, w=chart_width, h=chart_height)
             os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
