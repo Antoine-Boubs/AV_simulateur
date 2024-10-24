@@ -1650,9 +1650,12 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique financier : {str(e)}", 0, 'C')
     
         # Ajout des graphiques donuts côte à côte
-        chart_width = (effective_width / 2) + 10  # Augmenté pour des graphiques plus larges
-        chart_height = 120  # Augmenté pour des graphiques plus grands
+        chart_width = (effective_width / 2) - 5  # Légèrement réduit pour maintenir un petit espace entre les graphiques
+        chart_height = 180  # Considérablement augmenté pour des graphiques beaucoup plus grands
         chart_y = self.get_y()
+    
+        # Réduire l'espace entre le graphique financier et les donuts
+        self.ln(5)  # Réduit à 5 pour rapprocher les donuts du graphique financier
     
         # Création et ajout du premier graphique donut
         try:
@@ -1674,9 +1677,9 @@ class PDF(FPDF):
     
             # Titre et commentaire pour le premier graphique donut
             self.set_xy(left_margin, chart_y + new_height1 + 2)
-            self.set_font('Inter', 'B', 9)
+            self.set_font('Inter', 'B', 11)  # Augmenté la taille de la police
             self.cell(chart_width, 8, "À la fin de la phase d'épargne", 0, 1, 'C')
-            self.set_font('Inter', '', 8)
+            self.set_font('Inter', '', 10)  # Augmenté la taille de la police
             self.multi_cell(chart_width, 4, "Répartition entre versements initiaux et plus-values à la fin de votre phase d'épargne.")
     
         except Exception as e:
@@ -1704,11 +1707,11 @@ class PDF(FPDF):
             os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
-            self.set_xy(left_margin + chart_width - 10, chart_y + new_height2 + 2)
-            self.set_font('Inter', 'B', 9)
+            self.set_xy(left_margin + chart_width + 10, chart_y + new_height2 + 2)
+            self.set_font('Inter', 'B', 11)  # Augmenté la taille de la police
             self.cell(chart_width, 8, "Au terme de vos projets", 0, 1, 'C')
-            self.set_font('Inter', '', 8)
-            self.set_x(left_margin + chart_width - 10)  # Aligner avec le titre
+            self.set_font('Inter', '', 10)  # Augmenté la taille de la police
+            self.set_x(left_margin + chart_width + 10)  # Aligner avec le titre
             self.multi_cell(chart_width, 4, "Répartition finale entre versements initiaux et plus-values après la réalisation de tous vos projets.")
     
         except Exception as e:
@@ -1718,7 +1721,7 @@ class PDF(FPDF):
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         # Espace après les graphiques donuts
-        self.ln(max(new_height1, new_height2) + 10)
+        self.ln(max(new_height1, new_height2) + 5)  # Réduit à 5 pour optimiser l'espace
 
     
     def set_font_safe(self, family, style='', size=0):
