@@ -1615,40 +1615,67 @@ class PDF(FPDF):
     
         self.ln(chart_height + 20)  # Espace après le graphique
 
-        # Vérifier s'il reste suffisamment d'espace pour les graphiques
-        if self.get_y() + 250 > self.h - 20:  # 250 est une estimation de la hauteur totale nécessaire
+         # Vérifier s'il reste suffisamment d'espace pour les graphiques
+        if self.get_y() + 400 > self.h - 20:  # 400 est une estimation de la hauteur totale nécessaire
             self.add_page()
+    
+        # Fonction pour créer une image de haute qualité
+        def create_high_quality_image(fig):
+            buf = io.BytesIO()
+            fig.savefig(buf, format='png', dpi=300, bbox_inches='tight', pad_inches=0.1)
+            buf.seek(0)
+            return buf
+    
+        # Ajout du graphique financier
+        financial_chart_width = effective_width
+        financial_chart_height = 120  # Ajustez cette valeur si nécessaire
+        financial_chart_y = self.get_y()
+    
+        try:
+            fig_financial, ax_financial = plt.subplots(figsize=(12, 6))  # Augmenter la taille de la figure
+            financial_chart = create_financial_chart(resultats_df, ax_financial)
+            financial_chart_buffer = create_high_quality_image(fig_financial)
+            
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                temp_filename = temp_file.name
+                temp_file.write(financial_chart_buffer.getvalue())
+            
+            self.image(temp_filename, x=left_margin, y=financial_chart_y, w=financial_chart_width, h=financial_chart_height)
+            os.unlink(temp_filename)
+            plt.close(fig_financial)
+    
+            # Ajouter un titre et un commentaire pour le graphique financier
+            self.ln(financial_chart_height + 5)
+            self.set_font('Inter', 'B', 12)
+            self.cell(0, 10, "Évolution de votre placement financier", 0, 1, 'C')
+            self.set_font('Inter', '', 9)
+            self.multi_cell(0, 5, "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps.")
+            self.ln(10)
+    
+        except Exception as e:
+            print(f"Erreur détaillée lors de la création du graphique financier : {e}")
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(*text_color)
+            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique financier : {str(e)}", 0, 'C')
     
         # Ajout des graphiques donuts côte à côte
         chart_width = (effective_width / 2) - 5
-        chart_height = 180  # Augmenté pour des graphiques plus grands
+        chart_height = 180  # Hauteur augmentée pour des graphiques plus grands
         chart_y = self.get_y()
-    
-        # Réduire l'espace entre le graphique financier et les donuts
-        self.ln(10)
-    
-        # Fonction pour redimensionner l'image en préservant la qualité
-        def resize_image(img_buffer, target_width, target_height):
-            img = Image.open(img_buffer)
-            img = img.resize((int(target_width), int(target_height)), Image.LANCZOS)
-            buf = io.BytesIO()
-            img.save(buf, format='PNG', dpi=(300, 300))
-            return buf.getvalue()
     
         # Création et ajout du premier graphique donut
         try:
-            donut_chart1 = create_donut_chart(resultats_df, duree_capi_max)
-            chart_buffer1 = fig_to_img_buffer(donut_chart1)
-            
-            # Redimensionner l'image
-            resized_chart1 = resize_image(io.BytesIO(chart_buffer1.getvalue()), chart_width, chart_height)
+            fig1, ax1 = plt.subplots(figsize=(8, 8))  # Augmenter la taille de la figure
+            donut_chart1 = create_donut_chart(resultats_df, duree_capi_max, ax1)
+            chart_buffer1 = create_high_quality_image(fig1)
             
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 temp_filename1 = temp_file.name
-                temp_file.write(resized_chart1)
+                temp_file.write(chart_buffer1.getvalue())
             
             self.image(temp_filename1, x=left_margin, y=chart_y, w=chart_width, h=chart_height)
             os.unlink(temp_filename1)
+            plt.close(fig1)
     
             # Titre et commentaire pour le premier graphique donut
             self.set_xy(left_margin, chart_y + chart_height + 5)
@@ -1665,18 +1692,17 @@ class PDF(FPDF):
     
         # Création et ajout du deuxième graphique donut
         try:
-            donut_chart2 = create_donut_chart2(resultats_df, objectifs)
-            chart_buffer2 = fig_to_img_buffer(donut_chart2)
-            
-            # Redimensionner l'image
-            resized_chart2 = resize_image(io.BytesIO(chart_buffer2.getvalue()), chart_width, chart_height)
+            fig2, ax2 = plt.subplots(figsize=(8, 8))  # Augmenter la taille de la figure
+            donut_chart2 = create_donut_chart2(resultats_df, objectifs, ax2)
+            chart_buffer2 = create_high_quality_image(fig2)
             
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 temp_filename2 = temp_file.name
-                temp_file.write(resized_chart2)
+                temp_file.write(chart_buffer2.getvalue())
             
             self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=chart_width, h=chart_height)
             os.unlink(temp_filename2)
+            plt.close(fig2)
     
             # Titre et commentaire pour le deuxième graphique donut
             self.set_xy(left_margin + chart_width + 10, chart_y + chart_height + 5)
