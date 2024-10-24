@@ -1619,50 +1619,20 @@ class PDF(FPDF):
         if self.get_y() + 250 > self.h - 20:  # 250 est une estimation de la hauteur totale nécessaire
             self.add_page()
     
-        # Ajout du graphique financier
-        financial_chart_width = effective_width
-        financial_chart_height = 120  # Augmenté pour plus de visibilité
-        financial_chart_y = self.get_y()
-    
-        try:
-            financial_chart = create_financial_chart(resultats_df)
-            financial_chart_buffer = fig_to_img_buffer(financial_chart)
-            
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-                temp_filename = temp_file.name
-                temp_file.write(financial_chart_buffer.getvalue())
-            
-            self.image(temp_filename, x=left_margin, y=financial_chart_y, w=financial_chart_width, h=financial_chart_height)
-            os.unlink(temp_filename)
-    
-            # Ajouter un titre et un commentaire pour le graphique financier
-            self.ln(financial_chart_height + 5)
-            self.set_font('Inter', 'B', 12)
-            self.cell(0, 10, "Évolution de votre placement financier", 0, 1, 'C')
-            self.set_font('Inter', '', 9)
-            self.multi_cell(0, 5, "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps.")
-            self.ln(10)
-    
-        except Exception as e:
-            print(f"Erreur détaillée lors de la création du graphique financier : {e}")
-            self.set_font_safe('Inter', '', 10)
-            self.set_text_color(*text_color)
-            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique financier : {str(e)}", 0, 'C')
-    
         # Ajout des graphiques donuts côte à côte
-        chart_width = (effective_width / 2) - 10
-        chart_height = 140 # Ajusté pour un meilleur équilibre
+        chart_width = (effective_width / 2) - 5
+        chart_height = 180  # Augmenté pour des graphiques plus grands
         chart_y = self.get_y()
     
         # Réduire l'espace entre le graphique financier et les donuts
         self.ln(10)
     
-        # Fonction pour redimensionner l'image en préservant le ratio d'aspect
-        def resize_image(img_buffer, max_width, max_height):
+        # Fonction pour redimensionner l'image en préservant la qualité
+        def resize_image(img_buffer, target_width, target_height):
             img = Image.open(img_buffer)
-            img.thumbnail((max_width, max_height), Image.LANCZOS)
+            img = img.resize((int(target_width), int(target_height)), Image.LANCZOS)
             buf = io.BytesIO()
-            img.save(buf, format='PNG', quality=95, optimize=True)
+            img.save(buf, format='PNG', dpi=(300, 300))
             return buf.getvalue()
     
         # Création et ajout du premier graphique donut
@@ -1677,14 +1647,11 @@ class PDF(FPDF):
                 temp_filename1 = temp_file.name
                 temp_file.write(resized_chart1)
             
-            img1 = Image.open(temp_filename1)
-            img_width, img_height = img1.size
-            
-            self.image(temp_filename1, x=left_margin, y=chart_y, w=img_width, h=img_height)
+            self.image(temp_filename1, x=left_margin, y=chart_y, w=chart_width, h=chart_height)
             os.unlink(temp_filename1)
     
             # Titre et commentaire pour le premier graphique donut
-            self.set_xy(left_margin, chart_y + img_height + 5)
+            self.set_xy(left_margin, chart_y + chart_height + 5)
             self.set_font('Inter', 'B', 11)
             self.cell(chart_width, 8, "À la fin de la phase d'épargne", 0, 1, 'C')
             self.set_font('Inter', '', 10)
@@ -1708,18 +1675,15 @@ class PDF(FPDF):
                 temp_filename2 = temp_file.name
                 temp_file.write(resized_chart2)
             
-            img2 = Image.open(temp_filename2)
-            img_width, img_height = img2.size
-            
-            self.image(temp_filename2, x=left_margin + chart_width + 20, y=chart_y, w=img_width, h=img_height)
+            self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=chart_width, h=chart_height)
             os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
-            self.set_xy(left_margin + chart_width + 20, chart_y + img_height + 5)
+            self.set_xy(left_margin + chart_width + 10, chart_y + chart_height + 5)
             self.set_font('Inter', 'B', 11)
             self.cell(chart_width, 8, "Au terme de vos projets", 0, 1, 'C')
             self.set_font('Inter', '', 10)
-            self.set_x(left_margin + chart_width + 20)
+            self.set_x(left_margin + chart_width + 10)
             self.multi_cell(chart_width, 4, "Répartition finale entre versements initiaux et plus-values après la réalisation de tous vos projets.")
     
         except Exception as e:
@@ -1729,7 +1693,7 @@ class PDF(FPDF):
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         # Espace après les graphiques donuts
-        self.ln(max(img_height, img_height) + 30)
+        self.ln(chart_height + 30)
 
     
     def set_font_safe(self, family, style='', size=0):
