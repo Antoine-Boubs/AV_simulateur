@@ -1627,25 +1627,25 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
-        donut_chart = create_donut_chart(resultats_df, duree_capi_max)
-        chart_buffer = fig_to_img_buffer(donut_chart)
+            donut_chart = create_donut_chart(resultats_df, duree_capi_max)
+            chart_buffer = fig_to_img_buffer(donut_chart)
+            
+            # Créer un fichier temporaire pour stocker l'image
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                temp_filename = temp_file.name
+                temp_file.write(chart_buffer.getvalue())
+            
+            # Ajoutez l'image au PDF en utilisant le fichier temporaire
+            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            
+            # Supprimez le fichier temporaire après utilisation
+            os.unlink(temp_filename)
         
-        # Créer un fichier temporaire pour stocker l'image
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-            temp_filename = temp_file.name
-            temp_file.write(chart_buffer.getvalue())
-        
-        # Ajoutez l'image au PDF en utilisant le fichier temporaire
-        self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
-        
-        # Supprimez le fichier temporaire après utilisation
-        os.unlink(temp_filename)
-    
-    except Exception as e:
-        print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(*text_color)
-        self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+        except Exception as e:
+            print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(*text_color)
+            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         self.ln(chart_height + 20)  # Espace après le graphique
 
