@@ -1621,35 +1621,34 @@ class PDF(FPDF):
     
         # Ajout des graphiques donuts côte à côte
         chart_width = effective_width / 2 - 5  # La moitié de la largeur effective moins un petit espace entre les graphiques
-        chart_height = 100  # Ajustez cette valeur selon vos besoins
+        chart_height = 100  # Gardez la hauteur originale
         chart_y = self.get_y()
-
     
-        # Création et ajout du graphique en cascade
+        # Création et ajout du premier graphique donut
         try:
-            donut_chart = create_donut_chart(resultats_df, duree_capi_max)
-            chart_buffer = fig_to_img_buffer(donut_chart)
+            donut_chart1 = create_donut_chart(resultats_df, duree_capi_max)
+            chart_buffer1 = fig_to_img_buffer(donut_chart1)
             
-            # Créer un fichier temporaire pour stocker l'image
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-                temp_filename = temp_file.name
-                temp_file.write(chart_buffer.getvalue())
+                temp_filename1 = temp_file.name
+                temp_file.write(chart_buffer1.getvalue())
             
-            # Ajoutez l'image au PDF en utilisant le fichier temporaire
-            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
-            
-            # Supprimez le fichier temporaire après utilisation
-            os.unlink(temp_filename)
-        
+            # Calculer les dimensions pour conserver le ratio d'aspect
+            img1 = Image.open(temp_filename1)
+            aspect_ratio1 = img1.width / img1.height
+            new_width1 = min(chart_width, chart_height * aspect_ratio1)
+            new_height1 = new_width1 / aspect_ratio1
+    
+            self.image(temp_filename1, x=left_margin, y=chart_y, w=new_width1, h=new_height1)
+            os.unlink(temp_filename1)
+    
         except Exception as e:
-            print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
+            print(f"Erreur détaillée lors de la création du premier graphique donut : {e}")
             self.set_font_safe('Inter', '', 10)
             self.set_text_color(*text_color)
-            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+            self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
-        self.ln(chart_height + 20)  # Espace après le graphique
-
-
+        # Création et ajout du deuxième graphique donut
         try:
             donut_chart2 = create_donut_chart2(resultats_df, objectifs)
             chart_buffer2 = fig_to_img_buffer(donut_chart2)
@@ -1658,7 +1657,13 @@ class PDF(FPDF):
                 temp_filename2 = temp_file.name
                 temp_file.write(chart_buffer2.getvalue())
             
-            self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=chart_width, h=chart_height)
+            # Calculer les dimensions pour conserver le ratio d'aspect
+            img2 = Image.open(temp_filename2)
+            aspect_ratio2 = img2.width / img2.height
+            new_width2 = min(chart_width, chart_height * aspect_ratio2)
+            new_height2 = new_width2 / aspect_ratio2
+    
+            self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=new_width2, h=new_height2)
             os.unlink(temp_filename2)
     
         except Exception as e:
@@ -1666,6 +1671,10 @@ class PDF(FPDF):
             self.set_font_safe('Inter', '', 10)
             self.set_text_color(*text_color)
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+    
+        # Calculer la hauteur maximale des deux graphiques
+        max_height = max(new_height1, new_height2)
+        self.ln(max_height + 20)  # Espace après les graphiques donuts
     
         self.ln(chart_height + 20)  # Espace après les graphiques donuts
 
