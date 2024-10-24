@@ -1651,7 +1651,7 @@ class PDF(FPDF):
     
         # Ajout des graphiques donuts côte à côte
         chart_width = (effective_width / 2) - 10
-        chart_height = 100  # Ajusté pour un meilleur équilibre
+        chart_height = 140 # Ajusté pour un meilleur équilibre
         chart_y = self.get_y()
     
         # Réduire l'espace entre le graphique financier et les donuts
