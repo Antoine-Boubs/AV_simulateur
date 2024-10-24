@@ -1651,7 +1651,7 @@ class PDF(FPDF):
     
         # Ajout des graphiques donuts côte à côte
         chart_width = effective_width / 2 - 5  # Réduire l'espace entre les graphiques
-        chart_height = 80  # Ajustez cette valeur si nécessaire
+        chart_height = 90  # Ajustez cette valeur si nécessaire
         chart_y = self.get_y()
     
         # Création et ajout du premier graphique donut
