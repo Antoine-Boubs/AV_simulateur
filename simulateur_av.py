@@ -1649,9 +1649,12 @@ class PDF(FPDF):
         self.ln(financial_chart_height + 20)  # Espace après le graphique financier
     
         # Ajout des graphiques donuts côte à côte
-        chart_width = (effective_width / 2) - 5
-        chart_height = 80  # Hauteur augmentée pour des graphiques plus grands
+        chart_width = (effective_width / 1.5) - 5  # Nouvelle formule pour des graphiques plus larges
+        chart_height = 100  # Gardez la même hauteur ou ajustez si nécessaire
         chart_y = self.get_y()
+    
+        # Calculer l'espacement entre les graphiques
+        spacing = effective_width - (2 * chart_width)
     
         # Création et ajout du premier graphique donut
         try:
@@ -1666,16 +1669,19 @@ class PDF(FPDF):
             os.unlink(temp_filename1)
     
             # Titre et commentaire pour le premier graphique donut
-            self.set_xy(left_margin, chart_y + chart_height + 5)
-            self.set_font('Inter', 'B', 11)
-            self.cell(chart_width, 8, "À la fin de votre phase d'épargne", 0, 1, 'C')
+            self.set_xy(left_margin, chart_y + chart_height + 10)
+            self.set_font('Inter', 'B', 12)
+            self.set_text_color(218, 165, 32)  # Couleur dorée pour le titre
+            self.cell(chart_width, 10, "À la fin de votre phase d'épargne", 0, 1, 'C')
             self.set_font('Inter', '', 10)
-            self.multi_cell(chart_width, 4, "C'est le capital que vous pourriez racheter sur votre contrat à la date de votre dernier versement. De base ce simulateur est fait pour simuler une sortie en capital fractionné avec des rachats annuels. Mais si vous le souhaitez, il est également possible de récupérer la totalité de votre contrat.")
+            self.set_text_color(100, 100, 100)  # Gris foncé pour le texte
+            self.ln(5)
+            self.multi_cell(chart_width, 5, "C'est le capital que vous pourriez racheter sur votre contrat à la date de votre dernier versement. De base ce simulateur est fait pour simuler une sortie en capital fractionné avec des rachats annuels. Mais si vous le souhaitez, il est également possible de récupérer la totalité de votre contrat.")
     
         except Exception as e:
             print(f"Erreur détaillée lors de la création du premier graphique donut : {e}")
             self.set_font_safe('Inter', '', 10)
-            self.set_text_color(*text_color)
+            self.set_text_color(128, 128, 128)
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         # Création et ajout du deuxième graphique donut
@@ -1687,25 +1693,28 @@ class PDF(FPDF):
                 temp_filename2 = temp_file.name
                 temp_file.write(chart_buffer2.getvalue())
             
-            self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=chart_width, h=chart_height)
+            self.image(temp_filename2, x=left_margin + chart_width + spacing, y=chart_y, w=chart_width, h=chart_height)
             os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
-            self.set_xy(left_margin + chart_width + 10, chart_y + chart_height + 5)
-            self.set_font('Inter', 'B', 11)
-            self.cell(chart_width, 8, "À la fin de vos projets", 0, 1, 'C')
+            self.set_xy(left_margin + chart_width + spacing, chart_y + chart_height + 10)
+            self.set_font('Inter', 'B', 12)
+            self.set_text_color(218, 165, 32)
+            self.cell(chart_width, 10, "À la fin de vos projets", 0, 1, 'C')
             self.set_font('Inter', '', 10)
-            self.set_x(left_margin + chart_width + 10)
-            self.multi_cell(chart_width, 4, "C'est le capital qui vous reste en ayant concrétisé la totalité de vos projets énoncés ! Vous pouvez alors décider de transmettre ce capital, préparer un nouvel objectif ou augmenter vos rachats fractionnés en phase de restitution pour utiliser l'ensemble de vos ressources.")
+            self.set_text_color(100, 100, 100)
+            self.ln(5)
+            self.set_x(left_margin + chart_width + spacing)
+            self.multi_cell(chart_width, 5, "C'est le capital qui vous reste en ayant concrétisé la totalité de vos projets énoncés ! Vous pouvez alors décider de transmettre ce capital, préparer un nouvel objectif ou augmenter vos rachats fractionnés en phase de restitution pour utiliser l'ensemble de vos ressources.")
     
         except Exception as e:
             print(f"Erreur détaillée lors de la création du deuxième graphique donut : {e}")
             self.set_font_safe('Inter', '', 10)
-            self.set_text_color(*text_color)
+            self.set_text_color(128, 128, 128)
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         # Espace après les graphiques donuts
-        self.ln(chart_height + 30)
+        self.ln(chart_height + 50)
 
     
     def set_font_safe(self, family, style='', size=0):
