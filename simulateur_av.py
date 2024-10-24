@@ -1664,10 +1664,10 @@ class PDF(FPDF):
                 temp_file.write(chart_buffer1.getvalue())
             
             # Ajoutez l'image au PDF en utilisant le fichier temporaire
-            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            self.image(temp_filename1, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
             
             # Supprimez le fichier temporaire après utilisation
-            os.unlink(temp_filename)
+            os.unlink(temp_filename1)
     
             # Titre et commentaire pour le premier graphique donut
             self.set_xy(left_margin, chart_y + chart_height + 5)
@@ -1692,10 +1692,10 @@ class PDF(FPDF):
                 temp_file.write(chart_buffer2.getvalue())
             
             # Ajoutez l'image au PDF en utilisant le fichier temporaire
-            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            self.image(temp_filename2, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
             
             # Supprimez le fichier temporaire après utilisation
-            os.unlink(temp_filename)
+            os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
             self.set_xy(left_margin + chart_width + 10, chart_y + chart_height + 5)
