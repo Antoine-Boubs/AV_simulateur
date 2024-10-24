@@ -1615,9 +1615,13 @@ class PDF(FPDF):
     
         self.ln(chart_height + 20)  # Espace après le graphique
 
+        # Vérifier s'il reste suffisamment d'espace pour les graphiques
+        if self.get_y() + 250 > self.h - 20:  # 250 est une estimation de la hauteur totale nécessaire
+            self.add_page()
+    
         # Ajout du graphique financier
         financial_chart_width = effective_width
-        financial_chart_height = 100  # Réduisez cette valeur si nécessaire
+        financial_chart_height = 100  # Ajustez cette valeur si nécessaire
         financial_chart_y = self.get_y()
     
         try:
@@ -1633,9 +1637,9 @@ class PDF(FPDF):
     
             # Ajouter un titre et un commentaire pour le graphique financier
             self.ln(financial_chart_height + 5)
-            self.set_font('Inter', 'B', 14)
+            self.set_font('Inter', 'B', 12)
             self.cell(0, 10, "Évolution de votre placement financier", 0, 1, 'C')
-            self.set_font('Inter', '', 10)
+            self.set_font('Inter', '', 9)
             self.multi_cell(0, 5, "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps.")
             self.ln(10)
     
@@ -1647,11 +1651,11 @@ class PDF(FPDF):
     
         # Ajout des graphiques donuts côte à côte
         chart_width = effective_width / 2 - 10  # La moitié de la largeur effective moins un petit espace entre les graphiques
-        chart_height = 80  # Réduisez cette valeur pour diminuer la taille des graphiques
+        chart_height = 80  # Ajustez cette valeur si nécessaire
         chart_y = self.get_y()
     
         # Titre général pour les graphiques donuts
-        self.set_font('Inter', 'B', 14)
+        self.set_font('Inter', 'B', 12)
         self.cell(0, 10, "Répartition de votre capital", 0, 1, 'C')
         self.ln(5)
     
@@ -1675,7 +1679,7 @@ class PDF(FPDF):
     
             # Titre et commentaire pour le premier graphique donut
             self.set_xy(left_margin, chart_y + new_height1 + 5)
-            self.set_font('Inter', 'B', 10)
+            self.set_font('Inter', 'B', 9)
             self.cell(chart_width, 8, "À la fin de la phase d'épargne", 0, 1, 'C')
             self.set_font('Inter', '', 8)
             self.multi_cell(chart_width, 4, "Répartition entre versements initiaux et plus-values à la fin de votre phase d'épargne.")
@@ -1706,7 +1710,7 @@ class PDF(FPDF):
     
             # Titre et commentaire pour le deuxième graphique donut
             self.set_xy(left_margin + chart_width + 20, chart_y + new_height2 + 5)
-            self.set_font('Inter', 'B', 10)
+            self.set_font('Inter', 'B', 9)
             self.cell(chart_width, 8, "Au terme de vos projets", 0, 1, 'C')
             self.set_font('Inter', '', 8)
             self.multi_cell(chart_width, 4, "Répartition finale entre versements initiaux et plus-values après la réalisation de tous vos projets.")
