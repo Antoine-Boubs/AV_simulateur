@@ -1649,12 +1649,12 @@ class PDF(FPDF):
         self.ln(financial_chart_height + 20)  # Espace après le graphique financier
     
         # Ajout des graphiques donuts côte à côte
-        chart_width = (effective_width / 1.5) - 5  # Nouvelle formule pour des graphiques plus larges
+        chart_width = (effective_width / 1.8) - 5  # Nouvelle formule pour des graphiques plus larges
         chart_height = 100  # Gardez la même hauteur ou ajustez si nécessaire
         chart_y = self.get_y()
     
         # Calculer l'espacement entre les graphiques
-        spacing = effective_width - (2 * chart_width)
+        #spacing = effective_width - (2 * chart_width)
     
         # Création et ajout du premier graphique donut
         try:
@@ -1714,7 +1714,7 @@ class PDF(FPDF):
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         # Espace après les graphiques donuts
-        self.ln(chart_height + 50)
+        self.ln(chart_height + 30)
 
     
     def set_font_safe(self, family, style='', size=0):
