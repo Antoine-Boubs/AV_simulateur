@@ -1646,7 +1646,7 @@ class PDF(FPDF):
             self.set_text_color(*text_color)
             self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
-        self.ln(financial_chart_height + 20)  # Espace après le graphique financier
+        self.ln(financial_chart_height + 5)  # Espace après le graphique financier
     
         # Ajout des graphiques donuts côte à côte
         chart_width = (effective_width / 2.2) - 5  # Ajusté pour laisser plus d'espace entre les graphiques
