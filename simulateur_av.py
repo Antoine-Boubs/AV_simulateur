@@ -1697,7 +1697,7 @@ class PDF(FPDF):
             os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
-            self.set_xy(left_margin + chart_width + spacing, chart_y + chart_height + 10)
+            self.set_xy(left_margin + chart_y + chart_height + 10)
             self.set_font('Inter', 'B', 12)
             self.set_text_color(218, 165, 32)
             self.cell(chart_width, 10, "À la fin de vos projets", 0, 1, 'C')
