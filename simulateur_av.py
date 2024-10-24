@@ -1653,58 +1653,60 @@ class PDF(FPDF):
         chart_width = (effective_width / 2) - 5
         chart_height = 80  # Hauteur augmentée pour des graphiques plus grands
         chart_y = self.get_y()
-    
+        
         # Création et ajout du premier graphique donut
         try:
-            donut_chart1 = create_donut_chart(resultats_df, duree_capi_max)
-            chart_buffer1 = fig_to_img_buffer(donut_chart)
+            fig1, ax1 = plt.subplots(figsize=(8, 8))
+            donut_chart1 = create_donut_chart(resultats_df, duree_capi_max, ax1)
+            chart_buffer1 = fig_to_img_buffer(fig1)
             
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 temp_filename1 = temp_file.name
                 temp_file.write(chart_buffer1.getvalue())
             
             # Ajoutez l'image au PDF en utilisant le fichier temporaire
-            self.image(temp_filename1, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            self.image(temp_filename1, x=left_margin, y=chart_y, w=chart_width, h=chart_height)
             
             # Supprimez le fichier temporaire après utilisation
             os.unlink(temp_filename1)
-    
+        
             # Titre et commentaire pour le premier graphique donut
             self.set_xy(left_margin, chart_y + chart_height + 5)
             self.set_font('Inter', 'B', 11)
             self.cell(chart_width, 8, "À la fin de votre phase d'épargne", 0, 1, 'C')
             self.set_font('Inter', '', 10)
-            self.multi_cell(chart_width, 4, "C'est le capital que vous pourriez racheter sur votre contrat à la date de votre dernier versement. De base ce simulateur est fait pour simuler une sortie en capital fractionné avec des rachats annuels. Mais si vous le souhiatez, il est également possible de récupérer la totalité de votre contrat.")
-    
+            self.multi_cell(chart_width, 4, "C'est le capital que vous pourriez racheter sur votre contrat à la date de votre dernier versement. De base ce simulateur est fait pour simuler une sortie en capital fractionné avec des rachats annuels. Mais si vous le souhaitez, il est également possible de récupérer la totalité de votre contrat.")
+        
         except Exception as e:
             print(f"Erreur détaillée lors de la création du premier graphique donut : {e}")
             self.set_font_safe('Inter', '', 10)
             self.set_text_color(*text_color)
             self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
-    
+        
         # Création et ajout du deuxième graphique donut
         try:
-            donut_chart2 = create_donut_chart2(resultats_df, objectifs)
-            chart_buffer2 = fig_to_img_buffer(donut_chart2)
+            fig2, ax2 = plt.subplots(figsize=(8, 8))
+            donut_chart2 = create_donut_chart2(resultats_df, objectifs, ax2)
+            chart_buffer2 = fig_to_img_buffer(fig2)
             
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 temp_filename2 = temp_file.name
                 temp_file.write(chart_buffer2.getvalue())
             
             # Ajoutez l'image au PDF en utilisant le fichier temporaire
-            self.image(temp_filename2, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=chart_width, h=chart_height)
             
             # Supprimez le fichier temporaire après utilisation
             os.unlink(temp_filename2)
-    
+        
             # Titre et commentaire pour le deuxième graphique donut
             self.set_xy(left_margin + chart_width + 10, chart_y + chart_height + 5)
             self.set_font('Inter', 'B', 11)
             self.cell(chart_width, 8, "À la fin de vos projets", 0, 1, 'C')
             self.set_font('Inter', '', 10)
             self.set_x(left_margin + chart_width + 10)
-            self.multi_cell(chart_width, 4, "C'est le capital qui vous reste en ayant concrétiser la totalité de vos projets énoncés ! Vous pouvez alors décider de transmettre ce capital, préparer un nouvel objectif ou augmenter vos rachats fractionnés en phase de restitution pour utiliser l'ensemble de vos ressources.")
-    
+            self.multi_cell(chart_width, 4, "C'est le capital qui vous reste en ayant concrétisé la totalité de vos projets énoncés ! Vous pouvez alors décider de transmettre ce capital, préparer un nouvel objectif ou augmenter vos rachats fractionnés en phase de restitution pour utiliser l'ensemble de vos ressources.")
+        
         except Exception as e:
             print(f"Erreur détaillée lors de la création du deuxième graphique donut : {e}")
             self.set_font_safe('Inter', '', 10)
