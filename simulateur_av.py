@@ -1680,40 +1680,46 @@ class PDF(FPDF):
             os.unlink(temp_filename2)
         
             # Espace après les graphiques
-            self.ln(chart_height + 10)
+            self.ln(chart_height + 0)
         
-            # Titres et commentaires pour les graphiques donuts
-            for i in range(2):
-                x_position = left_margin if i == 0 else left_margin + chart_width + spacing
-                self.set_xy(x_position, self.get_y())
-                self.set_font('Inter', 'B', 12)
-                self.set_text_color(218, 165, 32)  # Couleur dorée pour le titre
-                title = "À la fin de votre phase d'épargne" if i == 0 else "À la fin de vos projets"
-                self.cell(chart_width, 10, title, 0, 1, 'C')
-                self.set_font('Inter', '', 10)
-                self.set_text_color(100, 100, 100)  # Gris foncé pour le texte
-                self.ln(5)
-                self.set_x(x_position)
-                comment = ("C'est le capital que vous pourriez racheter sur votre contrat à la date de votre dernier versement. "
-                           "De base ce simulateur est fait pour simuler une sortie en capital fractionné avec des rachats annuels. "
-                           "Mais si vous le souhaitez, il est également possible de récupérer la totalité de votre contrat.") if i == 0 else (
-                           "C'est le capital qui vous reste en ayant concrétisé la totalité de vos projets énoncés ! "
-                           "Vous pouvez alors décider de transmettre ce capital, préparer un nouvel objectif ou augmenter "
-                           "vos rachats fractionnés en phase de restitution pour utiliser l'ensemble de vos ressources.")
-                self.multi_cell(chart_width, 5, comment)
-                
-                # Ajouter un espace entre les descriptions si c'est la première
-                if i == 0:
-                    self.ln(10)
-        
-        except Exception as e:
-            print(f"Erreur détaillée lors de la création des graphiques donuts : {e}")
-            self.set_font_safe('Inter', '', 10)
-            self.set_text_color(128, 128, 128)
-            self.multi_cell(effective_width, 10, f"Erreur lors de la création des graphiques : {str(e)}", 0, 'C')
-        
-        # Espace après les descriptions
-        self.ln(20)
+            ## Titres pour les graphiques donuts
+        title_y = self.get_y()
+        for i in range(2):
+            x_position = left_margin if i == 0 else left_margin + chart_width + spacing
+            self.set_xy(x_position, title_y)
+            self.set_font('Inter', 'B', 12)
+            self.set_text_color(218, 165, 32)  # Couleur dorée pour le titre
+            title = "À la fin de votre phase d'épargne" if i == 0 else "À la fin de vos projets"
+            self.cell(chart_width, 10, title, 0, 1, 'C')
+    
+        # Espace entre le titre et le commentaire
+        self.ln(3)
+    
+        # Commentaires pour les graphiques donuts
+        comment_y = self.get_y()
+        max_comment_height = 0
+        for i in range(2):
+            x_position = left_margin if i == 0 else left_margin + chart_width + spacing
+            self.set_xy(x_position, comment_y)
+            self.set_font('Inter', '', 10)
+            self.set_text_color(100, 100, 100)  # Gris foncé pour le texte
+            comment = ("C'est le capital que vous pourriez racheter sur votre contrat à la date de votre dernier versement. "
+                       "De base ce simulateur est fait pour simuler une sortie en capital fractionné avec des rachats annuels. "
+                       "Mais si vous le souhaitez, il est également possible de récupérer la totalité de votre contrat.") if i == 0 else (
+                       "C'est le capital qui vous reste en ayant concrétisé la totalité de vos projets énoncés ! "
+                       "Vous pouvez alors décider de transmettre ce capital, préparer un nouvel objectif ou augmenter "
+                       "vos rachats fractionnés en phase de restitution pour utiliser l'ensemble de vos ressources.")
+            comment_height = self.multi_cell(chart_width, 5, comment, 0, 'L', False)
+            max_comment_height = max(max_comment_height, comment_height)
+    
+        # Espace après les commentaires
+        self.ln(max_comment_height + 10)
+    
+    except Exception as e:
+        print(f"Erreur détaillée lors de la création des graphiques donuts : {e}")
+        self.set_font_safe('Inter', '', 10)
+        self.set_text_color(128, 128, 128)
+        self.multi_cell(effective_width, 10, f"Erreur lors de la création des graphiques : {str(e)}", 0, 'C')
 
     
     def set_font_safe(self, family, style='', size=0):
