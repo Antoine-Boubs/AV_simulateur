@@ -1757,7 +1757,7 @@ def generate_pdf_report(resultats_df, params, objectives):
     img_buffer4 = fig_to_img_buffer(fig4)
     
     # Créer le PDF
-    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3, img_buffer4], resultats_df, params, objectives, titles=[title3, title4])
+    pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3, img_buffer4], resultats_df, params, objectives)
     
     return pdf_bytes
 
