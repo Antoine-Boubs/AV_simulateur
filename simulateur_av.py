@@ -1715,11 +1715,11 @@ class PDF(FPDF):
             # Espace après les commentaires
             self.ln(max_comment_height + 10)
 
-    except Exception as e:
-        print(f"Erreur détaillée lors de la création des graphiques donuts : {e}")
-        self.set_font_safe('Inter', '', 10)
-        self.set_text_color(128, 128, 128)
-        self.multi_cell(effective_width, 10, f"Erreur lors de la création des graphiques : {str(e)}", 0, 'C')
+        except Exception as e:
+            print(f"Erreur détaillée lors de la création des graphiques donuts : {e}")
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(128, 128, 128)
+            self.multi_cell(effective_width, 10, f"Erreur lors de la création des graphiques : {str(e)}", 0, 'C')
 
     
     def set_font_safe(self, family, style='', size=0):
