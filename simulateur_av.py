@@ -1650,14 +1650,9 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique financier : {str(e)}", 0, 'C')
     
         # Ajout des graphiques donuts côte à côte
-        chart_width = effective_width / 2 - 10  # La moitié de la largeur effective moins un petit espace entre les graphiques
+        chart_width = effective_width / 2 - 5  # Réduire l'espace entre les graphiques
         chart_height = 80  # Ajustez cette valeur si nécessaire
         chart_y = self.get_y()
-    
-        # Titre général pour les graphiques donuts
-        self.set_font('Inter', 'B', 12)
-        self.cell(0, 10, "Répartition de votre capital", 0, 1, 'C')
-        self.ln(5)
     
         # Création et ajout du premier graphique donut
         try:
@@ -1705,15 +1700,15 @@ class PDF(FPDF):
             new_width2 = min(chart_width, chart_height * aspect_ratio2)
             new_height2 = new_width2 / aspect_ratio2
     
-            self.image(temp_filename2, x=left_margin + chart_width + 20, y=chart_y, w=new_width2, h=new_height2)
+            self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=new_width2, h=new_height2)
             os.unlink(temp_filename2)
     
             # Titre et commentaire pour le deuxième graphique donut
-            self.set_xy(left_margin + chart_width + 20, chart_y + new_height2 + 5)
+            self.set_xy(left_margin + chart_width + 10, chart_y + new_height2 + 5)
             self.set_font('Inter', 'B', 9)
             self.cell(chart_width, 8, "Au terme de vos projets", 0, 1, 'C')
             self.set_font('Inter', '', 8)
-            self.set_x(left_margin + chart_width + 20)  # Aligner avec le titre
+            self.set_x(left_margin + chart_width + 10)  # Aligner avec le titre
             self.multi_cell(chart_width, 4, "Répartition finale entre versements initiaux et plus-values après la réalisation de tous vos projets.")
     
         except Exception as e:
