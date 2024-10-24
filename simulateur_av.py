@@ -1615,15 +1615,15 @@ class PDF(FPDF):
     
         self.ln(chart_height + 20)  # Espace après le graphique
 
-         # Vérifier s'il reste suffisamment d'espace pour le graphique
-        if self.get_y() + 100 > self.h - 20:  # 100 est une estimation de la hauteur du graphique
+         # Vérifier s'il reste suffisamment d'espace pour les graphiques donuts
+        if self.get_y() + 120 > self.h - 20:  # 120 est une estimation de la hauteur des graphiques donuts
             self.add_page()
-
-        # Ajout du graphique en cascade
-        chart_width = effective_width
+    
+        # Ajout des graphiques donuts côte à côte
+        chart_width = effective_width / 2 - 5  # La moitié de la largeur effective moins un petit espace entre les graphiques
         chart_height = 100  # Ajustez cette valeur selon vos besoins
-        chart_x = left_margin
         chart_y = self.get_y()
+
     
         # Création et ajout du graphique en cascade
         try:
@@ -1648,6 +1648,26 @@ class PDF(FPDF):
             self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         self.ln(chart_height + 20)  # Espace après le graphique
+
+
+        try:
+            donut_chart2 = create_donut_chart2(resultats_df, objectifs)
+            chart_buffer2 = fig_to_img_buffer(donut_chart2)
+            
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                temp_filename2 = temp_file.name
+                temp_file.write(chart_buffer2.getvalue())
+            
+            self.image(temp_filename2, x=left_margin + chart_width + 10, y=chart_y, w=chart_width, h=chart_height)
+            os.unlink(temp_filename2)
+    
+        except Exception as e:
+            print(f"Erreur détaillée lors de la création du deuxième graphique donut : {e}")
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(*text_color)
+            self.multi_cell(chart_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+    
+        self.ln(chart_height + 20)  # Espace après les graphiques donuts
 
     
     def set_font_safe(self, family, style='', size=0):
