@@ -1656,9 +1656,8 @@ class PDF(FPDF):
         
         # Création et ajout du premier graphique donut
         try:
-            fig1, ax1 = plt.subplots(figsize=(8, 8))
-            donut_chart1 = create_donut_chart(resultats_df, duree_capi_max, ax1)
-            chart_buffer1 = fig_to_img_buffer(fig1)
+            donut_chart1 = create_donut_chart(resultats_df, duree_capi_max)
+            chart_buffer1 = fig_to_img_buffer(donut_chart1)
             
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 temp_filename1 = temp_file.name
@@ -1685,9 +1684,8 @@ class PDF(FPDF):
         
         # Création et ajout du deuxième graphique donut
         try:
-            fig2, ax2 = plt.subplots(figsize=(8, 8))
-            donut_chart2 = create_donut_chart2(resultats_df, objectifs, ax2)
-            chart_buffer2 = fig_to_img_buffer(fig2)
+            donut_chart2 = create_donut_chart2(resultats_df, objectifs)
+            chart_buffer2 = fig_to_img_buffer(donut_chart2)
             
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 temp_filename2 = temp_file.name
