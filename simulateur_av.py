@@ -1715,10 +1715,9 @@ def generate_pdf_report(resultats_df, params, objectives):
     # Générer les graphiques
     img_buffer1 = fig_to_img_buffer(create_financial_chart(resultats_df))
     img_buffer2 = fig_to_img_buffer(create_waterfall_chart(resultats_df))
-    fig3, title3 = create_donut_chart(resultats_df, duree_capi_max)
-    fig4, title4 = create_donut_chart2(resultats_df)
-    img_buffer3 = fig_to_img_buffer(fig3)
-    img_buffer4 = fig_to_img_buffer(fig4)
+    img_buffer3 = fig_to_img_buffer(create_donut_chart(resultats_df, duree_capi_max))
+    img_buffer4 = fig_to_img_buffer(create_donut_chart2(resultats_df))
+    
     
     # Créer le PDF
     pdf_bytes = create_pdf(data, [img_buffer1, img_buffer2, img_buffer3, img_buffer4], resultats_df, params, objectives)
