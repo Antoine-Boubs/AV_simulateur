@@ -1633,6 +1633,40 @@ class PDF(FPDF):
     
         self.ln(chart_height + 20)  # Espace après le graphique
 
+         # Vérifier s'il reste suffisamment d'espace pour le graphique
+        if self.get_y() + 100 > self.h - 20:  # 100 est une estimation de la hauteur du graphique
+            self.add_page()
+
+        # Ajout du graphique en cascade
+        chart_width = effective_width
+        chart_height = 100  # Ajustez cette valeur selon vos besoins
+        chart_x = left_margin
+        chart_y = self.get_y()
+    
+        # Création et ajout du graphique en cascade
+        try:
+            waterfall_chart = create_donut_chart(resultats_df)
+            chart_buffer = fig_to_img_buffer(donut_chart)
+            
+            # Créer un fichier temporaire pour stocker l'image
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                temp_filename = temp_file.name
+                temp_file.write(chart_buffer.getvalue())
+            
+            # Ajoutez l'image au PDF en utilisant le fichier temporaire
+            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            
+            # Supprimez le fichier temporaire après utilisation
+            os.unlink(temp_filename)
+    
+        except Exception as e:
+            print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(*text_color)
+            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+    
+        self.ln(chart_height + 20)  # Espace après le graphique
+
     
     def set_font_safe(self, family, style='', size=0):
         try:
@@ -1656,6 +1690,43 @@ class PDF(FPDF):
             return resultats_df['Année'].max() if not resultats_df.empty else 0
         max_annee_objectif = max(obj['annee'] for obj in objectifs)
         return min(max_annee_objectif, resultats_df['Année'].max()) if not resultats_df.empty else max_annee_objectif
+        
+
+def add_graph(self, chart_function, df, title, description, chart_width, chart_height):
+        chart_x = self.get_x()
+        chart_y = self.get_y()
+
+        try:
+            # Création du graphique
+            chart = chart_function(df)
+            chart_buffer = self.fig_to_img_buffer(chart)
+            
+            # Créer un fichier temporaire pour stocker l'image
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                temp_filename = temp_file.name
+                temp_file.write(chart_buffer.getvalue())
+            
+            # Ajoutez l'image au PDF en utilisant le fichier temporaire
+            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            
+            # Supprimez le fichier temporaire après utilisation
+            os.unlink(temp_filename)
+
+            # Ajout du titre et de la description
+            self.ln(chart_height + 5)
+            self.set_font('Inter', 'B', 14)
+            self.cell(0, 10, title, 0, 1, 'C')
+            self.set_font('Inter', '', 10)
+            self.multi_cell(0, 5, description)
+            self.ln(10)
+
+        except Exception as e:
+            print(f"Erreur détaillée lors de la création du graphique {title} : {e}")
+            self.set_font_safe('Inter', '', 10)
+            self.set_text_color(32, 32, 33)  # text_color
+            self.multi_cell(0, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+
+        self.ln(10)  # Espace après le graphique
 
 
 import re
@@ -1753,21 +1824,7 @@ def create_pdf(data, img_buffers, resultats_df, params, objectives):
     # Appel de la méthode avec les arguments requis
     pdf.add_simulation_parameters(params, resultats_df, objectives)
 
-    # Définition des descriptions des graphiques (si nécessaire)
-    graph_descriptions = [
-        "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps. "
-        "Il vous permet de visualiser la croissance de votre investissement et l'impact des retraits.",
-        "Ce graphique en cascade montre les variations de votre capital année par année, "
-        "mettant en évidence les contributions positives et négatives à votre investissement.",
-        "Ce graphique en anneau présente la répartition de votre capital entre les versements initiaux et les plus-values "
-        "à la fin de votre phase d'épargne, avant le début de vos projets.",
-        "Ce graphique en anneau montre la répartition finale de votre capital entre les versements initiaux et les plus-values "
-        "après la réalisation de tous vos projets."
-    ]
-
-    # Ajout des graphiques au PDF
-    add_graphs_to_pdf(pdf, img_buffers, graph_descriptions, add_titles=False)
-        
+    
     
     
     # Tableau détaillé
