@@ -1057,10 +1057,13 @@ st.markdown(title2, unsafe_allow_html=True)
 st.plotly_chart(fig2, use_container_width=True, config={'displayModeBar': False}, key=f"plot_{uuid.uuid4()}")
 
 
-def fig_to_img_buffer(fig):
-    img_bytes = pio.to_image(fig, format="png", width=1000, height=600, scale=2)
+def fig_to_img_buffer(fig_or_tuple):
+    if isinstance(fig_or_tuple, tuple):
+        fig = fig_or_tuple[0]  # Prendre la figure si c'est un tuple
+    else:
+        fig = fig_or_tuple
+    img_bytes = fig.to_image(format="png", width=800, height=400, scale=2)
     return io.BytesIO(img_bytes)
-
 
 
 
@@ -1624,25 +1627,25 @@ class PDF(FPDF):
     
         # Création et ajout du graphique en cascade
         try:
-            donut_chart = create_donut_chart(resultats_df, duree_capi_max)
-            chart_buffer = fig_to_img_buffer(donut_chart)
-            
-            # Créer un fichier temporaire pour stocker l'image
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-                temp_filename = temp_file.name
-                temp_file.write(chart_buffer.getvalue())
-            
-            # Ajoutez l'image au PDF en utilisant le fichier temporaire
-            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
-            
-            # Supprimez le fichier temporaire après utilisation
-            os.unlink(temp_filename)
+        donut_chart = create_donut_chart(resultats_df, duree_capi_max)
+        chart_buffer = fig_to_img_buffer(donut_chart)
+        
+        # Créer un fichier temporaire pour stocker l'image
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+            temp_filename = temp_file.name
+            temp_file.write(chart_buffer.getvalue())
+        
+        # Ajoutez l'image au PDF en utilisant le fichier temporaire
+        self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+        
+        # Supprimez le fichier temporaire après utilisation
+        os.unlink(temp_filename)
     
-        except Exception as e:
-            print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
-            self.set_font_safe('Inter', '', 10)
-            self.set_text_color(*text_color)
-            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+    except Exception as e:
+        print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
+        self.set_font_safe('Inter', '', 10)
+        self.set_text_color(*text_color)
+        self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
     
         self.ln(chart_height + 20)  # Espace après le graphique
 
