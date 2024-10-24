@@ -1619,44 +1619,35 @@ class PDF(FPDF):
         if self.get_y() + 400 > self.h - 20:  # 400 est une estimation de la hauteur totale nécessaire
             self.add_page()
     
-        # Fonction pour créer une image de haute qualité
-        def create_high_quality_image(fig):
-            buf = io.BytesIO()
-            fig.savefig(buf, format='png', dpi=300, bbox_inches='tight', pad_inches=0.1)
-            buf.seek(0)
-            return buf
     
         # Ajout du graphique financier
         financial_chart_width = effective_width
-        financial_chart_height = 120  # Ajustez cette valeur si nécessaire
+        financial_chart_height = 100  # Ajustez cette valeur si nécessaire
         financial_chart_y = self.get_y()
     
         try:
-            fig_financial, ax_financial = plt.subplots(figsize=(12, 6))  # Augmenter la taille de la figure
-            financial_chart = create_financial_chart(resultats_df, ax_financial)
-            financial_chart_buffer = create_high_quality_image(fig_financial)
+            financial_chart = create_financial_chart(resultats_df)
+            financial_chart_buffer = fig_to_img_buffer(financial_chart)
             
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                 temp_filename = temp_file.name
                 temp_file.write(financial_chart_buffer.getvalue())
             
-            self.image(temp_filename, x=left_margin, y=financial_chart_y, w=financial_chart_width, h=financial_chart_height)
+            # Ajoutez l'image au PDF en utilisant le fichier temporaire
+            self.image(temp_filename, x=chart_x, y=chart_y, w=chart_width, h=chart_height)
+            
+            # Supprimez le fichier temporaire après utilisation
             os.unlink(temp_filename)
-            plt.close(fig_financial)
-    
-            # Ajouter un titre et un commentaire pour le graphique financier
-            self.ln(financial_chart_height + 5)
-            self.set_font('Inter', 'B', 12)
-            self.cell(0, 10, "Évolution de votre placement financier", 0, 1, 'C')
-            self.set_font('Inter', '', 9)
-            self.multi_cell(0, 5, "Ce graphique illustre l'évolution de votre capital, de l'épargne investie et des rachats au fil du temps.")
-            self.ln(10)
     
         except Exception as e:
-            print(f"Erreur détaillée lors de la création du graphique financier : {e}")
+            print(f"Erreur détaillée lors de la création du graphique en cascade : {e}")
             self.set_font_safe('Inter', '', 10)
             self.set_text_color(*text_color)
-            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique financier : {str(e)}", 0, 'C')
+            self.multi_cell(effective_width, 10, f"Erreur lors de la création du graphique : {str(e)}", 0, 'C')
+    
+        self.ln(chart_height + 20)  # Espace après le graphique
+    
+           
     
         # Ajout des graphiques donuts côte à côte
         chart_width = (effective_width / 2) - 5
